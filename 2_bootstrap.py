@@ -21,11 +21,11 @@ if sys.version_info < (3,):
 if sys.version_info < (3,):
     from package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from package_control.package_manager import PackageManager
-    from package_control import loader, text
+    from package_control import loader, text, sys_path
 else:
     from .package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from .package_control.package_manager import PackageManager
-    from .package_control import loader, text
+    from .package_control import loader, text, sys_path
 
 
 def plugin_loaded():
@@ -94,6 +94,15 @@ def _background_bootstrap(settings):
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
+        # Handle the development environment
+        if not found and sys.version_info >= (3,):
+            import Default.sort
+            if os.path.basename(Default.sort.__file__) == 'sort.py':
+                packages_dir = dirname(dirname(Default.sort.__file__))
+                pc_package_path = os.path.join(packages_dir, u'Package Control')
+                if os.path.exists(encode(pc_package_path)):
+                    found = True
+
         if found:
             if os.name == 'nt':
                 from ctypes import windll, create_unicode_buffer
@@ -115,10 +124,10 @@ def _background_bootstrap(settings):
 
     # SSL support fo Linux
     if sublime.platform() == 'linux' and int(sublime.version()) < 3109:
-        linux_ssl_url = u'http://packagecontrol.io/ssl/1.0.1/ssl-linux.sublime-package'
-        linux_ssl_hash = u'862d061cbe666777cd1e9cd1cbc7c82f48ad8897dbb68332975f3edf5ce0f38d'
+        linux_ssl_url = u'http://packagecontrol.io/ssl/1.0.2/ssl-linux.sublime-package'
+        linux_ssl_hash = u'23f35f64458a0a14c99b1bb1bbc3cb04794c7361c4940e0a638d40f038acd377'
         linux_ssl_priority = u'01'
-        linux_ssl_version = '1.0.1'
+        linux_ssl_version = '1.0.2'
 
         def linux_ssl_show_restart():
             sublime.message_dialog(text.format(
