@@ -78,7 +78,7 @@ class Cli(object):
         self.binary_locations = binary_locations
         self.debug = debug
 
-    def execute(self, args, cwd, input=None, encoding='utf-8', meaningful_output=False, ignore_errors=None):
+    def execute(self, args, cwd, input=None, encoding='utf-8', meaningful_output=False, ignore_errors=None, live_output=False):
         """
         Creates a subprocess with the executable/args
 
@@ -98,13 +98,20 @@ class Cli(object):
         :param ignore_errors:
             A regex of errors to ignore
 
+        :param live_output:
+            Whether to ignore the return executable output, or print it immediately to the stdout
+            stream. It is useful when running long commands, so you can see the continuously
+            outputting.
+
         :return:
             A string of the executable output or False on error
         """
 
-        orig_cwd = cwd
+        output = "The live_output is being performed."
 
+        orig_cwd = cwd
         startupinfo = None
+
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -126,24 +133,46 @@ class Cli(object):
             )
 
         try:
+            proc = None
             if sys.platform == 'win32' and sys.version_info < (3,):
                 cwd = cwd.encode('mbcs')
-            proc = subprocess.Popen(
-                args,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                startupinfo=startupinfo,
-                cwd=cwd,
-                env=os.environ
-            )
+
+            # https://stackoverflow.com/questions/4417546/constantly-print-subprocess-output-while-process-is-running
+            if live_output:
+                with subprocess.Popen(
+                    args,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    startupinfo=startupinfo,
+                    cwd=cwd,
+                    env=os.environ
+                ) as proc:
+                    for line in proc.stdout:
+                        line = line.decode(encoding)
+                        line = line.replace('\r\n', '\n').rstrip(' \n\r')
+
+                        # process line here
+                        print(line)
+            else:
+                proc = subprocess.Popen(
+                    args,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    startupinfo=startupinfo,
+                    cwd=cwd,
+                    env=os.environ
+                )
 
             if input and isinstance(input, str_cls):
                 input = input.encode(encoding)
 
             stuck = True
+            is_vcs = False
 
             binary_name = os.path.basename(args[0])
+
             if re.search('git', binary_name):
                 is_vcs = True
             elif re.search('hg', binary_name):
@@ -183,12 +212,13 @@ class Cli(object):
                     show_error(message)
                 sublime.set_timeout(kill_proc, 60000)
 
-            output, _ = proc.communicate(input)
+            if not live_output:
+                output, _ = proc.communicate(input)
+
+                output = output.decode(encoding)
+                output = output.replace('\r\n', '\n').rstrip(' \n\r')
 
             stuck = False
-
-            output = output.decode(encoding)
-            output = output.replace('\r\n', '\n').rstrip(' \n\r')
 
             if proc.returncode not in self.ok_returncodes:
                 if not ignore_errors or re.search(ignore_errors, output) is None:
