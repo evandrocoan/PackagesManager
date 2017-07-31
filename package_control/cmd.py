@@ -101,13 +101,15 @@ class Cli(object):
         :param live_output:
             Whether to ignore the return executable output, or print it immediately to the stdout
             stream. It is useful when running long commands, so you can see the continuously
-            outputting.
+            outputting. This is not supported by python 2 version.
 
         :return:
             A string of the executable output or False on error
         """
 
+        # live_output does not works for python version < 3
         output = "The live_output is being performed."
+        live_output = live_output and not sys.version_info[0] < 3
 
         orig_cwd = cwd
         startupinfo = None
@@ -137,8 +139,8 @@ class Cli(object):
             if sys.platform == 'win32' and sys.version_info < (3,):
                 cwd = cwd.encode('mbcs')
 
-            # https://stackoverflow.com/questions/4417546/constantly-print-subprocess-output-while-process-is-running
             if live_output:
+                # https://stackoverflow.com/questions/4417546/constantly-print-subprocess-output-while-process-is-running
                 with subprocess.Popen(
                     args,
                     stdin=subprocess.PIPE,
