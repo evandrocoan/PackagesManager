@@ -124,7 +124,7 @@ class PackageDisabler():
                     # Handle view-specific color_scheme settings not already taken care
                     # of by resetting the global color_scheme above
                     scheme = view_settings.get('color_scheme')
-                    if scheme is not None and scheme.find('Packages/' + package + '/') != -1:
+                    if scheme is not None and scheme != global_color_scheme and scheme.find('Packages/' + package + '/') != -1:
                         if package not in PackageDisabler.old_color_schemes:
                             PackageDisabler.old_color_schemes[package] = []
                         PackageDisabler.old_color_schemes[package].append([view, scheme])
@@ -203,6 +203,11 @@ class PackageDisabler():
             def delayed_settings_restore():
                 syntax_errors = set()
                 color_scheme_errors = set()
+
+                if PackageDisabler.old_syntaxes is None:
+                    PackageDisabler.old_syntaxes = {}
+                if PackageDisabler.old_color_schemes is None:
+                    PackageDisabler.old_color_schemes = {}
 
                 if type == 'upgrade' and package in PackageDisabler.old_syntaxes:
                     for view_syntax in PackageDisabler.old_syntaxes[package]:
