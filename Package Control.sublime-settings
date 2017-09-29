@@ -98,7 +98,7 @@
 	//
 	// The setting can also be set to the boolean true to ignore all git and hg
 	// repositories, no matter what the name.
-	"ignore_vcs_packages": [],
+	"ignore_vcs_packages": true,
 
 	// Custom path(s) to "git" binary for when it can't be automatically
 	// found on the system and a package includes a .git metadata directory.
