@@ -45,8 +45,8 @@ def show_error(string, params=None, strip=True, indent=None):
             sublime.error_message(u'Package Control\n\n%s\n%s' % (
                 string,
                 u'''
-                    If there will be new error messages on the next seconds,
-                    they will be show on the Sublime Text console
+                If there will be new messages on the next seconds,
+                they will be show on the Sublime Text console
                 '''
                 ) )
 
