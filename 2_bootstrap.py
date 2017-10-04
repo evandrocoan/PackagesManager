@@ -5,14 +5,14 @@ from textwrap import dedent
 
 import sublime
 
-# Clean up the installed and pristine packages for Package Control 2 to
+# Clean up the installed and pristine packages for PackagesManager 2 to
 # prevent a downgrade from happening via Sublime Text
 if sys.version_info < (3,):
     sublime_dir = os.path.dirname(sublime.packages_path())
     pristine_dir = os.path.join(sublime_dir, 'Pristine Packages')
     installed_dir = os.path.join(sublime_dir, 'Installed Packages')
-    pristine_file = os.path.join(pristine_dir, 'Package Control.sublime-package')
-    installed_file = os.path.join(installed_dir, 'Package Control.sublime-package')
+    pristine_file = os.path.join(pristine_dir, 'PackagesManager.sublime-package')
+    installed_file = os.path.join(installed_dir, 'PackagesManager.sublime-package')
     if os.path.exists(pristine_file):
         os.remove(pristine_file)
     if os.path.exists(installed_file):
@@ -38,7 +38,7 @@ def plugin_loaded():
 def _background_bootstrap(settings):
     """
     Runs the bootstrap process in a thread since it may need to block to update
-    the package control loader
+    the PackagesManager loader
 
     :param settings:
         A dict of settings
@@ -50,7 +50,7 @@ def _background_bootstrap(settings):
         from os.path import dirname
 
 
-        # This file adds the package_control subdirectory of Package Control
+        # This file adds the package_control subdirectory of PackagesManager
         # to first in the sys.path so that all other packages may rely on
         # PC for utility functions, such as event helpers, adding things to
         # sys.path, downloading files from the internet, etc
@@ -84,13 +84,13 @@ def _background_bootstrap(settings):
         found = False
         if sys.version_info >= (3,):
             installed_packages_dir = os.path.join(st_dir, u'Installed Packages')
-            pc_package_path = os.path.join(installed_packages_dir, u'Package Control.sublime-package')
+            pc_package_path = os.path.join(installed_packages_dir, u'PackagesManager.sublime-package')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
         if not found:
             packages_dir = os.path.join(st_dir, u'Packages')
-            pc_package_path = os.path.join(packages_dir, u'Package Control')
+            pc_package_path = os.path.join(packages_dir, u'PackagesManager')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
@@ -99,7 +99,7 @@ def _background_bootstrap(settings):
             import Default.sort
             if os.path.basename(Default.sort.__file__) == 'sort.py':
                 packages_dir = dirname(dirname(Default.sort.__file__))
-                pc_package_path = os.path.join(packages_dir, u'Package Control')
+                pc_package_path = os.path.join(packages_dir, u'PackagesManager')
                 if os.path.exists(encode(pc_package_path)):
                     found = True
 
@@ -117,7 +117,7 @@ def _background_bootstrap(settings):
             sys.path.remove(encode(pc_package_path))
 
         else:
-            print(u'Package Control: Error finding main directory from loader')
+            print(u'PackagesManager: Error finding main directory from loader')
     """
     base_loader_code = dedent(base_loader_code).lstrip()
     loader.add_or_update('00', 'package_control', base_loader_code)
@@ -132,9 +132,9 @@ def _background_bootstrap(settings):
         def linux_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
-                Package Control just installed or upgraded the missing Python
+                PackagesManager just installed or upgraded the missing Python
                 _ssl module for Linux since Sublime Text does not include it.
 
                 Please restart Sublime Text to make SSL available to all
@@ -164,9 +164,9 @@ def _background_bootstrap(settings):
         def win_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
-                Package Control just upgraded the Python _ssl module for ST2 on
+                PackagesManager just upgraded the Python _ssl module for ST2 on
                 Windows because the bundled one does not include support for
                 modern SSL certificates.
 

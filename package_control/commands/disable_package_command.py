@@ -26,7 +26,7 @@ class DisablePackageCommand(sublime_plugin.WindowCommand, PackageDisabler):
         if not self.package_list:
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 There are no enabled packages to disable
                 '''

@@ -11,8 +11,8 @@ if st_version == 3:
 
     installed_dir, _ = __name__.split('.')
 
-    package_path = os.path.join(sys_path.installed_packages_path, 'Package Control.sublime-package')
-    pc_python_path = os.path.join(sys_path.packages_path, 'Package Control', 'Package Control.py')
+    package_path = os.path.join(sys_path.installed_packages_path, 'PackagesManager.sublime-package')
+    pc_python_path = os.path.join(sys_path.packages_path, 'PackagesManager', 'PackagesManager.py')
     has_packed = os.path.exists(package_path)
     has_unpacked = os.path.exists(pc_python_path)
 
@@ -22,15 +22,15 @@ elif st_version == 2:
     installed_dir = os.path.basename(os.getcwd())
 
 
-# Ensure the user has installed Package Control properly
-if installed_dir != 'Package Control':
+# Ensure the user has installed PackagesManager properly
+if installed_dir != 'PackagesManager':
     message = text.format(
         u'''
-        Package Control
+        PackagesManager
 
         This package appears to be installed incorrectly.
 
-        It should be installed as "Package Control", but seems to be installed
+        It should be installed as "PackagesManager", but seems to be installed
         as "%s".
 
         To fix the issue, please:
@@ -46,7 +46,7 @@ if installed_dir != 'Package Control':
     if os.path.exists(os.path.join(sys_path.packages_path, installed_dir)):
         message += text.format(
             u'''
-            3. Rename the folder "%s" to "Package Control"
+            3. Rename the folder "%s" to "PackagesManager"
             4. Restart Sublime Text
             ''',
             installed_dir
@@ -57,7 +57,7 @@ if installed_dir != 'Package Control':
             u'''
             3. Browse up a folder
             4. Browse into the "Installed Packages/" folder
-            5. Rename "%s.sublime-package" to "Package Control.sublime-package"
+            5. Rename "%s.sublime-package" to "PackagesManager.sublime-package"
             6. Restart Sublime Text
             ''',
             installed_dir
@@ -67,16 +67,16 @@ if installed_dir != 'Package Control':
 elif st_version == 3 and has_packed and has_unpacked:
     message = text.format(
         u'''
-        Package Control
+        PackagesManager
 
-        It appears you have Package Control installed as both a
+        It appears you have PackagesManager installed as both a
         .sublime-package file and a directory inside of the Packages folder.
 
         To fix this issue, please:
 
         1. Open the "Preferences" menu
         2. Select "Browse Packages\u2026"
-        3. Delete the folder "Package Control"
+        3. Delete the folder "PackagesManager"
         4. Restart Sublime Text
         '''
     )
@@ -100,7 +100,7 @@ else:
 
     def plugin_loaded():
         # Make sure the user's locale can handle non-ASCII. A whole bunch of
-        # work was done to try and make Package Control work even if the locale
+        # work was done to try and make PackagesManager work even if the locale
         # was poorly set, by manually encoding all file paths, but it ended up
         # being a fool's errand since the package loading code built into
         # Sublime Text is not written to work that way, and although packages
@@ -110,10 +110,10 @@ else:
         except (UnicodeEncodeError):
             message = text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 Your system's locale is set to a value that can not handle
-                non-ASCII characters. Package Control can not properly work
+                non-ASCII characters. PackagesManager can not properly work
                 unless this is fixed.
 
                 On Linux, please reference your distribution's docs for

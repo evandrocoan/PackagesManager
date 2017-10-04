@@ -55,7 +55,7 @@ class UpgradePackageThread(threading.Thread, PackageInstaller):
             if not self.package_list:
                 sublime.message_dialog(text.format(
                     u'''
-                    Package Control
+                    PackagesManager
 
                     There are no packages ready for upgrade
                     '''

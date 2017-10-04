@@ -223,7 +223,7 @@ class PackageManager():
         on disk.
 
         This is primarily only useful when a package author has a
-        dependency they are developing locally and Package Control needs to
+        dependency they are developing locally and PackagesManager needs to
         know how to set up a loader for it.
 
         :param dependency:
@@ -540,7 +540,7 @@ class PackageManager():
                 Fetching list of available packages and dependencies
                   Platform: %s-%s
                   Sublime Text Version: %s
-                  Package Control Version: %s
+                  PackagesManager Version: %s
                 ''',
                 (
                     self.settings['platform'],
@@ -1810,13 +1810,13 @@ class PackageManager():
             views = window.views()
             view = None
             for _view in views:
-                if _view.name() == 'Package Control Messages':
+                if _view.name() == 'PackagesManager Messages':
                     view = _view
                     break
 
             if not view:
                 view = window.new_file()
-                view.set_name('Package Control Messages')
+                view.set_name('PackagesManager Messages')
                 view.set_scratch(True)
                 view.settings().set("word_wrap", True)
                 view.settings().set("auto_indent", False)
@@ -1839,7 +1839,7 @@ class PackageManager():
             if not view.size():
                 write(text.format(
                     u'''
-                    Package Control Messages
+                    PackagesManager Messages
                     ========================
                     '''
                 ))
@@ -1979,7 +1979,7 @@ class PackageManager():
         """
         Submits install, upgrade and delete actions to a usage server
 
-        The usage information is currently displayed on the Package Control
+        The usage information is currently displayed on the PackagesManager
         website at https://packagecontrol.io
 
         :param params:
@@ -1989,7 +1989,7 @@ class PackageManager():
         if not self.settings.get('submit_usage'):
             return
         params['package_control_version'] = \
-            self.get_metadata('Package Control').get('version')
+            self.get_metadata('PackagesManager').get('version')
         params['sublime_platform'] = self.settings.get('platform')
         params['sublime_version'] = self.settings.get('version')
 

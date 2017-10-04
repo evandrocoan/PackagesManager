@@ -33,7 +33,7 @@ class HgUpgrader(VcsUpgrader):
                 Unable to find %s.
 
                 Please set the "hg_binary" setting by accessing the
-                Preferences > Package Settings > Package Control > Settings
+                Preferences > Package Settings > PackagesManager > Settings
                 \u2013 User menu entry.
 
                 The Settings \u2013 Default entry can be used for reference,

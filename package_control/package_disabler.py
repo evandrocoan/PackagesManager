@@ -11,7 +11,7 @@ from .settings import preferences_filename, pc_settings_filename, load_list_sett
 # otherwise this code and packages will each load a different instance of the
 # module, and the event tracking won't work. However, upon initial install,
 # when running ST3, the module will not yet be imported, and the cwd will not
-# be Packages/Package Control/ so we need to patch it into sys.modules.
+# be Packages/PackagesManager/ so we need to patch it into sys.modules.
 try:
     from package_control import events
 except (ImportError):
@@ -189,7 +189,7 @@ class PackageDisabler():
 
             if type == 'remove' and PackageDisabler.old_theme_package == package:
                 message = text.format(u'''
-                    Package Control
+                    PackagesManager
 
                     The package containing your active theme was just removed
                     and the Default theme was enabled in its place.
@@ -225,7 +225,7 @@ class PackageDisabler():
                         color_scheme_errors.add(PackageDisabler.old_color_scheme)
                         sublime.error_message(text.format(
                             u'''
-                            Package Control
+                            PackagesManager
 
                             The package containing your active color scheme was
                             just upgraded, however the .tmTheme file no longer
@@ -247,7 +247,7 @@ class PackageDisabler():
                     if package_file_exists(package, PackageDisabler.old_theme):
                         settings.set('theme', PackageDisabler.old_theme)
                         message = text.format(u'''
-                            Package Control
+                            PackagesManager
 
                             The package containing your active theme was just
                             upgraded.
@@ -258,7 +258,7 @@ class PackageDisabler():
                     else:
                         sublime.error_message(text.format(
                             u'''
-                            Package Control
+                            PackagesManager
 
                             The package containing your active theme was just
                             upgraded, however the .sublime-theme file no longer

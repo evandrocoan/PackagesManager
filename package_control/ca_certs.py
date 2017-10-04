@@ -30,7 +30,7 @@ def get_ca_bundle_path(settings):
 
     system_ca_bundle_path = get_system_ca_bundle_path(settings)
     user_ca_bundle_path = get_user_ca_bundle_path(settings)
-    merged_ca_bundle_path = os.path.join(ca_bundle_dir, 'Package Control.merged-ca-bundle')
+    merged_ca_bundle_path = os.path.join(ca_bundle_dir, 'PackagesManager.merged-ca-bundle')
 
     merged_missing = not os.path.exists(merged_ca_bundle_path)
     merged_empty = (not merged_missing) and os.stat(merged_ca_bundle_path).st_size == 0
@@ -77,7 +77,7 @@ def get_user_ca_bundle_path(settings):
 
     ensure_ca_bundle_dir()
 
-    user_ca_bundle_path = os.path.join(ca_bundle_dir, 'Package Control.user-ca-bundle')
+    user_ca_bundle_path = os.path.join(ca_bundle_dir, 'PackagesManager.user-ca-bundle')
     if not os.path.exists(user_ca_bundle_path):
         if settings.get('debug'):
             console_write(
@@ -140,7 +140,7 @@ def get_system_ca_bundle_path(settings):
 
     if platform == 'win32' or platform == 'darwin':
         # Remove any file with the old system bundle filename
-        old_ca_path = os.path.join(ca_bundle_dir, 'Package Control.system-ca-bundle')
+        old_ca_path = os.path.join(ca_bundle_dir, 'PackagesManager.system-ca-bundle')
         if os.path.exists(old_ca_path):
             os.unlink(old_ca_path)
 

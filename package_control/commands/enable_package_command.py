@@ -19,7 +19,7 @@ class EnablePackageCommand(sublime_plugin.WindowCommand, PackageDisabler):
         if not self.disabled_packages:
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 There are no disabled packages to enable
                 '''

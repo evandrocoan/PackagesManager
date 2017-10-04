@@ -18,10 +18,10 @@ def preferences_filename():
 
 def pc_settings_filename():
     """
-    :return: The settings file for Package Control
+    :return: The settings file for PackagesManager
     """
 
-    return 'Package Control.sublime-settings'
+    return 'PackagesManager.sublime-settings'
 
 
 def load_list_setting(settings, name):

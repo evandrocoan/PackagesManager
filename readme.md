@@ -1,4 +1,4 @@
-# Package Control
+# PackagesManager
 
 The [Sublime Text](http://www.sublimetext.com) package manager. Visit
 [packagecontrol.io](https://packagecontrol.io) for
@@ -8,7 +8,7 @@ The [Sublime Text](http://www.sublimetext.com) package manager. Visit
 
 ## License
 
-Package Control is licensed under the MIT license.
+PackagesManager is licensed under the MIT license.
 
 All of the source code (except for `package_control/semver.py`), is under the
 license:

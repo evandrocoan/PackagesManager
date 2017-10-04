@@ -40,10 +40,10 @@
 	// If missing packages should be automatically installed when ST starts
 	"install_missing": true,
 
-	// If a package was installed by Package Control (has a
+	// If a package was installed by PackagesManager (has a
 	// package-metadata.json file) but is not in installed_packages, remove it
 	// based upon the assumption that it was removed on another machine and
-	// the Package Control.sublime-settings file was synced to this machine.
+	// the PackagesManager.sublime-settings file was synced to this machine.
 	"remove_orphaned": true,
 
 	// The minimum frequency in hours in which to check for automatic upgrades,
@@ -86,12 +86,12 @@
 
 	// User agent for HTTP requests. If "%s" is present, will be replaced
 	// with the current version.
-	"user_agent": "Package Control v%s",
+	"user_agent": "PackagesManager v%s",
 
 	// A list of package names to ignore when performing operations. This will
 	// only affect packages that appear to be a git or hg repository, but will
 	// be especially useful for package developers who manually deal with the
-	// repository and don't want Package Control touching it.
+	// repository and don't want PackagesManager touching it.
 	//
 	// It can help if trying to list packages to install hangs, possibly due
 	// to an interactive prompt.

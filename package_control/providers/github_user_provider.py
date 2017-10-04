@@ -10,7 +10,7 @@ class GitHubUserProvider():
 
     """
     Allows using a GitHub user/organization as the source for multiple packages,
-    or in Package Control terminology, a "repository".
+    or in PackagesManager terminology, a "repository".
 
     :param repo:
         The public web URL to the GitHub user/org. Should be in the format

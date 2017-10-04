@@ -9,7 +9,7 @@ from .. import text
 class RemoveChannelCommand(sublime_plugin.WindowCommand):
 
     """
-    A command to remove a channel from the user's Package Control settings
+    A command to remove a channel from the user's PackagesManager settings
     """
 
     def run(self):
@@ -18,7 +18,7 @@ class RemoveChannelCommand(sublime_plugin.WindowCommand):
         if not self.channels:
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 There are no channels to remove
                 '''
@@ -29,7 +29,7 @@ class RemoveChannelCommand(sublime_plugin.WindowCommand):
         if len(self.channels) == 1:
             message = text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 You are about to remove the only channel in your settings. This
                 will mean you will no longer be able to install or update

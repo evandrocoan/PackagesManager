@@ -56,7 +56,7 @@ class UrlLibDownloader(DecodingDownloader, LimitingDownloader, CachingDownloader
     A downloader that uses the Python urllib module
 
     :param settings:
-        A dict of the various Package Control settings. The Sublime Text
+        A dict of the various PackagesManager settings. The Sublime Text
         Settings API is not used because this code is run in a thread.
     """
 
@@ -80,7 +80,7 @@ class UrlLibDownloader(DecodingDownloader, LimitingDownloader, CachingDownloader
         """
         Downloads a URL and returns the contents
 
-        Uses the proxy settings from the Package Control.sublime-settings file,
+        Uses the proxy settings from the PackagesManager.sublime-settings file,
         however there seem to be a decent number of proxies that this code
         does not work with. Patches welcome!
 
@@ -257,7 +257,7 @@ class UrlLibDownloader(DecodingDownloader, LimitingDownloader, CachingDownloader
     def setup_opener(self, url, timeout):
         """
         Sets up a urllib OpenerDirector to be used for requests. There is a
-        fair amount of custom urllib code in Package Control, and part of it
+        fair amount of custom urllib code in PackagesManager, and part of it
         is to handle proxies and keep-alives. Creating an opener the way
         below is because the handlers have been customized to send the
         "Connection: Keep-Alive" header and hold onto connections so they

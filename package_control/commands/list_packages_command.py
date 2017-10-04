@@ -11,7 +11,7 @@ from ..package_manager import PackageManager
 from .existing_packages_command import ExistingPackagesCommand
 
 
-# print( "Reloading `Package Control\package_control\commands\list_packages_command.py`" )
+# print( "Reloading `PackagesManager\package_control\commands\list_packages_command.py`" )
 
 class ListPackagesCommand(sublime_plugin.WindowCommand):
 
@@ -70,7 +70,7 @@ class ListPackagesThread(threading.Thread, ExistingPackagesCommand):
         def show_no_packages():
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 There are no packages to list
                 '''

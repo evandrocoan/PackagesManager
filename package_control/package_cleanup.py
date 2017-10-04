@@ -41,19 +41,19 @@ class PackageCleanup(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        # This song and dance is necessary so Package Control doesn't try to clean
+        # This song and dance is necessary so PackagesManager doesn't try to clean
         # itself up, but also get properly marked as installed in the settings
         installed_packages_at_start = list(self.original_installed_packages)
 
-        # Ensure we record the installation of Package Control itself
-        if 'Package Control' not in installed_packages_at_start:
+        # Ensure we record the installation of PackagesManager itself
+        if 'PackagesManager' not in installed_packages_at_start:
             params = {
-                'package': 'Package Control',
+                'package': 'PackagesManager',
                 'operation': 'install',
                 'version': __version__
             }
             self.manager.record_usage(params)
-            installed_packages_at_start.append('Package Control')
+            installed_packages_at_start.append('PackagesManager')
 
         found_packages = []
         installed_packages = list(installed_packages_at_start)
@@ -97,7 +97,7 @@ class PackageCleanup(threading.Thread):
                     found_dependencies.append(package_name)
                     continue
 
-                # Cleanup packages that were installed via Package Control, but
+                # Cleanup packages that were installed via PackagesManager, but
                 # we removed from the "installed_packages" list - usually by
                 # removing them from another computer and the settings file
                 # being synced.
@@ -216,7 +216,7 @@ class PackageCleanup(threading.Thread):
                     }
                     self.manager.record_usage(params)
 
-                # Cleanup packages that were installed via Package Control, but
+                # Cleanup packages that were installed via PackagesManager, but
                 # we removed from the "installed_packages" list - usually by
                 # removing them from another computer and the settings file
                 # being synced.
@@ -415,7 +415,7 @@ class PackageCleanup(threading.Thread):
     def finish(self, installed_packages, found_packages, found_dependencies):
         """
         A callback that can be run the main UI thread to perform saving of the
-        Package Control.sublime-settings file. Also fires off the
+        PackagesManager.sublime-settings file. Also fires off the
         :class:`AutomaticUpgrader`.
 
         :param installed_packages:

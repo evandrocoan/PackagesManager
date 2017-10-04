@@ -35,7 +35,7 @@ if sys.version_info >= (3,):
             installed_packages_path = _possible_installed_packages_path
 
     # When loaded as a .sublime-package file, the filename ends up being
-    # Package Control.sublime-package/Package Control.package_control.sys_path
+    # PackagesManager.sublime-package/PackagesManager.package_control.sys_path
     else:
         pc_package_path = dirname(dirname(__file__))
         installed_packages_path = dirname(pc_package_path)

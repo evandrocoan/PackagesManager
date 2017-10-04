@@ -5,7 +5,7 @@
 	// This file is a filesystem-level solution for specifying dependencies
 	// for packages. This is most useful for package developers since they are
 	// not installing their own packages from a repository or channel, and
-	// need to make sure Package Control installs the dependencies they need.
+	// need to make sure PackagesManager installs the dependencies they need.
 
 	// The file contains two levels of selectors, platform and Sublime Text
 	// version, to pick what set of dependencies should be installed.

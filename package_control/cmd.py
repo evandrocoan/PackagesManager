@@ -203,7 +203,7 @@ class Cli(object):
 
                             This is likely due to a password or passphrase
                             prompt. Please ensure %s works without a prompt, or
-                            change the "ignore_vcs_packages" Package Control
+                            change the "ignore_vcs_packages" PackagesManager
                             setting to true.
 
                             Sublime Text will need to be restarted once these

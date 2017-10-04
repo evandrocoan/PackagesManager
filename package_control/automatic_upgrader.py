@@ -64,7 +64,7 @@ class AutomaticUpgrader(threading.Thread):
 
         self.last_run = None
 
-        self.last_run_file = os.path.join(sublime.packages_path(), 'User', 'Package Control.last-run')
+        self.last_run_file = os.path.join(sublime.packages_path(), 'User', 'PackagesManager.last-run')
 
         if os.path.isfile(self.last_run_file):
             with open_compat(self.last_run_file) as fobj:
@@ -119,7 +119,7 @@ class AutomaticUpgrader(threading.Thread):
     def install_missing(self):
         """
         Installs all packages that were listed in the list of
-        `installed_packages` from Package Control.sublime-settings but were not
+        `installed_packages` from PackagesManager.sublime-settings but were not
         found on the filesystem and passed as `found_packages`. Also installs
         any missing dependencies.
         """
@@ -257,9 +257,9 @@ class AutomaticUpgrader(threading.Thread):
             ignore_packages=self.auto_upgrade_ignore
         )
 
-        # If Package Control is being upgraded, just do that and restart
+        # If PackagesManager is being upgraded, just do that and restart
         for package in package_list:
-            if package[0] != 'Package Control':
+            if package[0] != 'PackagesManager':
                 continue
 
             if self.last_run:

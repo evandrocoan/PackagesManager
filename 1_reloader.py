@@ -16,7 +16,7 @@ mod_prefix = 'package_control'
 # ST3 loads each package as a module, so it needs an extra prefix
 if sys.version_info >= (3,):
     bare_mod_prefix = mod_prefix
-    mod_prefix = 'Package Control.' + mod_prefix
+    mod_prefix = 'PackagesManager.' + mod_prefix
     from imp import reload
 
 # When reloading the package, we also need to reload the base "package_control"
@@ -53,13 +53,13 @@ if commands_name in sys.modules and sys.version_info >= (3,) and st_build < 3112
 #
 # Thus is module A depends on B and we don't reload B before A, when A is reloaded
 # it will still have a reference to the old B. Thus we hard-code the dependency
-# order of the various Package Control modules so they get reloaded properly.
+# order of the various PackagesManager modules so they get reloaded properly.
 #
 # There are solutions for doing this all programatically, but this is much easier
 # to understand.
 reload_mods = []
 for mod in sys.modules:
-    if mod[0:15] in set(['package_control', 'Package Control']) and sys.modules[mod] is not None:
+    if mod[0:15] in set(['packagesmanager', 'PackagesManager']) and sys.modules[mod] is not None:
         reload_mods.append(mod)
 
 mods_load_order = [

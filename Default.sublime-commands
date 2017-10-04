@@ -1,96 +1,96 @@
 [
     {
-        "caption": "Package Control: Add Repository",
+        "caption": "PackagesManager: Add Repository",
         "command": "add_repository"
     },
     {
-        "caption": "Package Control: Add Channel",
+        "caption": "PackagesManager: Add Channel",
         "command": "add_channel"
     },
     {
-        "caption": "Package Control: Advanced Install Package",
+        "caption": "PackagesManager: Advanced Install Package",
         "command": "advanced_install_package"
     },
     {
-        "caption": "Package Control: Create Package File",
+        "caption": "PackagesManager: Create Package File",
         "command": "create_package"
     },
     {
-        "caption": "Package Control: Disable Package",
+        "caption": "PackagesManager: Disable Package",
         "command": "disable_package"
     },
     {
-        "caption": "Package Control: Discover Packages",
+        "caption": "PackagesManager: Discover Packages",
         "command": "discover_packages"
     },
     {
-        "caption": "Package Control: Enable Package",
+        "caption": "PackagesManager: Enable Package",
         "command": "enable_package"
     },
     {
-        "caption": "Package Control: Grab CA Certs",
+        "caption": "PackagesManager: Grab CA Certs",
         "command": "grab_certs"
     },
     {
-        "caption": "Package Control: Install Local Dependency",
+        "caption": "PackagesManager: Install Local Dependency",
         "command": "install_local_dependency"
     },
     {
-        "caption": "Package Control: Install Package",
+        "caption": "PackagesManager: Install Package",
         "command": "install_package"
     },
     {
-        "caption": "Package Control: List Packages",
+        "caption": "PackagesManager: List Packages",
         "command": "list_packages"
     },
     {
-        "caption": "Package Control: List Packages on View",
+        "caption": "PackagesManager: List Packages on View",
         "command": "list_packages_on_view"
     },
     {
-        "caption": "Package Control: Remove Channel",
+        "caption": "PackagesManager: Remove Channel",
         "command": "remove_channel"
     },
     {
-        "caption": "Package Control: List Unmanaged Packages",
+        "caption": "PackagesManager: List Unmanaged Packages",
         "command": "list_unmanaged_packages"
     },
     {
-        "caption": "Package Control: Remove Package",
+        "caption": "PackagesManager: Remove Package",
         "command": "remove_package"
     },
     {
-        "caption": "Package Control: Remove Repository",
+        "caption": "PackagesManager: Remove Repository",
         "command": "remove_repository"
     },
     {
-        "caption": "Package Control: Upgrade Package",
+        "caption": "PackagesManager: Upgrade Package",
         "command": "upgrade_package"
     },
     {
-        "caption": "Package Control: Upgrade/Overwrite All Packages",
+        "caption": "PackagesManager: Upgrade/Overwrite All Packages",
         "command": "upgrade_all_packages"
     },
     {
-        "caption": "Package Control: Satisfy Dependencies",
+        "caption": "PackagesManager: Satisfy Dependencies",
         "command": "satisfy_dependencies"
     },
     {
-        "caption": "Preferences: Package Control Settings – Default",
+        "caption": "Preferences: PackagesManager Settings – Default",
         "command": "open_file", "args":
         {
-            "file": "${packages}/Package Control/Package Control.sublime-settings"
+            "file": "${packages}/PackagesManager/PackagesManager.sublime-settings"
         }
     },
     {
-        "caption": "Preferences: Package Control Settings – User",
+        "caption": "Preferences: PackagesManager Settings – User",
         "command": "open_file", "args":
         {
-            "file": "${packages}/User/Package Control.sublime-settings"
+            "file": "${packages}/User/PackagesManager.sublime-settings"
         }
     },
     {
-        "caption": "Package Control: Tests",
+        "caption": "PackagesManager: Tests",
         "command": "package_control_tests"
     }
 ]

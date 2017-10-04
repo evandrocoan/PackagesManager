@@ -29,7 +29,7 @@ from .settings import pc_settings_filename
 
 def mark_bootstrapped():
     """
-    Mark Package Control as successfully bootstrapped
+    Mark PackagesManager as successfully bootstrapped
     """
 
     pc_settings = sublime.load_settings(pc_settings_filename())
@@ -45,7 +45,7 @@ def bootstrap_dependency(settings, url, hash_, priority, version, on_complete):
     on Linux and ST2/Windows
 
     :param settings:
-        Package Control settings
+        PackagesManager settings
 
     :param url:
         The non-secure URL to download from

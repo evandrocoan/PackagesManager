@@ -9,7 +9,7 @@ from ..settings import pc_settings_filename
 class RemoveRepositoryCommand(sublime_plugin.WindowCommand):
 
     """
-    A command to remove a repository from the user's Package Control settings
+    A command to remove a repository from the user's PackagesManager settings
     """
 
     def run(self):
@@ -18,7 +18,7 @@ class RemoveRepositoryCommand(sublime_plugin.WindowCommand):
         if not self.repositories:
             sublime.message_dialog(text.format(
                 u'''
-                Package Control
+                PackagesManager
 
                 There are no repositories to remove
                 '''

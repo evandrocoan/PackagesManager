@@ -13,7 +13,7 @@ class CliDownloader(object):
     Base for downloaders that use a command line program
 
     :param settings:
-        A dict of the various Package Control settings. The Sublime Text
+        A dict of the various PackagesManager settings. The Sublime Text
         Settings API is not used because this code is run in a thread.
     """
 

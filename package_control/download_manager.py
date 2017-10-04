@@ -151,8 +151,8 @@ def update_url(url, debug):
     url = url.replace('://nodeload.github.com/', '://codeload.github.com/')
     url = re.sub('^(https://codeload.github.com/[^/]+/[^/]+/)zipball(/.*)$', '\\1zip\\2', url)
 
-    # Fix URLs from old versions of Package Control since we are going to
-    # remove all packages but Package Control from them to force upgrades
+    # Fix URLs from old versions of PackagesManager since we are going to
+    # remove all packages but PackagesManager from them to force upgrades
     if url == 'https://sublime.wbond.net/repositories.json' or url == 'https://sublime.wbond.net/channel.json':
         url = 'https://packagecontrol.io/channel_v3.json'
 
@@ -363,7 +363,7 @@ class DownloadManager(object):
             )
 
             # Here we grab the proxy info extracted from WinInet to fill in
-            # the Package Control settings if those are not present. This should
+            # the PackagesManager settings if those are not present. This should
             # hopefully make a seamless fallback for users who run into weird
             # windows errors related to network communication.
             wininet_proxy = self.downloader.proxy or ''

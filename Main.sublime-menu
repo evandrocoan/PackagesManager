@@ -10,20 +10,20 @@
                 "children":
                 [
                     {
-                        "caption": "Package Control",
+                        "caption": "PackagesManager",
                         "children":
                         [
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/Package Control/Package Control.sublime-settings"
+                                    "file": "${packages}/PackagesManager/PackagesManager.sublime-settings"
                                 },
                                 "caption": "Settings – Default"
                             },
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/User/Package Control.sublime-settings"
+                                    "file": "${packages}/User/PackagesManager.sublime-settings"
                                 },
                                 "caption": "Settings – User"
                             },
@@ -33,10 +33,10 @@
                 ]
             },
             {
-                "caption": "Package Control",
+                "caption": "PackagesManager",
                 "mnemonic": "C",
                 "command": "show_overlay",
-                "args": {"overlay": "command_palette", "text": "Package Control: "}
+                "args": {"overlay": "command_palette", "text": "PackagesManager: "}
             }
         ]
     }

@@ -8,7 +8,7 @@ import sublime
 _lock = threading.Lock()
 
 
-# A dict tracking events for packages being controlled via Package Control
+# A dict tracking events for packages being controlled via PackagesManager
 _tracker = {
     # key is package name, value is installed version
     'install': {},

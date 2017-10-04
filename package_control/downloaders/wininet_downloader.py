@@ -34,7 +34,7 @@ class WinINetDownloader(DecodingDownloader, LimitingDownloader, CachingDownloade
     has the benefit of utilizing system-level proxy configuration and CA certs.
 
     :param settings:
-        A dict of the various Package Control settings. The Sublime Text
+        A dict of the various PackagesManager settings. The Sublime Text
         Settings API is not used because this code is run in a thread.
     """
 
@@ -369,7 +369,7 @@ class WinINetDownloader(DecodingDownloader, LimitingDownloader, CachingDownloade
                 raise WinDownloaderException(error_string)
 
             # Normally the proxy info would come from IE, but this allows storing it in
-            # the Package Control settings file.
+            # the PackagesManager settings file.
             proxy_username = self.settings.get('proxy_username')
             proxy_password = self.settings.get('proxy_password')
             if proxy_username and proxy_password:

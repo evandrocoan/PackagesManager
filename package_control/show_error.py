@@ -18,7 +18,7 @@ is_error_recentely_displayed = False
 
 def show_error(string, params=None, strip=True, indent=None):
     """
-    Displays an error message with a standard "Package Control" header after
+    Displays an error message with a standard "PackagesManager" header after
     running the string through text.format()
 
     :param string:
@@ -42,7 +42,7 @@ def show_error(string, params=None, strip=True, indent=None):
         if is_error_recentely_displayed:
             console_write( string )
         else:
-            sublime.error_message(u'Package Control\n\n%s\n%s' % (
+            sublime.error_message(u'PackagesManager\n\n%s\n%s' % (
                 string,
                 u'''
                 If there will be new messages on the next seconds,

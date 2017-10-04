@@ -4,7 +4,7 @@ import sublime_plugin
 class DiscoverPackagesCommand(sublime_plugin.WindowCommand):
 
     """
-    A command that opens the Package Control website
+    A command that opens the PackagesManager website
     """
 
     def run(self):

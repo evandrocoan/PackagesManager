@@ -28,7 +28,7 @@ def console_write(string, params=None, strip=True, indent=None, prefix=True):
         If all lines should be indented by a set indent after being dedented
 
     :param prefix:
-        If the string "Package Control: " should be prefixed to the string
+        If the string "PackagesManager: " should be prefixed to the string
     """
 
     string = text.format(str_cls(string), params, strip=strip, indent=indent)
@@ -38,6 +38,6 @@ def console_write(string, params=None, strip=True, indent=None, prefix=True):
             string = string.encode('UTF-8')
 
     if prefix:
-        sys.stdout.write('Package Control: ')
+        sys.stdout.write('PackagesManager: ')
 
     print(string)
