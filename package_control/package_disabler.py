@@ -13,7 +13,7 @@ from .settings import preferences_filename, pc_settings_filename, load_list_sett
 # when running ST3, the module will not yet be imported, and the cwd will not
 # be Packages/PackagesManager/ so we need to patch it into sys.modules.
 try:
-    from package_control import events
+    from packagesmanager import events
 except (ImportError):
     events = None
 
@@ -73,7 +73,7 @@ class PackageDisabler():
         global events
 
         if events is None:
-            from package_control import events
+            from packagesmanager import events
 
         if not isinstance(packages, list):
             packages = [packages]
@@ -164,7 +164,7 @@ class PackageDisabler():
         global events
 
         if events is None:
-            from package_control import events
+            from packagesmanager import events
 
         settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')

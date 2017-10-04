@@ -11,7 +11,7 @@ if sys.version_info >= (3,):
 st_build = int(sublime.version())
 
 
-mod_prefix = 'package_control'
+mod_prefix = 'packagesmanager'
 
 # ST3 loads each package as a module, so it needs an extra prefix
 if sys.version_info >= (3,):
@@ -19,7 +19,7 @@ if sys.version_info >= (3,):
     mod_prefix = 'PackagesManager.' + mod_prefix
     from imp import reload
 
-# When reloading the package, we also need to reload the base "package_control"
+# When reloading the package, we also need to reload the base "packagesmanager"
 # module in ST3. This flag inidicates we should re-add the PC package path
 # to the beginning of sys.path before we try to reload.
 do_insert = False
@@ -205,9 +205,9 @@ mods_load_order = [
     '.commands.remove_repository_command',
     '.commands.upgrade_all_packages_command',
     '.commands.upgrade_package_command',
-    '.commands.package_control_insert_command',
+    '.commands.packagesmanager_insert_command',
     '.commands.satisfy_dependencies_command',
-    '.commands.package_control_tests_command',
+    '.commands.packagesmanager_tests_command',
 
     '.automatic_upgrader',
     '.package_cleanup'

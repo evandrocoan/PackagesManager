@@ -10,7 +10,7 @@ The [Sublime Text](http://www.sublimetext.com) package manager. Visit
 
 PackagesManager is licensed under the MIT license.
 
-All of the source code (except for `package_control/semver.py`), is under the
+All of the source code (except for `packagesmanager/semver.py`), is under the
 license:
 
 ```
@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-`package_control/semver.py` is under the license:
+`packagesmanager/semver.py` is under the license:
 
 ```
 Copyright (c) 2013 Zachary King, FichteFoll

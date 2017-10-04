@@ -34,7 +34,7 @@
             },
             {
                 "caption": "PackagesManager",
-                "mnemonic": "C",
+                "mnemonic": "M",
                 "command": "show_overlay",
                 "args": {"overlay": "command_palette", "text": "PackagesManager: "}
             }

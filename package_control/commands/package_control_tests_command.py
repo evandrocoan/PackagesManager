@@ -12,7 +12,7 @@ from ..tests.providers import (
 )
 
 
-class PackageControlTestsCommand(sublime_plugin.WindowCommand):
+class PackagesManagerTestsCommand(sublime_plugin.WindowCommand):
 
     """
     A command to run the tests for PackagesManager

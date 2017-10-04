@@ -19,13 +19,13 @@ if sys.version_info < (3,):
         os.remove(installed_file)
 
 if sys.version_info < (3,):
-    from package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
-    from package_control.package_manager import PackageManager
-    from package_control import loader, text, sys_path
+    from packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
+    from packagesmanager.package_manager import PackageManager
+    from packagesmanager import loader, text, sys_path
 else:
-    from .package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
-    from .package_control.package_manager import PackageManager
-    from .package_control import loader, text, sys_path
+    from .packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
+    from .packagesmanager.package_manager import PackageManager
+    from .packagesmanager import loader, text, sys_path
 
 
 def plugin_loaded():
@@ -50,7 +50,7 @@ def _background_bootstrap(settings):
         from os.path import dirname
 
 
-        # This file adds the package_control subdirectory of PackagesManager
+        # This file adds the packagesmanager subdirectory of PackagesManager
         # to first in the sys.path so that all other packages may rely on
         # PC for utility functions, such as event helpers, adding things to
         # sys.path, downloading files from the internet, etc
@@ -111,7 +111,7 @@ def _background_bootstrap(settings):
                     pc_package_path = buf.value
 
             sys.path.insert(0, encode(pc_package_path))
-            import package_control
+            import packagesmanager
             # We remove the import path right away so as not to screw up
             # Sublime Text and its import machinery
             sys.path.remove(encode(pc_package_path))
@@ -120,7 +120,7 @@ def _background_bootstrap(settings):
             print(u'PackagesManager: Error finding main directory from loader')
     """
     base_loader_code = dedent(base_loader_code).lstrip()
-    loader.add_or_update('00', 'package_control', base_loader_code)
+    loader.add_or_update('00', 'packagesmanager', base_loader_code)
 
     # SSL support fo Linux
     if sublime.platform() == 'linux' and int(sublime.version()) < 3109:

@@ -50,7 +50,7 @@ non_local = {
 
 
 
-loader_package_name = u'0_package_control_loader'
+loader_package_name = u'0_packagesmanager_loader'
 if sys.version_info < (3,):
     loader_package_path = path.join(sys_path.packages_path, loader_package_name)
 else:
@@ -236,7 +236,7 @@ def add(priority, name, code=None):
         # Tie the loader to the platform so we can detect
         # people syncing packages incorrectly.
         "platforms": [sublime.platform()],
-        "url": "https://github.com/wbond/package_control/issues",
+        "url": "https://github.com/wbond/packagesmanager/issues",
         "description": "PackagesManager dependency loader"
     }
     loader_metadata_enc = json.dumps(loader_metadata).encode('utf-8')
@@ -305,8 +305,8 @@ def add(priority, name, code=None):
 
     # Clean things up for people who were tracking the master branch
     if just_created_loader:
-        old_loader_sp = path.join(sys_path.installed_packages_path, '0-package_control_loader.sublime-package')
-        old_loader_dir = path.join(sys_path.packages_path, '0-package_control_loader')
+        old_loader_sp = path.join(sys_path.installed_packages_path, '0-packagesmanager_loader.sublime-package')
+        old_loader_dir = path.join(sys_path.packages_path, '0-packagesmanager_loader')
 
         removed_old_loader = False
 
@@ -332,8 +332,8 @@ def add(priority, name, code=None):
             orig_installed_packages = load_list_setting(pc_settings, 'installed_packages')
             installed_packages = list(orig_installed_packages)
 
-            if '0-package_control_loader' in installed_packages:
-                installed_packages.remove('0-package_control_loader')
+            if '0-packagesmanager_loader' in installed_packages:
+                installed_packages.remove('0-packagesmanager_loader')
 
             for name in ['bz2', 'ssl-linux', 'ssl-windows']:
                 dep_dir = path.join(sys_path.packages_path, name)
@@ -466,7 +466,7 @@ def _default_loader(name):
     """
 
     code = """
-        from package_control import sys_path
+        from packagesmanager import sys_path
         sys_path.add_dependency(%s)
     """ % repr(name)
     return dedent(code).lstrip()
