@@ -236,7 +236,7 @@ def add(priority, name, code=None):
         # Tie the loader to the platform so we can detect
         # people syncing packages incorrectly.
         "platforms": [sublime.platform()],
-        "url": "https://github.com/wbond/packagesmanager/issues",
+        "url": "https://github.com/wbond/package_control/issues",
         "description": "PackagesManager dependency loader"
     }
     loader_metadata_enc = json.dumps(loader_metadata).encode('utf-8')

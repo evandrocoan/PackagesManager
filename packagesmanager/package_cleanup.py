@@ -94,6 +94,8 @@ class PackageCleanup(threading.Thread):
                 package_name = file.replace('.sublime-package', '')
 
                 if package_name == loader.loader_package_name:
+                    # This got `0_packagesmanager_loader`, it seems to be scanning the `Installed Packages` folder
+                    # print( "package_cleanup.py, package_name: " + str( package_name ) )
                     found_dependencies.append(package_name)
                     continue
 
@@ -117,6 +119,9 @@ class PackageCleanup(threading.Thread):
 
         required_dependencies = set(self.manager.find_required_dependencies())
         extra_dependencies = list(set(installed_dependencies) - required_dependencies)
+
+        # print( "package_cleanup.py, installed_dependencies: %d\n" % len( installed_dependencies ) + str( installed_dependencies ) )
+        # print( "package_cleanup.py, required_dependencies:  %d\n" % len( required_dependencies ) + str( required_dependencies ) )
 
         # Clean up unneeded dependencies so that found_dependencies will only
         # end up having required dependencies added to it
@@ -270,6 +275,7 @@ class PackageCleanup(threading.Thread):
                     load_order, loader_code = self.manager.get_dependency_priority_code(package_name)
                     loader.add_or_update(load_order, package_name, loader_code)
 
+                # print( "package_cleanup.py, Adding dependency: " + str( package_name ) )
                 found_dependencies.append(package_name)
                 continue
 
@@ -288,6 +294,8 @@ class PackageCleanup(threading.Thread):
             if metadata:
                 if not self.is_compatible(metadata):
                     invalid_packages.append(package)
+
+        # print( "package_cleanup.py, found_dependencies:     %d\n" % len( found_dependencies ) + str( found_dependencies ) )
 
         # Make sure installed dependencies are not improperly installed
         for dependency in found_dependencies:
