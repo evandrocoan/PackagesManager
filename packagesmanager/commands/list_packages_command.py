@@ -97,9 +97,10 @@ class ListPackagesThread(threading.Thread, ExistingPackagesCommand):
             new_view.set_syntax_file("Packages/Text/Plain text.tmLanguage")
             new_view.settings().set('tab_size', 8)
 
+            wrapper = textwrap.TextWrapper(initial_indent=prefix_indent, width=80, subsequent_indent=prefix_indent)
+
             for package in self.package_list:
                 package_count += 1;
-                wrapper = textwrap.TextWrapper(initial_indent=prefix_indent, width=80, subsequent_indent=prefix_indent)
 
                 # Efficient String Concatenation in Python - https://waymoot.org/home/python_string/
                 package_string_list.append( "%3d: <%s>\n" % ( package_count, package[0] ) )
