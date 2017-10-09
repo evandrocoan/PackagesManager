@@ -73,15 +73,16 @@ class RemovePackageThread(threading.Thread, PackageDisabler):
     UI does not become frozen
     """
 
-    def __init__(self, manager, package):
+    def __init__(self, manager, package, is_dependency=False):
         self.manager = manager
         self.package = package
+        self.is_dependency = is_dependency
         threading.Thread.__init__(self)
 
     def run(self):
         # Let the package disabling take place
         time.sleep(0.7)
-        self.result = self.manager.remove_package(self.package)
+        self.result = self.manager.remove_package(self.package, self.is_dependency)
 
         # Do not reenable if removing deferred until next restart
         if self.result is not None:
