@@ -42,7 +42,7 @@ class InstallPackageThread(threading.Thread, PackageInstaller):
         PackageInstaller.__init__(self)
 
     def run(self):
-        self.package_list = self.make_package_list(['upgrade', 'downgrade', 'reinstall', 'pull', 'none'])
+        self.package_list = self.make_package_list(['upgrade', 'downgrade', 'reinstall', 'pull', 'none'], ignore_packages=["Package Control"])
 
         def show_panel():
             if not self.package_list:
