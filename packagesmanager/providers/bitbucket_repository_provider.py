@@ -10,8 +10,8 @@ class BitBucketRepositoryProvider():
 
     """
     Allows using a public BitBucket repository as the source for a single package.
-    For legacy purposes, this can also be treated as the source for a Package
-    Control "repository".
+    For legacy purposes, this can also be treated as the source for a PackagesManager
+    "repository".
 
     :param repo:
         The public web URL to the BitBucket repository. Should be in the format

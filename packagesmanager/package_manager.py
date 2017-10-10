@@ -1875,8 +1875,11 @@ class PackageManager():
                  if the package needs to be cleaned up on the next restart
                  and should not be reenabled
         """
+        if is_dependency is None:
+            installed_packages = self.list_packages()
+            installed_packages.extend( self.list_dependencies() )
 
-        if not is_dependency:
+        elif not is_dependency:
             installed_packages = self.list_packages()
         else:
             installed_packages = self.list_dependencies()

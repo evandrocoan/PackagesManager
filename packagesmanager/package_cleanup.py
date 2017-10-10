@@ -476,8 +476,8 @@ class PackageCleanup(threading.Thread):
                         continue
                     console_write(
                         u'''
-                        The package %s is being re-enabled after a Package
-                        Control operation was interrupted
+                        The package %s is being re-enabled after a PackagesManager
+                        operation was interrupted
                         ''',
                         package
                     )
