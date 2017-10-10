@@ -33,8 +33,6 @@ def show_error(string, params=None, strip=True, indent=None):
     :param indent:
         If all lines should be indented by a set indent after being dedented
     """
-
-    global is_error_recentely_displayed
     string = text.format(string, params, strip=strip, indent=indent)
 
     if sublime:
@@ -50,11 +48,7 @@ def show_error(string, params=None, strip=True, indent=None):
                 '''
                 ) )
 
-            is_error_recentely_displayed = True
-
-            # Enable the message dialog after x.x seconds
-            thread = Timer(60.0, _restart_error_messages)
-            thread.start()
+            silence_error_message_box()
 
     else:
         console_write( string )
@@ -62,3 +56,12 @@ def show_error(string, params=None, strip=True, indent=None):
 def _restart_error_messages():
     global is_error_recentely_displayed
     is_error_recentely_displayed = False
+
+def silence_error_message_box(how_many_seconds=60.0):
+    global is_error_recentely_displayed
+    is_error_recentely_displayed = True
+
+    # Enable the message dialog after x.x seconds
+    thread = Timer(how_many_seconds, _restart_error_messages)
+    thread.start()
+
