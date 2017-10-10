@@ -73,7 +73,7 @@ class PackageDisabler():
         global events
 
         if events is None:
-            from packagesmanager import events
+            from PackagesManager.packagesmanager import events
 
         if not isinstance(packages, list):
             packages = [packages]
