@@ -5,6 +5,9 @@ try:
 except (NameError):
     str_cls = str
 
+# Globally used to count how many dependencies are found installed
+g_dependencies_installed = 0
+
 
 def preferences_filename():
     """

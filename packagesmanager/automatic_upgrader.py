@@ -13,7 +13,7 @@ from .console_write import console_write
 from .package_installer import PackageInstaller
 from .package_renamer import PackageRenamer
 from .open_compat import open_compat, read_compat, write_compat
-from .settings import pc_settings_filename, load_list_setting
+from .settings import pc_settings_filename, load_list_setting, g_dependencies_installed
 
 
 class AutomaticUpgrader(threading.Thread):
@@ -141,23 +141,21 @@ class AutomaticUpgrader(threading.Thread):
                 (total_missing_dependencies, dependency_s)
             )
 
-            dependencies_installed = 0
-
             for dependency in self.missing_dependencies:
                 if self.installer.manager.install_package(dependency, is_dependency=True):
                     console_write(u'Installed missing dependency %s', dependency)
-                    dependencies_installed += 1
+                    g_dependencies_installed += 1
 
-            if dependencies_installed:
+            if g_dependencies_installed:
                 def notify_restart():
-                    dependency_was = 'ies were' if dependencies_installed != 1 else 'y was'
+                    dependency_was = 'ies were' if g_dependencies_installed != 1 else 'y was'
                     show_error(
                         u'''
                         %s missing dependenc%s just installed. Sublime Text
                         should be restarted, otherwise one or more of the
                         installed packages may not function properly.
                         ''',
-                        (dependencies_installed, dependency_was)
+                        (g_dependencies_installed, dependency_was)
                     )
                 sublime.set_timeout(notify_restart, 1000)
 

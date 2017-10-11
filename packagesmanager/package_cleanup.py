@@ -12,7 +12,7 @@ from .automatic_upgrader import AutomaticUpgrader
 from .package_manager import PackageManager
 from .open_compat import open_compat
 from .package_io import package_file_exists
-from .settings import preferences_filename, pc_settings_filename, load_list_setting, save_list_setting
+from .settings import preferences_filename, pc_settings_filename, load_list_setting, save_list_setting, g_dependencies_installed
 from . import loader, text, __version__
 from .providers.release_selector import is_compatible_version
 
@@ -148,8 +148,6 @@ class PackageCleanup(threading.Thread):
             # Make sure when cleaning up the dependency files that we remove the loader for it also
             loader.remove(dependency)
 
-        dependencies_installed = 0
-
         for package_name in os.listdir(sublime.packages_path()):
             found = True
 
@@ -276,7 +274,7 @@ class PackageCleanup(threading.Thread):
                     )
                     load_order, loader_code = self.manager.get_dependency_priority_code(package_name)
                     loader.add_or_update(load_order, package_name, loader_code)
-                    dependencies_installed += 1
+                    g_dependencies_installed += 1
 
                 # print( "package_cleanup.py, Adding dependency: " + str( package_name ) )
                 found_dependencies.append(package_name)
@@ -284,19 +282,6 @@ class PackageCleanup(threading.Thread):
 
             if found:
                 found_packages.append(package_name)
-
-        if dependencies_installed:
-            def notify_restart():
-                dependency_was = 'ies were' if dependencies_installed != 1 else 'y was'
-                show_error(
-                    u'''
-                    %s missing dependenc%s just installed. Sublime Text
-                    should be restarted, otherwise one or more of the
-                    installed packages may not function properly.
-                    ''',
-                    (dependencies_installed, dependency_was)
-                )
-            sublime.set_timeout(notify_restart, 1000)
 
         invalid_packages = []
         invalid_dependencies = []
