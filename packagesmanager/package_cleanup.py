@@ -12,7 +12,7 @@ from .automatic_upgrader import AutomaticUpgrader
 from .package_manager import PackageManager
 from .open_compat import open_compat
 from .package_io import package_file_exists
-from .settings import preferences_filename, pc_settings_filename, load_list_setting, save_list_setting, g_dependencies_installed
+from .settings import preferences_filename, pc_settings_filename, load_list_setting, save_list_setting, increment_dependencies_installed
 from . import loader, text, __version__
 from .providers.release_selector import is_compatible_version
 
@@ -274,7 +274,7 @@ class PackageCleanup(threading.Thread):
                     )
                     load_order, loader_code = self.manager.get_dependency_priority_code(package_name)
                     loader.add_or_update(load_order, package_name, loader_code)
-                    g_dependencies_installed += 1
+                    increment_dependencies_installed()
 
                 # print( "package_cleanup.py, Adding dependency: " + str( package_name ) )
                 found_dependencies.append(package_name)

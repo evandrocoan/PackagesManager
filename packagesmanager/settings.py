@@ -9,6 +9,15 @@ except (NameError):
 g_dependencies_installed = 0
 
 
+def increment_dependencies_installed():
+    global g_dependencies_installed
+    g_dependencies_installed += 1
+
+
+def get_dependencies_installed():
+    return g_dependencies_installed
+
+
 def preferences_filename():
     """
     :return: The appropriate settings filename based on the version of Sublime Text
