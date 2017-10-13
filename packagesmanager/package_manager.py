@@ -693,7 +693,7 @@ class PackageManager():
 
         return self._list_available()[0]
 
-    def list_packages(self, unpacked_only=False):
+    def list_packages(self, unpacked_only=False, list_everything=False):
         """
         :param unpacked_only:
             Only list packages that are not inside of .sublime-package files
@@ -706,16 +706,18 @@ class PackageManager():
         if self.settings['version'] > 3000 and unpacked_only is False:
             packages |= self._list_sublime_package_files(self.settings['installed_packages_path'])
 
-        packages -= set(self.list_default_packages())
-        packages -= set(self.list_dependencies())
-        packages -= set(['User', 'Default'])
+        if not list_everything:
+            packages -= set(self.list_default_packages())
+            packages -= set(self.list_dependencies())
+            packages -= set(['Default'])
+
+        packages -= set(['User'])
         return sorted(packages, key=lambda s: s.lower())
 
     def list_dependencies(self):
         """
         :return: A list of all installed dependency names
         """
-
         output = []
 
         # This is seeded since it is in a .sublime-package with ST3
