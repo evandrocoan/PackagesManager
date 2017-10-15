@@ -39,6 +39,7 @@ def show_error(string, params=None, strip=True, indent=None):
 
         if is_error_recentely_displayed:
             console_write( string )
+
         else:
             sublime.error_message(u'PackagesManager\n\n%s\n%s' % (
                 string,
@@ -54,14 +55,20 @@ def show_error(string, params=None, strip=True, indent=None):
         console_write( string )
 
 def _restart_error_messages():
+    console_write( "Unsilencing Error Messages Boxes" )
+
     global is_error_recentely_displayed
     is_error_recentely_displayed = False
 
 def silence_error_message_box(how_many_seconds=60.0):
     global is_error_recentely_displayed
-    is_error_recentely_displayed = True
+    console_write( "Silencing Error Messages Boxes for %s seconds" % str( how_many_seconds ) )
 
     # Enable the message dialog after x.x seconds
-    thread = Timer(how_many_seconds, _restart_error_messages)
-    thread.start()
+    if not is_error_recentely_displayed:
+        is_error_recentely_displayed = True
+
+        thread = Timer(how_many_seconds, _restart_error_messages)
+        thread.start()
+
 
