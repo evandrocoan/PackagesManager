@@ -46,6 +46,9 @@ def _background_bootstrap(settings):
 
     base_loader_code = """
         import sys
+        import time
+        import sublime
+
         import os
         from os.path import dirname
 
@@ -118,6 +121,74 @@ def _background_bootstrap(settings):
 
         else:
             print(u'PackagesManager: Error finding main directory from loader')
+
+
+        def plugin_loaded():
+
+            if not found:
+                remove_itself()
+
+
+        def remove_itself():
+            CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
+            CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+
+            print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
+            print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
+            print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
+
+            from package_control.package_manager import PackageManager
+            from package_control.package_disabler import PackageDisabler
+
+            package_manager  = PackageManager()
+            package_disabler = PackageDisabler()
+
+            package_disabler.disable_packages( [CURRENT_FILE], "remove" )
+            time.sleep(0.7)
+
+            # package_manager.remove_package( CURRENT_FILE, True )
+
+            _packagesmanager_loader_path = os.path.join( CURRENT_DIRECTORY )
+            safe_remove( _packagesmanager_loader_path )
+
+
+        def safe_remove(path):
+
+            try:
+                os.remove( path )
+
+            except Exception as error:
+                log( 1, "Failed to remove `%s`. Error is: %s" % ( path, error) )
+
+                try:
+                    _delete_read_only_file(path)
+
+                except Exception as error:
+                    log( 1, "Failed to remove `%s`. Error is: %s" % ( path, error) )
+
+
+        def _delete_read_only_file(path):
+            delete_read_only_file( None, path, None )
+
+
+        def delete_read_only_file(action, name, exc):
+            os.chmod( name, stat.S_IWRITE )
+            os.remove( name )
+
+
+        def get_main_directory(current_directory):
+            possible_main_directory = os.path.normpath( os.path.dirname( os.path.dirname( current_directory ) ) )
+
+            if sublime:
+                sublime_text_packages = os.path.normpath( os.path.dirname( sublime.packages_path() ) )
+
+                if possible_main_directory == sublime_text_packages:
+                    return possible_main_directory
+
+                else:
+                    return sublime_text_packages
+
+            return possible_main_directory
     """
     base_loader_code = dedent(base_loader_code).lstrip()
     loader.add_or_update('00', 'packagesmanager', base_loader_code)
