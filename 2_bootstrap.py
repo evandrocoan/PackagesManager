@@ -120,36 +120,41 @@ def _background_bootstrap(settings):
             sys.path.remove(encode(pc_package_path))
 
         else:
-            print(u'PackagesManager: Error finding main directory from loader')
+            print( u'PackagesManager: Error finding main directory from loader' )
 
 
         def plugin_loaded():
-
-            if not found:
-                remove_itself()
-
-
-        def remove_itself():
             CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
             CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
-            print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
-            print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
-            print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
+            if found:
+                remove_the_evel( CURRENT_DIRECTORY, "0_package_control_loader" )
 
-            from package_control.package_manager import PackageManager
-            from package_control.package_disabler import PackageDisabler
+            else:
+                remove_the_evel( CURRENT_DIRECTORY, CURRENT_FILE )
 
-            package_manager  = PackageManager()
-            package_disabler = PackageDisabler()
 
-            package_disabler.disable_packages( [CURRENT_FILE], "remove" )
-            time.sleep(0.7)
+        def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
 
-            # package_manager.remove_package( CURRENT_FILE, True )
+            _packagesmanager_loader_path = os.path.join( CURRENT_DIRECTORY, CURRENT_FILE )
 
-            _packagesmanager_loader_path = os.path.join( CURRENT_DIRECTORY )
-            safe_remove( _packagesmanager_loader_path )
+            if os.path.exists( _packagesmanager_loader_path ):
+                print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
+                print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
+                print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
+                print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
+
+                try:
+                    from package_control.package_disabler import PackageDisabler
+
+                except ImportError:
+                    from PackagesManager.packagesmanager.package_disabler import PackageDisabler
+
+                package_disabler = PackageDisabler()
+                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
+
+                time.sleep( 0.7 )
+                safe_remove( _packagesmanager_loader_path )
 
 
         def safe_remove(path):
@@ -158,7 +163,7 @@ def _background_bootstrap(settings):
                 os.remove( path )
 
             except Exception as error:
-                log( 1, "Failed to remove `%s`. Error is: %s" % ( path, error) )
+                print( "Failed to remove `%s`. Error is: %s" % ( path, error) )
 
                 try:
                     _delete_read_only_file(path)

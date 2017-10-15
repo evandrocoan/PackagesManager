@@ -161,8 +161,11 @@ def _existing_info(name, return_code):
             if match:
                 load_order = match.group(1)
                 if return_code:
-                    with zipfile.ZipFile(loader_path_to_check, 'r') as z:
-                        code = z.read(filename).decode('utf-8')
+                    try:
+                        with zipfile.ZipFile(loader_path_to_check, 'r') as z:
+                            code = z.read(filename).decode('utf-8')
+                    except KeyError:
+                        console_write( "There is no item named '%s in the archive loader_path_to_check: " % filename + str( loader_path_to_check ) )
                 break
     except (zipfile.BadZipfile, OSError):
         non_local['loaders'] = []
