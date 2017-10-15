@@ -133,10 +133,17 @@ def _background_bootstrap(settings):
             else:
                 remove_the_evel( CURRENT_DIRECTORY, CURRENT_FILE )
 
+            uninstall_package_control()
+
 
         def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
 
             _packagesmanager_loader_path = os.path.join( CURRENT_DIRECTORY, CURRENT_FILE )
+
+            print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
+            print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
+            print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
+            print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
 
             if os.path.exists( _packagesmanager_loader_path ):
                 print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
@@ -155,6 +162,29 @@ def _background_bootstrap(settings):
 
                 time.sleep( 0.7 )
                 safe_remove( _packagesmanager_loader_path )
+
+
+        def uninstall_package_control():
+
+            try:
+                from PackagesManager.packagesmanager.package_manager import PackageManager
+                from PackagesManager.packagesmanager.package_disabler import PackageDisabler
+
+            except ImportError:
+                return
+
+            package_manager    = PackageManager()
+            installed_packages = package_manager.list_packages()
+
+            if "PackagesManager" in installed_packages:
+                package_control_name = "Package Control"
+                print( "[00-packagesmanager.py] Uninstalling %s..." % package_control_name )
+
+                package_disabler = PackageDisabler()
+                package_disabler.disable_packages( [ package_control_name ], "remove" )
+
+                time.sleep( 0.7 )
+                package_manager.remove_package( package_control_name, False )
 
 
         def safe_remove(path):
