@@ -18,6 +18,31 @@ def get_dependencies_installed():
     return g_dependencies_installed
 
 
+# The `PackagesManager.sublime-settings` loaded by `sublime.load_settings`
+g_packagesmanger_settings = None
+g_packagesmanger_name = ""
+
+
+def set_sublime_settings(settings):
+    global g_packagesmanger_settings
+    g_packagesmanger_settings = settings
+
+
+def add_packagesmanager_on_change(key_name, callback):
+    global g_packagesmanger_name
+    g_packagesmanger_name = key_name
+
+    g_packagesmanger_settings.add_on_change( key_name, callback )
+
+
+def disable_package_control_uninstaller():
+    """
+        This is required to be called when uninstalling PackagesManager, otherwise we could never
+        install Package Control just before uninstalling PackagesManager.
+    """
+    g_packagesmanger_settings.clear_on_change( g_packagesmanger_name )
+
+
 def preferences_filename():
     """
     :return: The appropriate settings filename based on the version of Sublime Text

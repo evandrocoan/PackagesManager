@@ -32,7 +32,9 @@ if sys.version_info < (3,):
     from packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
     from packagesmanager.package_manager import PackageManager
     from packagesmanager import loader, text, sys_path
+
 else:
+    from .packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change
     from .packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
     from .packagesmanager.package_manager import PackageManager
     from .packagesmanager import loader, text, sys_path
@@ -45,6 +47,7 @@ def plugin_loaded():
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     configure_package_control_uninstaller()
 
+
 def configure_package_control_uninstaller():
     global g_package_control_settings_file
 
@@ -53,8 +56,8 @@ def configure_package_control_uninstaller():
 
     clean_package_control_settings()
 
-    settings = sublime.load_settings( "%s.sublime-settings" % g_package_control_name )
-    settings.add_on_change( g_package_control_name, uninstall_package_control )
+    set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
+    add_packagesmanager_on_change( g_package_control_name, uninstall_package_control )
 
 
 def uninstall_package_control():
