@@ -71,7 +71,7 @@ def uninstall_package_control():
         return
 
     print( "[00-packagesmanager.py] Uninstalling %s..." % g_package_control_name )
-    silence_error_message_box()
+    silence_error_message_box(63.0)
 
     package_disabler = PackageDisabler()
     package_disabler.disable_packages( [ g_package_control_name ], "remove" )
@@ -329,7 +329,7 @@ def _background_bootstrap(settings):
 
             if package_control_name in installed_packages:
                 print( "[00-packagesmanager.py] Uninstalling %s..." % package_control_name )
-                silence_error_message_box()
+                silence_error_message_box(64.0)
 
                 package_disabler = PackageDisabler()
                 package_disabler.disable_packages( [ package_control_name ], "remove" )

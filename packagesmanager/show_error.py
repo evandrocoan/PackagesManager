@@ -49,7 +49,7 @@ def show_error(string, params=None, strip=True, indent=None):
                 '''
                 ) )
 
-            silence_error_message_box()
+            silence_error_message_box(60.1)
 
     else:
         console_write( string )
