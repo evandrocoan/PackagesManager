@@ -3,7 +3,16 @@ import threading
 import os
 from textwrap import dedent
 
+import json
+import time
+import stat
 import sublime
+
+CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
+CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+
+g_package_control_name = "Package Control"
+g_package_control_settings_file = ""
 
 # Clean up the installed and pristine packages for PackagesManager 2 to
 # prevent a downgrade from happening via Sublime Text
@@ -33,6 +42,103 @@ def plugin_loaded():
     settings = manager.settings.copy()
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
+    configure_package_control_uninstaller()
+
+def configure_package_control_uninstaller():
+    global g_package_control_settings_file
+
+    g_package_control_settings_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
+            "Packages", "User", "%s.sublime-settings" % g_package_control_name )
+
+    clean_package_control_settings()
+
+    settings = sublime.load_settings( "%s.sublime-settings" % g_package_control_name )
+    settings.add_on_change( g_package_control_name, uninstall_package_control )
+
+
+def uninstall_package_control():
+
+    try:
+        from PackagesManager.packagesmanager.show_error import silence_error_message_box
+        from PackagesManager.packagesmanager.package_manager import PackageManager
+        from PackagesManager.packagesmanager.package_disabler import PackageDisabler
+
+    except ImportError:
+        return
+
+    print( "[00-packagesmanager.py] Uninstalling %s..." % g_package_control_name )
+    silence_error_message_box()
+
+    package_disabler = PackageDisabler()
+    package_disabler.disable_packages( [ g_package_control_name ], "remove" )
+
+    time.sleep( 0.7 )
+
+    package_manager = PackageManager()
+    package_manager.remove_package( g_package_control_name, False )
+
+    clean_package_control_settings()
+
+
+def clean_package_control_settings():
+    """
+        Clean it a few times because Package Control is kinda running and still flushing stuff down
+        to its settings file.
+    """
+    package_control_settings = load_data_file( g_package_control_settings_file )
+
+    if 'remove_orphaned' not in package_control_settings:
+        ensure_not_removed_orphaned( package_control_settings )
+
+    elif package_control_settings['remove_orphaned']:
+        ensure_not_removed_orphaned( package_control_settings )
+
+
+def ensure_not_removed_orphaned(package_control_settings):
+    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation..." )
+
+    package_control_settings['remove_orphaned'] = False
+    write_data_file( g_package_control_settings_file, package_control_settings )
+
+
+def get_main_directory(current_directory):
+    possible_main_directory = os.path.normpath( os.path.dirname( os.path.dirname( current_directory ) ) )
+
+    if sublime:
+        sublime_text_packages = os.path.normpath( os.path.dirname( sublime.packages_path() ) )
+
+        if possible_main_directory == sublime_text_packages:
+            return possible_main_directory
+
+        else:
+            return sublime_text_packages
+
+    return possible_main_directory
+
+
+def write_data_file(file_path, channel_dictionary):
+    print( "[00-packagesmanager.py] Writing to the data file: " + file_path )
+
+    with open(file_path, 'w', encoding='utf-8') as output_file:
+        json.dump( channel_dictionary, output_file, indent=4 )
+
+
+def load_data_file(file_path):
+    channel_dictionary = {}
+
+    if os.path.exists( file_path ):
+
+        try:
+            with open( file_path, 'r', encoding='utf-8' ) as studio_channel_data:
+                channel_dictionary = json.load( studio_channel_data )
+
+        except ValueError as error:
+            print( "[00-packagesmanager.py] Error on load_data_file(1), the file '%s', %s" % ( file_path, error ) )
+
+    else:
+        print( "[00-packagesmanager.py] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
+
+    return channel_dictionary
 
 
 def _background_bootstrap(settings):
@@ -47,6 +153,7 @@ def _background_bootstrap(settings):
     base_loader_code = """
         import sys
         import time
+        import stat
         import sublime
 
         import os
@@ -137,19 +244,13 @@ def _background_bootstrap(settings):
 
 
         def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
-
-            _packagesmanager_loader_path = os.path.join( CURRENT_DIRECTORY, CURRENT_FILE )
-
-            print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
-            print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
-            print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
-            print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
+            _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
 
             if os.path.exists( _packagesmanager_loader_path ):
                 print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
-                print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
                 print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
                 print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
+                print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
 
                 try:
                     from package_control.package_disabler import PackageDisabler
@@ -158,15 +259,18 @@ def _background_bootstrap(settings):
                     from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
                 package_disabler = PackageDisabler()
-                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
 
+                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
                 time.sleep( 0.7 )
+
                 safe_remove( _packagesmanager_loader_path )
 
 
         def uninstall_package_control():
+            package_control_name = "Package Control"
 
             try:
+                from PackagesManager.packagesmanager.show_error import silence_error_message_box
                 from PackagesManager.packagesmanager.package_manager import PackageManager
                 from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
@@ -176,9 +280,9 @@ def _background_bootstrap(settings):
             package_manager    = PackageManager()
             installed_packages = package_manager.list_packages()
 
-            if "PackagesManager" in installed_packages:
-                package_control_name = "Package Control"
+            if package_control_name in installed_packages:
                 print( "[00-packagesmanager.py] Uninstalling %s..." % package_control_name )
+                silence_error_message_box()
 
                 package_disabler = PackageDisabler()
                 package_disabler.disable_packages( [ package_control_name ], "remove" )
@@ -190,16 +294,10 @@ def _background_bootstrap(settings):
         def safe_remove(path):
 
             try:
-                os.remove( path )
+                _delete_read_only_file(path)
 
             except Exception as error:
-                print( "Failed to remove `%s`. Error is: %s" % ( path, error) )
-
-                try:
-                    _delete_read_only_file(path)
-
-                except Exception as error:
-                    log( 1, "Failed to remove `%s`. Error is: %s" % ( path, error) )
+                print( "[00-packagesmanager.py] Failed to remove `%s`. Error is: %s" % ( path, error) )
 
 
         def _delete_read_only_file(path):
