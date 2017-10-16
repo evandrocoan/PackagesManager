@@ -469,7 +469,12 @@ def _default_loader(name):
     """
 
     code = """
-        from PackagesManager.packagesmanager import sys_path
+        try:
+            from packagesmanager import sys_path
+
+        except ImportError:
+            from PackagesManager.packagesmanager import sys_path
+
         sys_path.add_dependency(%s)
     """ % repr(name)
     return dedent(code).lstrip()
