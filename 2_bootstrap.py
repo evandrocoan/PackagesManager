@@ -341,17 +341,17 @@ def _background_bootstrap(settings):
         def safe_remove(path):
 
             try:
-                _delete_read_only_file(path)
+                delete_read_only_file(path)
 
             except Exception as error:
                 print( "[00-packagesmanager.py] Failed to remove `%s`. Error is: %s" % ( path, error) )
 
 
-        def _delete_read_only_file(path):
-            delete_read_only_file( None, path, None )
+        def delete_read_only_file(path):
+            _delete_read_only_file( None, path, None )
 
 
-        def delete_read_only_file(action, name, exc):
+        def _delete_read_only_file(action, name, exc):
             os.chmod( name, stat.S_IWRITE )
             os.remove( name )
 
