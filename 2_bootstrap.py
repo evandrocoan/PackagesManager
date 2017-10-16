@@ -2,6 +2,7 @@ import sys
 import threading
 import os
 from textwrap import dedent
+from collections import OrderedDict
 
 import json
 import time
@@ -85,20 +86,48 @@ def clean_package_control_settings():
         Clean it a few times because Package Control is kinda running and still flushing stuff down
         to its settings file.
     """
+    flush_settings = False
     package_control_settings = load_data_file( g_package_control_settings_file )
 
+    if 'bootstrapped' not in package_control_settings:
+        flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+
+    elif package_control_settings['bootstrapped']:
+        flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+
     if 'remove_orphaned' not in package_control_settings:
-        ensure_not_removed_orphaned( package_control_settings )
+        flush_settings = ensure_not_removed_orphaned( package_control_settings )
 
     elif package_control_settings['remove_orphaned']:
-        ensure_not_removed_orphaned( package_control_settings )
+        flush_settings = ensure_not_removed_orphaned( package_control_settings )
+
+    # Avoid infinity loop of writing to the settings file
+    if flush_settings:
+        write_data_file( g_package_control_settings_file, OrderedDict( sorted( package_control_settings.items() ) ) )
+
+
+def ensure_not_removed_bootstrapped(package_control_settings):
+    """
+        Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
+        immediately.
+    """
+    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation, setting bootstrapped..." )
+
+    package_control_settings['bootstrapped']  = False
+    return True
 
 
 def ensure_not_removed_orphaned(package_control_settings):
-    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation..." )
+    """
+        Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
+        restored later.
+    """
+    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation, setting remove_orphaned..." )
 
     package_control_settings['remove_orphaned'] = False
-    write_data_file( g_package_control_settings_file, package_control_settings )
+    package_control_settings['remove_orphaned_backup'] = True
+
+    return True
 
 
 def get_main_directory(current_directory):
