@@ -1878,11 +1878,11 @@ class PackageManager():
                  and should not be reenabled
         """
         if is_dependency is None:
-            installed_packages = self.list_packages()
-            installed_packages.extend( self.list_dependencies() )
+            installed_packages = self.list_packages(list_everything=True)
 
         elif not is_dependency:
             installed_packages = self.list_packages()
+
         else:
             installed_packages = self.list_dependencies()
 
