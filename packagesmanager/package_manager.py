@@ -1940,15 +1940,11 @@ class PackageManager():
             # in sublime_plugin.py
             can_delete_dir = True
             if not clear_directory(package_dir):
-                if os.path.exists(package_dir):
-                    # If there is an error deleting now, we will mark it for
-                    # cleanup the next time Sublime Text starts
-                    open_compat(os.path.join(package_dir, 'package-control.cleanup'), 'w').close()
-                    cleanup_complete = False
-                    can_delete_dir = False
-                else:
-                    console_write("Error: The folder does not exists, while uninstalling the package: " + str(package_dir))
-                    return True
+                # If there is an error deleting now, we will mark it for
+                # cleanup the next time Sublime Text starts
+                open_compat(os.path.join(package_dir, 'package-control.cleanup'), 'w').close()
+                cleanup_complete = False
+                can_delete_dir = False
 
         params = {
             'package': package_name,
