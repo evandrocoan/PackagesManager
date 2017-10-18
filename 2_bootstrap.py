@@ -29,6 +29,7 @@ if sys.version_info < (3,):
         os.remove(installed_file)
 
 if sys.version_info < (3,):
+    from packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change
     from packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
     from packagesmanager.package_manager import PackageManager
     from packagesmanager import loader, text, sys_path
@@ -41,11 +42,23 @@ else:
 
 
 def plugin_loaded():
-    manager = PackageManager()
+    manager  = PackageManager()
     settings = manager.settings.copy()
 
+    is_installation_complete = True
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
-    configure_package_control_uninstaller()
+
+    # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
+    # while Package Control still installing things
+    try:
+        import ChannelManager
+        is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
+
+    except ImportError:
+        pass
+
+    if is_installation_complete:
+        configure_package_control_uninstaller()
 
 
 def configure_package_control_uninstaller():
@@ -70,7 +83,7 @@ def uninstall_package_control():
     except ImportError:
         return
 
-    print( "[00-packagesmanager.py] Uninstalling %s..." % g_package_control_name )
+    print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
     silence_error_message_box(63.0)
 
     package_disabler = PackageDisabler()
@@ -114,7 +127,7 @@ def ensure_not_removed_bootstrapped(package_control_settings):
         Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
         immediately.
     """
-    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation, setting bootstrapped..." )
+    print( "[2_bootstrap.py] Finishing Package Control Uninstallation, setting bootstrapped..." )
 
     package_control_settings['bootstrapped']  = False
     return True
@@ -125,7 +138,7 @@ def ensure_not_removed_orphaned(package_control_settings):
         Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
         restored later.
     """
-    print( "[00-packagesmanager.py] Finishing Package Control Uninstallation, setting remove_orphaned..." )
+    print( "[2_bootstrap.py] Finishing Package Control Uninstallation, setting remove_orphaned..." )
 
     package_control_settings['remove_orphaned'] = False
     package_control_settings['remove_orphaned_backup'] = True
@@ -149,7 +162,7 @@ def get_main_directory(current_directory):
 
 
 def write_data_file(file_path, channel_dictionary):
-    print( "[00-packagesmanager.py] Writing to the data file: " + file_path )
+    print( "[2_bootstrap.py] Writing to the data file: " + file_path )
 
     with open(file_path, 'w', encoding='utf-8') as output_file:
         json.dump( channel_dictionary, output_file, indent=4 )
@@ -173,7 +186,7 @@ def load_data_file(file_path, wait_on_error=True):
                     return json.load( studio_channel_data )
 
             except ValueError as error:
-                print( "[00-packagesmanager.py] Error, maximum_attempts %d, load_data_file: %s" % ( maximum_attempts, error ) )
+                print( "[2_bootstrap.py] Error, maximum_attempts %d, load_data_file: %s" % ( maximum_attempts, error ) )
                 maximum_attempts -= 1
 
                 if wait_on_error:
@@ -183,7 +196,7 @@ def load_data_file(file_path, wait_on_error=True):
             raise ValueError( "file_path: %s, error: %s" % ( file_path, error ) )
 
     else:
-        print( "[00-packagesmanager.py] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
+        print( "[2_bootstrap.py] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
 
     return channel_dictionary
 
@@ -278,6 +291,22 @@ def _background_bootstrap(settings):
 
 
         def plugin_loaded():
+            is_installation_complete = True
+
+            # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
+            # while Package Control still installing things
+            try:
+                import ChannelManager
+                is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
+
+            except ImportError:
+                pass
+
+            if is_installation_complete:
+                run_uninstallers()
+
+
+        def run_uninstallers():
             CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
             CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
