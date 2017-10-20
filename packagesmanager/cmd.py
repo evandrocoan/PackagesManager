@@ -78,7 +78,7 @@ class Cli(object):
         self.binary_locations = binary_locations
         self.debug = debug
 
-    def execute(self, args, cwd, input=None, encoding='utf-8', meaningful_output=False, ignore_errors=None, live_output=False):
+    def execute(self, args, cwd, input=None, encoding='utf-8', meaningful_output=False, ignore_errors=None, live_output=False, short_errors=False):
         """
         Creates a subprocess with the executable/args
 
@@ -102,6 +102,9 @@ class Cli(object):
             Whether to ignore the return executable output, or print it immediately to the stdout
             stream. It is useful when running long commands, so you can see the continuously
             outputting. This is not supported by python 2 version.
+
+        :param short_errors:
+            Will print exclusively the error message, not the usual boiler plate.
 
         :return:
             A string of the executable output or False on error
@@ -234,6 +237,9 @@ class Cli(object):
                         ''',
                         (create_cmd(args), orig_cwd, output)
                     )
+                    if short_errors:
+                        show_error( message )
+                        return False
                     if is_vcs:
                         if len( output ) < 1:
                             message += text.format(
