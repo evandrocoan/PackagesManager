@@ -54,7 +54,7 @@ def plugin_loaded():
         import ChannelManager
         is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
 
-    except ImportError:
+    except( ImportError, AttributeError ):
         pass
 
     if is_installation_complete:
@@ -299,7 +299,7 @@ def _background_bootstrap(settings):
                 import ChannelManager
                 is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
 
-            except ImportError:
+            except( ImportError, AttributeError ):
                 pass
 
             if is_installation_complete:
