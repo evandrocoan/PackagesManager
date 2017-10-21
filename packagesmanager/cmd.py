@@ -226,6 +226,7 @@ class Cli(object):
             stuck = False
 
             if proc.returncode not in self.ok_returncodes:
+
                 if not ignore_errors or re.search(ignore_errors, output) is None:
                     message = text.format(
                         u'''
@@ -237,10 +238,13 @@ class Cli(object):
                         ''',
                         (create_cmd(args), orig_cwd, output)
                     )
+
                     if short_errors:
                         show_error( message )
-                        return False
+                        return False, output
+
                     if is_vcs:
+
                         if len( output ) < 1:
                             message += text.format(
                                 '''
@@ -263,11 +267,13 @@ class Cli(object):
                             setting is changed.
                             '''
                         )
+
                         if len( output ) < 1:
                             console_write( message )
-                            return False
+                            return False, output
+
                     show_error(message)
-                    return False
+                    return False, output
 
             if meaningful_output and self.debug and len(output) > 0:
                 console_write(output, indent='  ', prefix=False)
