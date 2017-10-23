@@ -111,8 +111,10 @@ class Cli(object):
         """
 
         # live_output does not works for python version < 3
-        output = "The live_output is being performed."
-        live_output = live_output and not sys.version_info[0] < 3
+        output = ""
+
+        output_lines =  []
+        live_output  = live_output and not sys.version_info[0] < 3
 
         orig_cwd = cwd
         startupinfo = None
@@ -158,6 +160,7 @@ class Cli(object):
                         line = line.replace('\r\n', '\n').rstrip(' \n\r')
 
                         # process line here
+                        output_lines.append(line)
                         print(line)
             else:
                 proc = subprocess.Popen(
@@ -217,6 +220,7 @@ class Cli(object):
                     show_error(message)
                 sublime.set_timeout(kill_proc, 60000)
 
+
             if not live_output:
                 output, _ = proc.communicate(input)
 
@@ -228,6 +232,11 @@ class Cli(object):
             if proc.returncode not in self.ok_returncodes:
 
                 if not ignore_errors or re.search(ignore_errors, output) is None:
+
+                    # Create a message to display on the error box while using the `live_output`
+                    if len( output ) < 2:
+                        output = "".join( output_lines )
+
                     message = text.format(
                         u'''
                         Error executing: %s
