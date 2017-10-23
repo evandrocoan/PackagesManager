@@ -250,7 +250,7 @@ class Cli(object):
 
                     if short_errors:
                         show_error( message )
-                        return False, output
+                        return False
 
                     if is_vcs:
 
@@ -279,10 +279,10 @@ class Cli(object):
 
                         if len( output ) < 1:
                             console_write( message )
-                            return False, output
+                            return False
 
                     show_error(message)
-                    return False, output
+                    return False
 
             if meaningful_output and self.debug and len(output) > 0:
                 console_write(output, indent='  ', prefix=False)
