@@ -1751,13 +1751,12 @@ class PackageManager():
             The new (string) version of the package
         """
 
-        messages_file = os.path.join(package_dir, 'messages.json')
-        if not os.path.exists(messages_file):
-            return
-
-        messages_fp = open_compat(messages_file, 'r')
         try:
-            message_info = json.loads(read_compat(messages_fp))
+            messages_file = os.path.join(package_dir, 'messages.json')
+            with open_compat(messages_file, 'r') as f:
+                message_info = json.loads(read_compat(f))
+        except (FileNotFoundError):
+            return
         except (ValueError):
             console_write(
                 u'''
@@ -1766,7 +1765,6 @@ class PackageManager():
                 package
             )
             return
-        messages_fp.close()
 
         def read_message(message_path):
             with open_compat(message_path, 'r') as f:
