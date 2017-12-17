@@ -698,6 +698,9 @@ class PackageManager():
         :param unpacked_only:
             Only list packages that are not inside of .sublime-package files
 
+        :param list_everything:
+            List all default packages, dependencies and the installed packages
+
         :return: A list of all installed, non-default, non-dependency, package names
         """
 
@@ -853,7 +856,7 @@ class PackageManager():
 
         output = ['0_packagesmanager_loader']
 
-        for package in self.list_packages():
+        for package in self.list_packages(list_everything=True):
             if package == ignore_package:
                 continue
             output.extend(self.get_dependencies(package))
