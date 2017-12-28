@@ -7,7 +7,9 @@ from collections import OrderedDict
 import json
 import time
 import stat
+
 import sublime
+import sublime_plugin
 
 CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
 CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
@@ -51,8 +53,8 @@ def plugin_loaded():
     # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
     # while Package Control still installing things
     try:
-        import ChannelManager
-        is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
+        import channel_manager
+        is_installation_complete = not channel_manager.channel_installer.g_is_running
 
     except( ImportError, AttributeError ):
         pass
@@ -74,27 +76,37 @@ def configure_package_control_uninstaller():
 
 
 def uninstall_package_control():
+    is_installation_complete = True
 
     try:
         from PackagesManager.packagesmanager.show_error import silence_error_message_box
         from PackagesManager.packagesmanager.package_manager import PackageManager
         from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
+        import channel_manager
+        sublime_plugin.reload_plugin( "channel_manager.channel_installer" )
+        sublime_plugin.reload_plugin( "channel_manager.channel_uninstaller" )
+
+        # Only enters in action when the installers are not running
+        is_installation_complete = not channel_manager.channel_installer.g_is_running \
+                and not channel_manager.channel_uninstaller.g_is_running
+
     except ImportError:
         return
 
-    print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
-    silence_error_message_box(63.0)
+    if is_installation_complete:
+        print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
+        silence_error_message_box(63.0)
 
-    package_disabler = PackageDisabler()
-    package_disabler.disable_packages( [ g_package_control_name ], "remove" )
+        package_disabler = PackageDisabler()
+        package_disabler.disable_packages( [ g_package_control_name ], "remove" )
 
-    time.sleep( 0.7 )
+        time.sleep( 0.7 )
 
-    package_manager = PackageManager()
-    package_manager.remove_package( g_package_control_name, False )
+        package_manager = PackageManager()
+        package_manager.remove_package( g_package_control_name, False )
 
-    clean_package_control_settings()
+        clean_package_control_settings()
 
 
 def clean_package_control_settings():
@@ -296,8 +308,13 @@ def _background_bootstrap(settings):
             # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
             # while Package Control still installing things
             try:
-                import ChannelManager
-                is_installation_complete = ChannelManager.channel_installer.g_is_installation_complete
+                import channel_manager
+                sublime_plugin.reload_plugin( "channel_manager.channel_installer" )
+                sublime_plugin.reload_plugin( "channel_manager.channel_uninstaller" )
+
+                # Only enters in action when the installers are not running
+                is_installation_complete = not channel_manager.channel_installer.g_is_running \
+                        and not channel_manager.channel_uninstaller.g_is_running
 
             except( ImportError, AttributeError ):
                 pass
