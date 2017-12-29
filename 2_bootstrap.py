@@ -226,7 +226,9 @@ def _background_bootstrap(settings):
         import sys
         import time
         import stat
+
         import sublime
+        import sublime_plugin
 
         import os
         from os.path import dirname
