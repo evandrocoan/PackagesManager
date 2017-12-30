@@ -101,7 +101,7 @@ def uninstall_package_control():
         package_disabler = PackageDisabler()
         package_disabler.disable_packages( [ g_package_control_name ], "remove" )
 
-        time.sleep( 0.7 )
+        time.sleep( 1.7 )
 
         package_manager = PackageManager()
         package_manager.remove_package( g_package_control_name, False )
@@ -356,7 +356,7 @@ def _background_bootstrap(settings):
                 package_disabler = PackageDisabler()
 
                 package_disabler.disable_packages( [CURRENT_FILE], "remove" )
-                time.sleep( 0.7 )
+                time.sleep( 1.7 )
 
                 safe_remove( _packagesmanager_loader_path )
 
@@ -382,7 +382,7 @@ def _background_bootstrap(settings):
                 package_disabler = PackageDisabler()
                 package_disabler.disable_packages( [ package_control_name ], "remove" )
 
-                time.sleep( 0.7 )
+                time.sleep( 1.7 )
                 package_manager.remove_package( package_control_name, False )
 
 
