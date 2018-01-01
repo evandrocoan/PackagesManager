@@ -15,7 +15,10 @@ CURRENT_DIRECTORY    = os.path.dirname( os.path.realpath( __file__ ) )
 CURRENT_PACKAGE_NAME = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
 g_package_control_name = "Package Control"
-g_package_control_settings_file = ""
+g_packages_loader_name = "0_package_control_loader"
+
+g_package_control_loader_file    = ""
+g_package_control_settings_file  = ""
 IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
 
 # Clean up the installed and pristine packages for PackagesManager 2 to
@@ -210,6 +213,7 @@ if sys.version_info < (3,):
 
 
 def plugin_loaded():
+    global g_package_control_loader_file
     global g_package_control_settings_file
 
     manager  = PackageManager()
@@ -218,12 +222,18 @@ def plugin_loaded():
     g_package_control_settings_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
             "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
+    g_package_control_loader_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
+            "Packages", "User", "%s.sublime-settings" % g_packages_loader_name )
+
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     configure_package_control_uninstaller()
 
 
 def configure_package_control_uninstaller():
     clean_package_control_settings()
+
+    if os.path.exists( g_package_control_loader_file ):
+        uninstall_package_control()
 
     set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
     add_packagesmanager_on_change( g_package_control_name, uninstall_package_control )
@@ -243,32 +253,33 @@ def uninstall_package_control():
     print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
 
     package_disabler = PackageDisabler()
-    package_disabler.disable_packages( [ g_package_control_name ], "remove" )
+    package_disabler.disable_packages( [ g_package_control_name, g_packages_loader_name ], "remove" )
 
-    _packagesmanager_loader_path = "0_package_control_loader"
     time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
     package_manager = PackageManager()
     package_manager.remove_package( g_package_control_name, False )
-    package_manager.remove_package( _packagesmanager_loader_path, False )
+    package_manager.remove_package( g_packages_loader_name, False )
 
-    safe_remove( _packagesmanager_loader_path + ".sublime-package" )
-    safe_remove( _packagesmanager_loader_path + ".sublime-package-new" )
+    safe_remove( g_package_control_loader_file )
+    safe_remove( g_package_control_loader_file + "-new" )
 
     clean_package_control_settings()
 
 
-def safe_remove(path):
+def safe_remove(absolute_path):
 
-    try:
-        delete_read_only_file( path )
+    if os.path.exists( absolute_path ):
 
-    except Exception as error:
-        print( "[00-packagesmanager.py] Failed to remove `%s`. Error is: %s" % ( path, error) )
+        try:
+            delete_read_only_file( absolute_path )
+
+        except Exception as error:
+            print( "[00-packagesmanager.py] Failed to remove `%s`. Error is: %s" % ( absolute_path, error) )
 
 
-def delete_read_only_file(path):
-    _delete_read_only_file( None, path, None )
+def delete_read_only_file(absolute_path):
+    _delete_read_only_file( None, absolute_path, None )
 
 
 def _delete_read_only_file(action, name, exc):
