@@ -322,29 +322,6 @@ def _background_bootstrap(settings):
                 remove_the_evel( is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE )
 
 
-        def remove_the_evel(is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE):
-            _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
-
-            if os.path.exists( _packagesmanager_loader_path ):
-                print( "[00-packagesmanager.py] CURRENT_FILE:             " + CURRENT_FILE )
-                print( "[00-packagesmanager.py] CURRENT_DIRECTORY:        " + CURRENT_DIRECTORY )
-                print( "[00-packagesmanager.py] get_main_directory:       " + get_main_directory( CURRENT_DIRECTORY ) )
-                print( "[00-packagesmanager.py] Removing loader:          " + _packagesmanager_loader_path )
-                print( "[00-packagesmanager.py] is_installation_complete: " + is_installation_complete )
-
-                try:
-                    from PackagesManager.packagesmanager.package_disabler import PackageDisabler
-
-                except ImportError:
-                    from package_control.package_disabler import PackageDisabler
-
-                package_disabler = PackageDisabler()
-                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
-
-                time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
-                safe_remove( _packagesmanager_loader_path )
-
-
         def uninstall_package_control():
             package_control_name = "Package Control"
 
@@ -368,6 +345,29 @@ def _background_bootstrap(settings):
 
                 time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
                 package_manager.remove_package( package_control_name, False )
+
+
+        def remove_the_evel(is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE):
+            _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
+
+            if os.path.exists( _packagesmanager_loader_path ):
+                print( "[00-packagesmanager.py] CURRENT_FILE:             " + CURRENT_FILE )
+                print( "[00-packagesmanager.py] CURRENT_DIRECTORY:        " + CURRENT_DIRECTORY )
+                print( "[00-packagesmanager.py] get_main_directory:       " + get_main_directory( CURRENT_DIRECTORY ) )
+                print( "[00-packagesmanager.py] Removing loader:          " + _packagesmanager_loader_path )
+                print( "[00-packagesmanager.py] is_installation_complete: " + is_installation_complete )
+
+                try:
+                    from PackagesManager.packagesmanager.package_disabler import PackageDisabler
+
+                except ImportError:
+                    from package_control.package_disabler import PackageDisabler
+
+                package_disabler = PackageDisabler()
+                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
+
+                time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+                safe_remove( _packagesmanager_loader_path )
 
 
         def safe_remove(path):
