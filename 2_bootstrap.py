@@ -11,8 +11,8 @@ import stat
 import sublime
 import sublime_plugin
 
-CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
-CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+CURRENT_DIRECTORY    = os.path.dirname( os.path.realpath( __file__ ) )
+CURRENT_PACKAGE_NAME = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
 g_package_control_name = "Package Control"
 g_package_control_settings_file = ""
@@ -288,8 +288,8 @@ def _background_bootstrap(settings):
 
 
         def run_uninstallers():
-            CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
-            CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+            CURRENT_DIRECTORY    = os.path.dirname( os.path.realpath( __file__ ) )
+            CURRENT_PACKAGE_NAME = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
             uninstall_package_control()
 
@@ -297,7 +297,7 @@ def _background_bootstrap(settings):
                 remove_the_evel( CURRENT_DIRECTORY, "0_package_control_loader" )
 
             else:
-                remove_the_evel( CURRENT_DIRECTORY, CURRENT_FILE )
+                remove_the_evel( CURRENT_DIRECTORY, CURRENT_PACKAGE_NAME )
 
 
         def uninstall_package_control():
@@ -325,11 +325,11 @@ def _background_bootstrap(settings):
                 package_manager.remove_package( package_control_name, False )
 
 
-        def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
-            _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
+        def remove_the_evel(CURRENT_DIRECTORY, CURRENT_PACKAGE_NAME):
+            _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_PACKAGE_NAME + ".sublime-package" )
 
             if os.path.exists( _packagesmanager_loader_path ):
-                print( "[00-packagesmanager.py] CURRENT_FILE:             " + CURRENT_FILE )
+                print( "[00-packagesmanager.py] CURRENT_PACKAGE_NAME:             " + CURRENT_PACKAGE_NAME )
                 print( "[00-packagesmanager.py] CURRENT_DIRECTORY:        " + CURRENT_DIRECTORY )
                 print( "[00-packagesmanager.py] get_main_directory:       " + get_main_directory( CURRENT_DIRECTORY ) )
                 print( "[00-packagesmanager.py] Removing loader:          " + _packagesmanager_loader_path )
@@ -341,10 +341,11 @@ def _background_bootstrap(settings):
                     from package_control.package_disabler import PackageDisabler
 
                 package_disabler = PackageDisabler()
-                package_disabler.disable_packages( [CURRENT_FILE], "remove" )
+                package_disabler.disable_packages( [CURRENT_PACKAGE_NAME], "remove" )
 
                 time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
                 safe_remove( _packagesmanager_loader_path )
+                safe_remove( _packagesmanager_loader_path + "-new" )
 
 
         def safe_remove(path):
