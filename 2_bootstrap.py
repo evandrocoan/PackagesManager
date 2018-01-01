@@ -16,6 +16,7 @@ CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
 g_package_control_name = "Package Control"
 g_package_control_settings_file = ""
+IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
 
 # Clean up the installed and pristine packages for PackagesManager 2 to
 # prevent a downgrade from happening via Sublime Text
@@ -47,25 +48,12 @@ def plugin_loaded():
     manager  = PackageManager()
     settings = manager.settings.copy()
 
-    is_installation_complete = True
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
-
-    # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
-    # while Package Control still installing things
-    try:
-        import channel_manager
-        is_installation_complete = not channel_manager.channel_installer.g_is_running
-
-    except( ImportError, AttributeError ):
-        pass
-
-    if is_installation_complete:
-        configure_package_control_uninstaller()
+    configure_package_control_uninstaller()
 
 
 def configure_package_control_uninstaller():
     global g_package_control_settings_file
-
     g_package_control_settings_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
             "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
@@ -84,24 +72,23 @@ def uninstall_package_control():
         from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
         import channel_manager
-        sublime_plugin.reload_plugin( "channel_manager.channel_installer" )
-        sublime_plugin.reload_plugin( "channel_manager.channel_uninstaller" )
 
         # Only enters in action when the installers are not running
-        is_installation_complete = not channel_manager.channel_installer.g_is_running \
-                and not channel_manager.channel_uninstaller.g_is_running
+        is_installation_complete = not channel_manager.channel_installer.g_is_running
 
     except ImportError:
         return
 
     if is_installation_complete:
-        print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
         silence_error_message_box(63.0)
+
+        print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
+        print( "[2_bootstrap.py] is_installation_complete: %s" % str( is_installation_complete ) )
 
         package_disabler = PackageDisabler()
         package_disabler.disable_packages( [ g_package_control_name ], "remove" )
 
-        time.sleep( 1.7 )
+        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
         package_manager = PackageManager()
         package_manager.remove_package( g_package_control_name, False )
@@ -232,7 +219,7 @@ def _background_bootstrap(settings):
 
         import os
         from os.path import dirname
-
+        IGNORE_PACKAGE_MINIMUM_WAIT_TIME = {ignore_time}
 
         # This file adds the packagesmanager subdirectory of PackagesManager
         # to first in the sys.path so that all other packages may rely on
@@ -311,53 +298,50 @@ def _background_bootstrap(settings):
             # while Package Control still installing things
             try:
                 import channel_manager
-                sublime_plugin.reload_plugin( "channel_manager.channel_installer" )
-                sublime_plugin.reload_plugin( "channel_manager.channel_uninstaller" )
 
                 # Only enters in action when the installers are not running
-                is_installation_complete = not channel_manager.channel_installer.g_is_running \
-                        and not channel_manager.channel_uninstaller.g_is_running
+                is_installation_complete = not channel_manager.channel_installer.g_is_running
 
             except( ImportError, AttributeError ):
                 pass
 
             if is_installation_complete:
-                run_uninstallers()
+                run_uninstallers( is_installation_complete )
 
 
-        def run_uninstallers():
+        def run_uninstallers(is_installation_complete):
             CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
             CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
-            if found:
-                remove_the_evel( CURRENT_DIRECTORY, "0_package_control_loader" )
-
-            else:
-                remove_the_evel( CURRENT_DIRECTORY, CURRENT_FILE )
-
             uninstall_package_control()
 
+            if found:
+                remove_the_evel( is_installation_complete, CURRENT_DIRECTORY, "0_package_control_loader" )
 
-        def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
+            else:
+                remove_the_evel( is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE )
+
+
+        def remove_the_evel(is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE):
             _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
 
             if os.path.exists( _packagesmanager_loader_path ):
-                print( "[00-packagesmanager.py] CURRENT_FILE:       " + CURRENT_FILE )
-                print( "[00-packagesmanager.py] CURRENT_DIRECTORY:  " + CURRENT_DIRECTORY )
-                print( "[00-packagesmanager.py] get_main_directory: " + get_main_directory( CURRENT_DIRECTORY ) )
-                print( "[00-packagesmanager.py] Removing loader:    " + _packagesmanager_loader_path )
+                print( "[00-packagesmanager.py] CURRENT_FILE:             " + CURRENT_FILE )
+                print( "[00-packagesmanager.py] CURRENT_DIRECTORY:        " + CURRENT_DIRECTORY )
+                print( "[00-packagesmanager.py] get_main_directory:       " + get_main_directory( CURRENT_DIRECTORY ) )
+                print( "[00-packagesmanager.py] Removing loader:          " + _packagesmanager_loader_path )
+                print( "[00-packagesmanager.py] is_installation_complete: " + is_installation_complete )
 
                 try:
-                    from package_control.package_disabler import PackageDisabler
-
-                except ImportError:
                     from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
+                except ImportError:
+                    from package_control.package_disabler import PackageDisabler
+
                 package_disabler = PackageDisabler()
-
                 package_disabler.disable_packages( [CURRENT_FILE], "remove" )
-                time.sleep( 1.7 )
 
+                time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
                 safe_remove( _packagesmanager_loader_path )
 
 
@@ -382,7 +366,7 @@ def _background_bootstrap(settings):
                 package_disabler = PackageDisabler()
                 package_disabler.disable_packages( [ package_control_name ], "remove" )
 
-                time.sleep( 1.7 )
+                time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
                 package_manager.remove_package( package_control_name, False )
 
 
@@ -417,7 +401,8 @@ def _background_bootstrap(settings):
                     return sublime_text_packages
 
             return possible_main_directory
-    """
+    """.format( ignore_time=IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+
     base_loader_code = dedent(base_loader_code).lstrip()
     loader.add_or_update('00', 'packagesmanager', base_loader_code)
 
