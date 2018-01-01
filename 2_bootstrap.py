@@ -45,18 +45,19 @@ else:
 
 
 def plugin_loaded():
+    global g_package_control_settings_file
+
     manager  = PackageManager()
     settings = manager.settings.copy()
+
+    g_package_control_settings_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
+            "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     configure_package_control_uninstaller()
 
 
 def configure_package_control_uninstaller():
-    global g_package_control_settings_file
-    g_package_control_settings_file = os.path.join( get_main_directory( CURRENT_DIRECTORY ),
-            "Packages", "User", "%s.sublime-settings" % g_package_control_name )
-
     clean_package_control_settings()
 
     set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
@@ -64,36 +65,27 @@ def configure_package_control_uninstaller():
 
 
 def uninstall_package_control():
-    is_installation_complete = True
 
     try:
         from PackagesManager.packagesmanager.show_error import silence_error_message_box
         from PackagesManager.packagesmanager.package_manager import PackageManager
         from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
-        import channel_manager
-
-        # Only enters in action when the installers are not running
-        is_installation_complete = not channel_manager.channel_installer.g_is_running
-
     except ImportError:
         return
 
-    if is_installation_complete:
-        silence_error_message_box(63.0)
+    silence_error_message_box(63.0)
+    print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
 
-        print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
-        print( "[2_bootstrap.py] is_installation_complete: %s" % str( is_installation_complete ) )
+    package_disabler = PackageDisabler()
+    package_disabler.disable_packages( [ g_package_control_name ], "remove" )
 
-        package_disabler = PackageDisabler()
-        package_disabler.disable_packages( [ g_package_control_name ], "remove" )
+    time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
-        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+    package_manager = PackageManager()
+    package_manager.remove_package( g_package_control_name, False )
 
-        package_manager = PackageManager()
-        package_manager.remove_package( g_package_control_name, False )
-
-        clean_package_control_settings()
+    clean_package_control_settings()
 
 
 def clean_package_control_settings():
@@ -160,11 +152,11 @@ def get_main_directory(current_directory):
     return possible_main_directory
 
 
-def write_data_file(file_path, channel_dictionary):
+def write_data_file(file_path, dictionary_data):
     print( "[2_bootstrap.py] Writing to the data file: " + file_path )
 
     with open(file_path, 'w', encoding='utf-8') as output_file:
-        json.dump( channel_dictionary, output_file, indent=4 )
+        json.dump( dictionary_data, output_file, indent=4 )
 
 
 def load_data_file(file_path, wait_on_error=True):
@@ -172,7 +164,7 @@ def load_data_file(file_path, wait_on_error=True):
         Attempt to read the file some times when there is a value error. This could happen when the
         file is currently being written by Sublime Text.
     """
-    channel_dictionary = {}
+    dictionary_data = {}
 
     if os.path.exists( file_path ):
         error = None
@@ -197,7 +189,7 @@ def load_data_file(file_path, wait_on_error=True):
     else:
         print( "[2_bootstrap.py] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
 
-    return channel_dictionary
+    return dictionary_data
 
 
 def _background_bootstrap(settings):
@@ -292,34 +284,20 @@ def _background_bootstrap(settings):
 
 
         def plugin_loaded():
-            is_installation_complete = True
-
-            # When this `channel_installer` is running, stop it from trying to uninstall Package Control,
-            # while Package Control still installing things
-            try:
-                import channel_manager
-
-                # Only enters in action when the installers are not running
-                is_installation_complete = not channel_manager.channel_installer.g_is_running
-
-            except( ImportError, AttributeError ):
-                pass
-
-            if is_installation_complete:
-                run_uninstallers( is_installation_complete )
+            run_uninstallers()
 
 
-        def run_uninstallers(is_installation_complete):
+        def run_uninstallers():
             CURRENT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
             CURRENT_FILE      = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
 
             uninstall_package_control()
 
             if found:
-                remove_the_evel( is_installation_complete, CURRENT_DIRECTORY, "0_package_control_loader" )
+                remove_the_evel( CURRENT_DIRECTORY, "0_package_control_loader" )
 
             else:
-                remove_the_evel( is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE )
+                remove_the_evel( CURRENT_DIRECTORY, CURRENT_FILE )
 
 
         def uninstall_package_control():
@@ -347,7 +325,7 @@ def _background_bootstrap(settings):
                 package_manager.remove_package( package_control_name, False )
 
 
-        def remove_the_evel(is_installation_complete, CURRENT_DIRECTORY, CURRENT_FILE):
+        def remove_the_evel(CURRENT_DIRECTORY, CURRENT_FILE):
             _packagesmanager_loader_path = os.path.join( os.path.dirname( CURRENT_DIRECTORY ), CURRENT_FILE + ".sublime-package" )
 
             if os.path.exists( _packagesmanager_loader_path ):
@@ -355,7 +333,6 @@ def _background_bootstrap(settings):
                 print( "[00-packagesmanager.py] CURRENT_DIRECTORY:        " + CURRENT_DIRECTORY )
                 print( "[00-packagesmanager.py] get_main_directory:       " + get_main_directory( CURRENT_DIRECTORY ) )
                 print( "[00-packagesmanager.py] Removing loader:          " + _packagesmanager_loader_path )
-                print( "[00-packagesmanager.py] is_installation_complete: " + is_installation_complete )
 
                 try:
                     from PackagesManager.packagesmanager.package_disabler import PackageDisabler
