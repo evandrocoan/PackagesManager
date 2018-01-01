@@ -231,19 +231,19 @@ def plugin_loaded():
             "Installed Packages", "%s.sublime-settings" % g_packages_loader_name )
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
-    configure_package_control_uninstaller()
+    threading.Thread(target=configure_package_control_uninstaller).start()
 
 
 def configure_package_control_uninstaller():
     clean_package_control_settings()
-
     set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
-    add_packagesmanager_on_change( g_package_control_name, uninstall_package_control )
 
     if os.path.exists( g_package_control_loader_file ) \
             or os.path.exists( g_package_control_loader_file + "-new" ):
 
         uninstall_package_control()
+
+    add_packagesmanager_on_change( g_package_control_name, uninstall_package_control )
 
 
 def uninstall_package_control():
@@ -260,11 +260,35 @@ def uninstall_package_control():
     print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
 
     package_disabler = PackageDisabler()
-    setup_packages_ignored_list( package_disabler, [g_package_control_name, g_packages_loader_name] )
+    callback = lambda: setup_packages_ignored_list( package_disabler, [g_package_control_name, g_packages_loader_name] )
+
+    # Keeps it running continually because something is setting it back, enabling Package Control again
+    helperThread = threading.Thread( target=callback ).start()
+
+    settings_name = "Preferences.sublime-settings"
+    user_settings = sublime.load_settings( settings_name )
+
+    # Wait some time until `Package Control` finally get ignored
+    for interval in range( 0, 100 ):
+        currently_ignored = user_settings.get( "ignored_packages", [] )
+
+        safe_remove( g_package_control_file )
+        safe_remove( g_package_control_loader_file )
+        safe_remove( g_package_control_loader_file + "-new" )
+
+        if currently_ignored \
+                and g_package_control_name in currently_ignored:
+            break
+
+        if not os.path.exists( g_package_control_loader_file ) \
+                and not os.path.exists( g_package_control_file ):
+            break
+
+        time.sleep( 0.1 )
 
     time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
-
     package_manager = PackageManager()
+
     package_manager.remove_package( g_package_control_name, False )
     package_manager.remove_package( g_packages_loader_name, False )
 
@@ -287,10 +311,10 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
     user_settings     = sublime.load_settings( settings_name )
     currently_ignored = user_settings.get( "ignored_packages", [] )
 
-    print( "[2_bootstrap.py] Currently ignored packages: " + str( currently_ignored ) )
     packages_to_add.sort()
     packages_to_remove.sort()
 
+    print( "[2_bootstrap.py] Currently ignored packages: " + str( currently_ignored ) )
     print( "[2_bootstrap.py] Ignoring the packages:      " + str( packages_to_add ) )
     print( "[2_bootstrap.py] Unignoring the packages:    " + str( packages_to_remove ) )
 
@@ -303,32 +327,24 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
     # This adds them to the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_add ):
         package_disabler.disable_packages( packages_to_add, ignoring_type )
-        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+        time.sleep( 0.1 )
 
     # This should remove them from the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_remove ):
         package_disabler.reenable_package( packages_to_remove, ignoring_type )
-        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+        time.sleep( 0.1 )
 
     # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
     # ensure we override this.
-    for interval in range( 0, 27 ):
+    for interval in range( 0, 100 ):
         user_settings.set( "ignored_packages", currently_ignored )
         sublime.save_settings( settings_name )
 
-        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+        if not os.path.exists( g_package_control_loader_file ) \
+                and not os.path.exists( g_package_control_file ):
+            break
 
-        new_ignored_list = user_settings.get( "ignored_packages", [] )
-        print( "[2_bootstrap.py] Currently ignored packages: " + str( new_ignored_list ) )
-
-        if new_ignored_list:
-
-            if len( new_ignored_list ) == len( currently_ignored ) \
-                    and new_ignored_list == currently_ignored:
-
-                break
-
-    sublime.save_settings( settings_name )
+        time.sleep( 0.1 )
 
 
 def unique_list_append(a_list, *lists):
@@ -348,8 +364,8 @@ def safe_remove(absolute_path):
         try:
             delete_read_only_file( absolute_path )
 
-        except Exception as error:
-            print( "[00-packagesmanager.py] Failed to remove `%s`. Error is: %s" % ( absolute_path, error) )
+        except Exception:
+            pass
 
 
 def delete_read_only_file(absolute_path):
