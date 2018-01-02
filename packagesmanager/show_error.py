@@ -74,12 +74,13 @@ def _restart_error_messages():
 
 def silence_error_message_box(how_many_seconds=60.0):
     global last_time
+    global accumulated_time
+
     global is_error_recentely_displayed
     console_write( "Silencing Error Messages Boxes for %s seconds... Accumulated time: %s" % ( str( how_many_seconds ), str( accumulated_time ) ) )
 
     # Enable the message dialog after x.x seconds
     if is_error_recentely_displayed:
-        global accumulated_time
         accumulated_time += ( time.time() - last_time )
 
     else:
