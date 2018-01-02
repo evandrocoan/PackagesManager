@@ -712,9 +712,8 @@ class PackageManager():
         if not list_everything:
             packages -= set(self.list_default_packages())
             packages -= set(self.list_dependencies())
-            packages -= set(['Default'])
+            packages -= set(['Default','User'])
 
-        packages -= set(['User'])
         return sorted(packages, key=lambda s: s.lower())
 
     def list_dependencies(self):
