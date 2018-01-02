@@ -364,8 +364,21 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
         user_settings.set( "ignored_packages", currently_ignored )
         sublime.save_settings( settings_name )
 
-        if not is_package_control_installed():
-            break
+        if len( packages_to_add ):
+
+            if not is_package_control_installed():
+                break
+
+        if len( packages_to_remove ):
+            new_ignored_list = user_settings.get( "ignored_packages", [] )
+            print( "[2_bootstrap.py] Currently ignored packages: " + str( new_ignored_list ) )
+
+            if new_ignored_list:
+
+                if len( new_ignored_list ) == len( currently_ignored ) \
+                        and new_ignored_list == currently_ignored:
+
+                    break
 
         time.sleep( 0.1 )
 
