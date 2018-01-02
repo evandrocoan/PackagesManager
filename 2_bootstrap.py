@@ -310,14 +310,14 @@ def uninstall_package_control():
 
     print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
-    try:
+    package_disabler   = PackageDisabler()
+    packages_to_ignore = [g_package_control_name, g_packages_loader_name]
+
+    def _uninstall_package_control():
+        silence_error_message_box( 63.0 )
         disable_package_control_uninstaller()
 
-        package_disabler = PackageDisabler()
-        silence_error_message_box( 63.0 )
-
         # Keeps it running continually because something is setting it back, enabling Package Control again
-        packages_to_ignore = [g_package_control_name, g_packages_loader_name]
         setup_packages_ignored_list( package_disabler, packages_to_ignore )
 
         # Wait some time until `Package Control` finally get ignored
@@ -337,17 +337,21 @@ def uninstall_package_control():
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
 
+    try:
+        _uninstall_package_control()
+
+    except:
+        setup_all_settings()
+        _uninstall_package_control()
+
     finally:
+        setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
 
-        try:
-            setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
+        add_package_control_on_change( uninstall_package_control )
+        clean_package_control_settings()
 
-        finally:
-            add_package_control_on_change( uninstall_package_control )
-            clean_package_control_settings()
-
-            global g_is_running
-            g_is_running = False
+        global g_is_running
+        g_is_running = False
 
 
 def setup_all_settings():
@@ -496,32 +500,39 @@ def _delete_read_only_file(action, name, exc):
     os.remove( name )
 
 
-def clean_package_control_settings():
+def clean_package_control_settings(is_already_called=False):
     """
         Clean it a few times because Package Control is kinda running and still flushing stuff down
         to its settings file.
     """
-    setup_all_settings()
 
-    flush_settings = False
-    package_control_settings = load_data_file( g_package_control_setting_file )
+    def _clean_package_control_settings():
+        flush_settings = False
+        package_control_settings = load_data_file( g_package_control_setting_file )
 
-    if 'bootstrapped' not in package_control_settings:
-        flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+        if 'bootstrapped' not in package_control_settings:
+            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
 
-    elif package_control_settings['bootstrapped']:
-        flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+        elif package_control_settings['bootstrapped']:
+            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
 
-    if 'remove_orphaned' not in package_control_settings:
-        flush_settings = ensure_not_removed_orphaned( package_control_settings )
+        if 'remove_orphaned' not in package_control_settings:
+            flush_settings = ensure_not_removed_orphaned( package_control_settings )
 
-    elif package_control_settings['remove_orphaned']:
-        flush_settings = ensure_not_removed_orphaned( package_control_settings )
+        elif package_control_settings['remove_orphaned']:
+            flush_settings = ensure_not_removed_orphaned( package_control_settings )
 
-    # Avoid infinity loop of writing to the settings file
-    if flush_settings:
-        package_control_settings = sort_dictionary( package_control_settings )
-        write_data_file( g_package_control_setting_file, package_control_settings )
+        # Avoid infinity loop of writing to the settings file
+        if flush_settings:
+            package_control_settings = sort_dictionary( package_control_settings )
+            write_data_file( g_package_control_setting_file, package_control_settings )
+
+    try:
+        _clean_package_control_settings()
+
+    except:
+        setup_all_settings()
+        _clean_package_control_settings()
 
 
 def ensure_not_removed_bootstrapped(package_control_settings):
