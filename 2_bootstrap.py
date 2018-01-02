@@ -13,12 +13,11 @@ import sublime_plugin
 
 CURRENT_DIRECTORY    = os.path.dirname( os.path.realpath( __file__ ) )
 CURRENT_PACKAGE_NAME = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+dummy_record_setting = "not_your_business"
 
-g_package_control_name  = "Package Control"
-g_packages_loader_name  = "0_package_control_loader"
-g_sublime_settings_name = "Preferences"
-
-g_settings_files = [g_package_control_name, g_sublime_settings_name]
+g_package_control_name = "Package Control"
+g_packages_loader_name = "0_package_control_loader"
+g_sublime_setting_name = "Preferences"
 
 g_is_running = False
 IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
@@ -222,12 +221,12 @@ def plugin_unloaded():
 def plugin_loaded():
     main_directory = get_main_directory( CURRENT_DIRECTORY )
 
-    global g_sublime_settings_file
+    global g_sublime_setting_file
     global g_package_control_directory
 
-    global g_package_control_file
+    global g_package_control_package
     global g_package_control_loader_file
-    global g_package_control_settings_file
+    global g_package_control_setting_file
 
     manager  = PackageManager()
     settings = manager.settings.copy()
@@ -235,17 +234,23 @@ def plugin_loaded():
     g_package_control_directory = os.path.join( main_directory,
             "Packages", g_package_control_name )
 
-    g_sublime_settings_file = os.path.join( main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_sublime_settings_name )
+    g_sublime_setting_file = os.path.join( main_directory,
+            "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
 
-    g_package_control_settings_file = os.path.join( main_directory,
+    g_package_control_setting_file = os.path.join( main_directory,
             "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
-    g_package_control_file = os.path.join( main_directory,
+    g_package_control_package = os.path.join( main_directory,
             "Installed Packages", "%s.sublime-package" % g_package_control_name )
 
     g_package_control_loader_file = os.path.join( main_directory,
             "Installed Packages", "%s.sublime-package" % g_packages_loader_name )
+
+    global g_settings_names
+    global g_settings_files
+
+    g_settings_names = [g_package_control_name, g_sublime_setting_name]
+    g_settings_files = [g_package_control_setting_file, g_sublime_setting_file]
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     threading.Thread(target=configure_package_control_uninstaller).start()
@@ -253,7 +258,7 @@ def plugin_loaded():
 
 def is_package_control_installed():
     return os.path.exists( g_package_control_loader_file ) \
-            or os.path.exists( g_package_control_file ) \
+            or os.path.exists( g_package_control_package ) \
             or os.path.exists( g_package_control_directory )
 
 
@@ -262,13 +267,15 @@ def configure_package_control_uninstaller():
     add_package_control_on_change( uninstall_package_control )
 
     # print( " is_package_control_installed()   " + str( is_package_control_installed() ) )
-    # print( " g_package_control_file:          " + str( g_package_control_file ) )
+    # print( " g_package_control_package:          " + str( g_package_control_package ) )
     # print( " g_package_control_directory:     " + str( g_package_control_directory ) )
     # print( " g_package_control_loader_file:   " + str( g_package_control_loader_file ) )
-    # print( " g_package_control_settings_file: " + str( g_package_control_settings_file ) )
+    # print( " g_package_control_setting_file: " + str( g_package_control_setting_file ) )
 
     if is_package_control_installed():
         uninstall_package_control()
+
+    clean_up_sublime_settings()
 
 
 def is_allowed_to_run():
@@ -315,7 +322,7 @@ def uninstall_package_control():
 
         # Wait some time until `Package Control` finally get ignored
         for interval in range( 0, 10 ):
-            safe_remove( g_package_control_file )
+            safe_remove( g_package_control_package )
             safe_remove( g_package_control_loader_file )
             safe_remove( g_package_control_loader_file + "-new" )
             time.sleep( 0.1 )
@@ -326,7 +333,7 @@ def uninstall_package_control():
         package_manager.remove_package( g_package_control_name, False )
         package_manager.remove_package( g_packages_loader_name, False )
 
-        safe_remove( g_package_control_file )
+        safe_remove( g_package_control_package )
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
 
@@ -345,33 +352,51 @@ def uninstall_package_control():
 
 def setup_all_settings():
 
-    for setting_file in g_settings_files:
-        setup_sublime_settings( setting_file + ".sublime-settings" )
+    for setting_name in g_settings_names:
+        setup_sublime_settings( setting_name + ".sublime-settings" )
 
 
-def setup_sublime_settings(settings_name):
+def setup_sublime_settings(setting_file_name):
     """
         Removes trailing commas and comments from the settings file, allowing it to be loaded by
         json parser.
     """
 
     for index in range( 0, 10 ):
-        sublime_settings = sublime.load_settings( settings_name )
-        sublime_settings.set( "not_your_business", index )
-        sublime.save_settings( settings_name )
+        sublime_setting = sublime.load_settings( setting_file_name )
+        sublime_setting.set( dummy_record_setting, index )
+
+        sublime.save_settings( setting_file_name )
         time.sleep( 0.1 )
 
 
+def clean_up_sublime_settings():
+    """
+        Removes the dummy setting added by setup_sublime_settings().
+    """
+
+    for setting_file in g_settings_files:
+
+        for index in range( 0, 3 ):
+            sublime_setting = load_data_file( setting_file )
+
+            if dummy_record_setting in sublime_setting:
+                del sublime_setting[dummy_record_setting]
+
+                write_data_file( setting_file, sublime_setting )
+                time.sleep( 0.1 )
+
+
 def get_ignored_packages():
-    sublime_settings = load_data_file( g_sublime_settings_file )
-    return get_dictionary_key( sublime_settings, "ignored_packages", [] )
+    sublime_setting = load_data_file( g_sublime_setting_file )
+    return get_dictionary_key( sublime_setting, "ignored_packages", [] )
 
 
 def set_ignored_packages(ignored_packages):
-    sublime_settings = load_data_file( g_sublime_settings_file )
+    sublime_setting = load_data_file( g_sublime_setting_file )
 
-    sublime_settings["ignored_packages"] = ignored_packages
-    write_data_file( g_sublime_settings_file, OrderedDict( sorted( sublime_settings.items() ) ) )
+    sublime_setting["ignored_packages"] = ignored_packages
+    write_data_file( g_sublime_setting_file, OrderedDict( sorted( sublime_setting.items() ) ) )
 
 
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
@@ -468,7 +493,7 @@ def clean_package_control_settings():
     setup_all_settings()
 
     flush_settings = False
-    package_control_settings = load_data_file( g_package_control_settings_file )
+    package_control_settings = load_data_file( g_package_control_setting_file )
 
     if 'bootstrapped' not in package_control_settings:
         flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
@@ -484,7 +509,7 @@ def clean_package_control_settings():
 
     # Avoid infinity loop of writing to the settings file
     if flush_settings:
-        write_data_file( g_package_control_settings_file, OrderedDict( sorted( package_control_settings.items() ) ) )
+        write_data_file( g_package_control_setting_file, OrderedDict( sorted( package_control_settings.items() ) ) )
 
 
 def ensure_not_removed_bootstrapped(package_control_settings):
