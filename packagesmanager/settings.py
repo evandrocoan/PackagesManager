@@ -7,7 +7,8 @@ except (NameError):
 
 # Globally used to count how many dependencies are found installed
 g_dependencies_installed = 0
-
+g_packagesmanger_name = "PackagesManager"
+g_package_control_name = "Package Control"
 
 def increment_dependencies_installed():
     global g_dependencies_installed
@@ -18,16 +19,12 @@ def get_dependencies_installed():
     return g_dependencies_installed
 
 
-def set_sublime_settings(settings):
-    global g_packagesmanger_settings
-    g_packagesmanger_settings = settings
+def get_package_control_sublime_settings():
+    return sublime.load_settings( "%s.sublime-settings" % g_package_control_name )
 
 
-def add_packagesmanager_on_change(key_name, callback):
-    global g_packagesmanger_name
-    g_packagesmanger_name = key_name
-
-    g_packagesmanger_settings.add_on_change( key_name, callback )
+def add_package_control_on_change(callback):
+    get_package_control_sublime_settings().add_on_change( g_package_control_name, callback )
 
 
 def disable_package_control_uninstaller():
@@ -35,7 +32,7 @@ def disable_package_control_uninstaller():
         This is required to be called when uninstalling PackagesManager, otherwise we could never
         install Package Control just before uninstalling PackagesManager.
     """
-    g_packagesmanger_settings.clear_on_change( g_packagesmanger_name )
+    get_package_control_sublime_settings().clear_on_change( g_package_control_name )
 
 
 def preferences_filename():
