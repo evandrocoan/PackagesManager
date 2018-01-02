@@ -383,8 +383,14 @@ def clean_up_sublime_settings():
             if dummy_record_setting in sublime_setting:
                 del sublime_setting[dummy_record_setting]
 
+                sublime_setting = sort_dictionary( sublime_setting )
                 write_data_file( setting_file, sublime_setting )
+
                 time.sleep( 0.1 )
+
+
+def sort_dictionary(dictionary):
+    return OrderedDict( sorted( dictionary.items() ) )
 
 
 def get_ignored_packages():
@@ -393,10 +399,15 @@ def get_ignored_packages():
 
 
 def set_ignored_packages(ignored_packages):
-    sublime_setting = load_data_file( g_sublime_setting_file )
 
+    if ignored_packages:
+        ignored_packages.sort()
+
+    sublime_setting = load_data_file( g_sublime_setting_file )
     sublime_setting["ignored_packages"] = ignored_packages
-    write_data_file( g_sublime_setting_file, OrderedDict( sorted( sublime_setting.items() ) ) )
+
+    sublime_setting = sort_dictionary( sublime_setting )
+    write_data_file( g_sublime_setting_file, sublime_setting )
 
 
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
@@ -509,7 +520,8 @@ def clean_package_control_settings():
 
     # Avoid infinity loop of writing to the settings file
     if flush_settings:
-        write_data_file( g_package_control_setting_file, OrderedDict( sorted( package_control_settings.items() ) ) )
+        package_control_settings = sort_dictionary( package_control_settings )
+        write_data_file( g_package_control_setting_file, package_control_settings )
 
 
 def ensure_not_removed_bootstrapped(package_control_settings):
@@ -561,8 +573,8 @@ def get_dictionary_key(dictionary, key, default=None):
 def write_data_file(file_path, dictionary_data):
     # print( "[2_bootstrap.py] Writing to the data file: " + file_path )
 
-    with open(file_path, 'w', encoding='utf-8') as output_file:
-        json.dump( dictionary_data, output_file, indent=4 )
+    with open( file_path, 'w', newline='\n', encoding='utf-8' ) as output_file:
+        json.dump( dictionary_data, output_file, indent=4, separators=(',', ': ') )
 
 
 def load_data_file(file_path, wait_on_error=True):
@@ -580,7 +592,7 @@ def load_data_file(file_path, wait_on_error=True):
 
             try:
                 with open( file_path, 'r', encoding='utf-8' ) as studio_channel_data:
-                    return json.load( studio_channel_data )
+                    return json.load( studio_channel_data, object_pairs_hook=OrderedDict )
 
             except ValueError as error:
                 print( "[2_bootstrap.py] Error, maximum_attempts %d, load_data_file: %s" % ( maximum_attempts, error ) )
