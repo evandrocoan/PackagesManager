@@ -259,6 +259,7 @@ def is_package_control_installed():
 
 def configure_package_control_uninstaller():
     clean_package_control_settings()
+    add_package_control_on_change( uninstall_package_control )
 
     # print( " is_package_control_installed()   " + str( is_package_control_installed() ) )
     # print( " g_package_control_file:          " + str( g_package_control_file ) )
@@ -268,9 +269,6 @@ def configure_package_control_uninstaller():
 
     if is_package_control_installed():
         uninstall_package_control()
-
-    else:
-        add_package_control_on_change( uninstall_package_control )
 
 
 def is_allowed_to_run():
@@ -287,7 +285,7 @@ def is_allowed_to_run():
 def uninstall_package_control():
 
     if not is_package_control_installed():
-        print( "[2_bootstrap.py] uninstall_package_control, is_package_control_installed..." )
+        print( "[2_bootstrap.py] uninstall_package_control, is_package_control_installed: False" )
         return
 
     try:
@@ -295,24 +293,21 @@ def uninstall_package_control():
         from PackagesManager.packagesmanager.package_manager import PackageManager
         from PackagesManager.packagesmanager.package_disabler import PackageDisabler
 
-    except ImportError:
-        print( "[2_bootstrap.py] uninstall_package_control, ImportError..." )
+    except ImportError as error:
+        print( "[2_bootstrap.py] uninstall_package_control, ImportError: %s" % error )
         return
 
     if not is_allowed_to_run():
-        print( "[2_bootstrap.py] uninstall_package_control, is_allowed_to_run()..." )
+        print( "[2_bootstrap.py] uninstall_package_control, is_allowed_to_run: False" )
         return
 
-    print( "[2_bootstrap.py] uninstall_package_control, running uninstall_package_control..." )
+    print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
     try:
         disable_package_control_uninstaller()
 
-        setup_all_settings()
-        silence_error_message_box( 63.0 )
-
         package_disabler = PackageDisabler()
-        print( "[2_bootstrap.py] uninstall_package_control, uninstalling %s..." % g_package_control_name )
+        silence_error_message_box( 63.0 )
 
         # Keeps it running continually because something is setting it back, enabling Package Control again
         packages_to_ignore = [g_package_control_name, g_packages_loader_name]
