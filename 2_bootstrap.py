@@ -40,7 +40,7 @@ if sys.version_info < (3,):
     from packagesmanager import loader, text, sys_path
 
 else:
-    from .packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change
+    from .packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change, disable_package_control_uninstaller
     from .packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
     from .packagesmanager.package_manager import PackageManager
     from .packagesmanager import loader, text, sys_path
@@ -226,17 +226,19 @@ def plugin_loaded():
     manager  = PackageManager()
     settings = manager.settings.copy()
 
+    g_package_control_directory = os.path.join( main_directory,
+            "Packages", g_package_control_name )
+
     g_package_control_settings_file = os.path.join( main_directory,
             "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
     g_package_control_file = os.path.join( main_directory,
-            "Installed Packages", "%s.sublime-settings" % g_package_control_name )
-
-    g_package_control_directory = os.path.join( main_directory,
-            "Packages", g_package_control_name )
+            "Installed Packages", "%s.sublime-package" % g_package_control_name )
 
     g_package_control_loader_file = os.path.join( main_directory,
-            "Installed Packages", "%s.sublime-settings" % g_packages_loader_name )
+            "Installed Packages", "%s.sublime-package" % g_packages_loader_name )
+
+    set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     threading.Thread(target=configure_package_control_uninstaller).start()
@@ -250,11 +252,14 @@ def is_package_control_installed():
 
 def configure_package_control_uninstaller():
     clean_package_control_settings()
-    set_sublime_settings( sublime.load_settings( "%s.sublime-settings" % g_package_control_name ) )
 
-    if os.path.exists( g_package_control_loader_file ) \
-            or os.path.exists( g_package_control_loader_file + "-new" ):
+    # print( " is_package_control_installed()   " + str( is_package_control_installed() ) )
+    # print( " g_package_control_file:          " + str( g_package_control_file ) )
+    # print( " g_package_control_directory:     " + str( g_package_control_directory ) )
+    # print( " g_package_control_loader_file:   " + str( g_package_control_loader_file ) )
+    # print( " g_package_control_settings_file: " + str( g_package_control_settings_file ) )
 
+    if is_package_control_installed():
         uninstall_package_control()
 
     add_packagesmanager_on_change( g_package_control_name, uninstall_package_control )
@@ -277,7 +282,9 @@ def uninstall_package_control():
     print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
 
     package_disabler = PackageDisabler()
-    callback = lambda: setup_packages_ignored_list( package_disabler, [g_package_control_name, g_packages_loader_name] )
+
+    packages_to_ignore = [g_package_control_name, g_packages_loader_name]
+    callback = lambda: setup_packages_ignored_list( package_disabler, packages_to_ignore )
 
     # Keeps it running continually because something is setting it back, enabling Package Control again
     helperThread = threading.Thread( target=callback ).start()
@@ -313,6 +320,7 @@ def uninstall_package_control():
     safe_remove( g_package_control_loader_file + "-new" )
 
     clean_package_control_settings()
+    setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
 
 
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):

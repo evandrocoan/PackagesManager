@@ -18,11 +18,6 @@ def get_dependencies_installed():
     return g_dependencies_installed
 
 
-# The `PackagesManager.sublime-settings` loaded by `sublime.load_settings`
-g_packagesmanger_settings = None
-g_packagesmanger_name = ""
-
-
 def set_sublime_settings(settings):
     global g_packagesmanger_settings
     g_packagesmanger_settings = settings
