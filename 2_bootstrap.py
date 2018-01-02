@@ -256,12 +256,6 @@ def plugin_loaded():
     threading.Thread(target=configure_package_control_uninstaller).start()
 
 
-def is_package_control_installed():
-    return os.path.exists( g_package_control_loader_file ) \
-            or os.path.exists( g_package_control_package ) \
-            or os.path.exists( g_package_control_directory )
-
-
 def configure_package_control_uninstaller():
     clean_package_control_settings()
     add_package_control_on_change( uninstall_package_control )
@@ -278,15 +272,23 @@ def configure_package_control_uninstaller():
     clean_up_sublime_settings()
 
 
-def is_allowed_to_run():
-    global g_is_running
+def clean_up_sublime_settings():
+    """
+        Removes the dummy setting added by setup_sublime_settings().
+    """
 
-    if g_is_running:
-        print( "[2_bootstrap.py] You are already running a command. Wait until it finishes or restart Sublime Text" )
-        return False
+    for setting_file in g_settings_files:
 
-    g_is_running = True
-    return True
+        for index in range( 0, 3 ):
+            sublime_setting = load_data_file( setting_file )
+
+            if dummy_record_setting in sublime_setting:
+                del sublime_setting[dummy_record_setting]
+
+                sublime_setting = sort_dictionary( sublime_setting )
+                write_data_file( setting_file, sublime_setting )
+
+                time.sleep( 0.1 )
 
 
 def uninstall_package_control():
@@ -354,64 +356,63 @@ def uninstall_package_control():
         g_is_running = False
 
 
-def setup_all_settings():
-
-    for setting_name in g_settings_names:
-        setup_sublime_settings( setting_name + ".sublime-settings" )
-
-
-def setup_sublime_settings(setting_file_name):
+def clean_package_control_settings(is_already_called=False):
     """
-        Removes trailing commas and comments from the settings file, allowing it to be loaded by
-        json parser.
+        Clean it a few times because Package Control is kinda running and still flushing stuff down
+        to its settings file.
     """
 
-    for index in range( 0, 10 ):
-        sublime_setting = sublime.load_settings( setting_file_name )
-        sublime_setting.set( dummy_record_setting, index )
+    def _clean_package_control_settings():
+        flush_settings = False
+        package_control_settings = load_data_file( g_package_control_setting_file )
 
-        sublime.save_settings( setting_file_name )
-        time.sleep( 0.1 )
+        if 'bootstrapped' not in package_control_settings:
+            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+
+        elif package_control_settings['bootstrapped']:
+            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+
+        if 'remove_orphaned' not in package_control_settings:
+            flush_settings = ensure_not_removed_orphaned( package_control_settings )
+
+        elif package_control_settings['remove_orphaned']:
+            flush_settings = ensure_not_removed_orphaned( package_control_settings )
+
+        # Avoid infinity loop of writing to the settings file
+        if flush_settings:
+            package_control_settings = sort_dictionary( package_control_settings )
+            write_data_file( g_package_control_setting_file, package_control_settings )
+
+    try:
+        _clean_package_control_settings()
+
+    except:
+        setup_all_settings()
+        _clean_package_control_settings()
 
 
-def clean_up_sublime_settings():
+def ensure_not_removed_bootstrapped(package_control_settings):
     """
-        Removes the dummy setting added by setup_sublime_settings().
+        Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
+        immediately.
     """
+    print( "[2_bootstrap.py] ensure_not_removed_bootstrapped, finishing Package Control Uninstallation, setting bootstrapped..." )
 
-    for setting_file in g_settings_files:
-
-        for index in range( 0, 3 ):
-            sublime_setting = load_data_file( setting_file )
-
-            if dummy_record_setting in sublime_setting:
-                del sublime_setting[dummy_record_setting]
-
-                sublime_setting = sort_dictionary( sublime_setting )
-                write_data_file( setting_file, sublime_setting )
-
-                time.sleep( 0.1 )
+    package_control_settings['bootstrapped']  = False
+    return True
 
 
-def sort_dictionary(dictionary):
-    return OrderedDict( sorted( dictionary.items() ) )
+def ensure_not_removed_orphaned(package_control_settings):
+    """
+        Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
+        restored later.
+    """
+    print( "[2_bootstrap.py] ensure_not_removed_orphaned, finishing Package Control Uninstallation, setting remove_orphaned..." )
 
+    package_control_settings['remove_orphaned'] = False
+    package_control_settings['remove_orphaned_backup'] = True
 
-def get_ignored_packages():
-    sublime_setting = load_data_file( g_sublime_setting_file )
-    return get_dictionary_key( sublime_setting, "ignored_packages", [] )
-
-
-def set_ignored_packages(ignored_packages):
-
-    if ignored_packages:
-        ignored_packages.sort()
-
-    sublime_setting = load_data_file( g_sublime_setting_file )
-    sublime_setting["ignored_packages"] = ignored_packages
-
-    sublime_setting = sort_dictionary( sublime_setting )
-    write_data_file( g_sublime_setting_file, sublime_setting )
+    return True
 
 
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
@@ -470,6 +471,64 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
                     break
 
 
+def setup_all_settings():
+
+    for setting_name in g_settings_names:
+        setup_sublime_settings( setting_name + ".sublime-settings" )
+
+
+def setup_sublime_settings(setting_file_name):
+    """
+        Removes trailing commas and comments from the settings file, allowing it to be loaded by
+        json parser.
+    """
+
+    for index in range( 0, 10 ):
+        sublime_setting = sublime.load_settings( setting_file_name )
+        sublime_setting.set( dummy_record_setting, index )
+
+        sublime.save_settings( setting_file_name )
+        time.sleep( 0.1 )
+
+
+def is_package_control_installed():
+    return os.path.exists( g_package_control_loader_file ) \
+            or os.path.exists( g_package_control_package ) \
+            or os.path.exists( g_package_control_directory )
+
+
+def sort_dictionary(dictionary):
+    return OrderedDict( sorted( dictionary.items() ) )
+
+
+def get_ignored_packages():
+    sublime_setting = load_data_file( g_sublime_setting_file )
+    return get_dictionary_key( sublime_setting, "ignored_packages", [] )
+
+
+def set_ignored_packages(ignored_packages):
+
+    if ignored_packages:
+        ignored_packages.sort()
+
+    sublime_setting = load_data_file( g_sublime_setting_file )
+    sublime_setting["ignored_packages"] = ignored_packages
+
+    sublime_setting = sort_dictionary( sublime_setting )
+    write_data_file( g_sublime_setting_file, sublime_setting )
+
+
+def is_allowed_to_run():
+    global g_is_running
+
+    if g_is_running:
+        print( "[2_bootstrap.py] You are already running a command. Wait until it finishes or restart Sublime Text" )
+        return False
+
+    g_is_running = True
+    return True
+
+
 def unique_list_append(a_list, *lists):
 
     for _list in lists:
@@ -498,65 +557,6 @@ def delete_read_only_file(absolute_path):
 def _delete_read_only_file(action, name, exc):
     os.chmod( name, stat.S_IWRITE )
     os.remove( name )
-
-
-def clean_package_control_settings(is_already_called=False):
-    """
-        Clean it a few times because Package Control is kinda running and still flushing stuff down
-        to its settings file.
-    """
-
-    def _clean_package_control_settings():
-        flush_settings = False
-        package_control_settings = load_data_file( g_package_control_setting_file )
-
-        if 'bootstrapped' not in package_control_settings:
-            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
-
-        elif package_control_settings['bootstrapped']:
-            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
-
-        if 'remove_orphaned' not in package_control_settings:
-            flush_settings = ensure_not_removed_orphaned( package_control_settings )
-
-        elif package_control_settings['remove_orphaned']:
-            flush_settings = ensure_not_removed_orphaned( package_control_settings )
-
-        # Avoid infinity loop of writing to the settings file
-        if flush_settings:
-            package_control_settings = sort_dictionary( package_control_settings )
-            write_data_file( g_package_control_setting_file, package_control_settings )
-
-    try:
-        _clean_package_control_settings()
-
-    except:
-        setup_all_settings()
-        _clean_package_control_settings()
-
-
-def ensure_not_removed_bootstrapped(package_control_settings):
-    """
-        Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
-        immediately.
-    """
-    print( "[2_bootstrap.py] ensure_not_removed_bootstrapped, finishing Package Control Uninstallation, setting bootstrapped..." )
-
-    package_control_settings['bootstrapped']  = False
-    return True
-
-
-def ensure_not_removed_orphaned(package_control_settings):
-    """
-        Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
-        restored later.
-    """
-    print( "[2_bootstrap.py] ensure_not_removed_orphaned, finishing Package Control Uninstallation, setting remove_orphaned..." )
-
-    package_control_settings['remove_orphaned'] = False
-    package_control_settings['remove_orphaned_backup'] = True
-
-    return True
 
 
 def get_main_directory(current_directory):
