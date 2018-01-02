@@ -279,9 +279,9 @@ def uninstall_package_control():
         return
 
     silence_error_message_box(63.0)
-    print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
-
     package_disabler = PackageDisabler()
+
+    print( "[2_bootstrap.py] Uninstalling %s..." % g_package_control_name )
 
     packages_to_ignore = [g_package_control_name, g_packages_loader_name]
     callback = lambda: setup_packages_ignored_list( package_disabler, packages_to_ignore )
@@ -289,12 +289,9 @@ def uninstall_package_control():
     # Keeps it running continually because something is setting it back, enabling Package Control again
     helperThread = threading.Thread( target=callback ).start()
 
-    settings_name = "Preferences.sublime-settings"
-    user_settings = sublime.load_settings( settings_name )
-
     # Wait some time until `Package Control` finally get ignored
     for interval in range( 0, 100 ):
-        currently_ignored = user_settings.get( "ignored_packages", [] )
+        currently_ignored = sublime_settings().get( "ignored_packages", [] )
 
         safe_remove( g_package_control_file )
         safe_remove( g_package_control_loader_file )
@@ -323,6 +320,16 @@ def uninstall_package_control():
     setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
 
 
+def sublime_settings():
+    settings_name = "Preferences.sublime-settings"
+    return sublime.load_settings( settings_name )
+
+
+def save_sublime_settings():
+    settings_name = "Preferences.sublime-settings"
+    sublime.save_settings( settings_name )
+
+
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
     """
         Flush just a few items each time. Let the packages be unloaded by Sublime Text while
@@ -331,9 +338,7 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
         Randomly reverting back the `ignored_packages` setting on batch operations
         https://github.com/SublimeTextIssues/Core/issues/2132
     """
-    settings_name     = "Preferences.sublime-settings"
-    user_settings     = sublime.load_settings( settings_name )
-    currently_ignored = user_settings.get( "ignored_packages", [] )
+    currently_ignored = sublime_settings().get( "ignored_packages", [] )
 
     packages_to_add.sort()
     packages_to_remove.sort()
@@ -361,8 +366,8 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
     # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
     # ensure we override this.
     for interval in range( 0, 100 ):
-        user_settings.set( "ignored_packages", currently_ignored )
-        sublime.save_settings( settings_name )
+        sublime_settings().set( "ignored_packages", currently_ignored )
+        save_sublime_settings()
 
         if len( packages_to_add ):
 
@@ -370,7 +375,7 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
                 break
 
         if len( packages_to_remove ):
-            new_ignored_list = user_settings.get( "ignored_packages", [] )
+            new_ignored_list = sublime_settings().get( "ignored_packages", [] )
             print( "[2_bootstrap.py] Currently ignored packages: " + str( new_ignored_list ) )
 
             if new_ignored_list:
