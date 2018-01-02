@@ -34,7 +34,7 @@ if sys.version_info < (3,):
         os.remove(installed_file)
 
 if sys.version_info < (3,):
-    from packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change
+    from packagesmanager.settings import set_sublime_settings, add_packagesmanager_on_change, disable_package_control_uninstaller
     from packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
     from packagesmanager.package_manager import PackageManager
     from packagesmanager import loader, text, sys_path
@@ -211,10 +211,15 @@ if sys.version_info < (3,):
     plugin_loaded()
 
 
+def plugin_unloaded():
+    disable_package_control_uninstaller()
+
+
 def plugin_loaded():
     main_directory = get_main_directory( CURRENT_DIRECTORY )
 
     global g_package_control_file
+    global g_package_control_directory
     global g_package_control_loader_file
     global g_package_control_settings_file
 
@@ -227,11 +232,20 @@ def plugin_loaded():
     g_package_control_file = os.path.join( main_directory,
             "Installed Packages", "%s.sublime-settings" % g_package_control_name )
 
+    g_package_control_directory = os.path.join( main_directory,
+            "Packages", g_package_control_name )
+
     g_package_control_loader_file = os.path.join( main_directory,
             "Installed Packages", "%s.sublime-settings" % g_packages_loader_name )
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     threading.Thread(target=configure_package_control_uninstaller).start()
+
+
+def is_package_control_installed():
+    return os.path.exists( g_package_control_loader_file ) \
+            or os.path.exists( g_package_control_file ) \
+            or os.path.exists( g_package_control_directory )
 
 
 def configure_package_control_uninstaller():
@@ -247,6 +261,9 @@ def configure_package_control_uninstaller():
 
 
 def uninstall_package_control():
+
+    if not is_package_control_installed():
+        return
 
     try:
         from PackagesManager.packagesmanager.show_error import silence_error_message_box
@@ -280,8 +297,7 @@ def uninstall_package_control():
                 and g_package_control_name in currently_ignored:
             break
 
-        if not os.path.exists( g_package_control_loader_file ) \
-                and not os.path.exists( g_package_control_file ):
+        if not is_package_control_installed():
             break
 
         time.sleep( 0.1 )
@@ -340,8 +356,7 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
         user_settings.set( "ignored_packages", currently_ignored )
         sublime.save_settings( settings_name )
 
-        if not os.path.exists( g_package_control_loader_file ) \
-                and not os.path.exists( g_package_control_file ):
+        if not is_package_control_installed():
             break
 
         time.sleep( 0.1 )
