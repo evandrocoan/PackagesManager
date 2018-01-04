@@ -91,6 +91,6 @@
     },
     {
         "caption": "PackagesManager: Tests",
-        "command": "packagesmanager_tests"
-    }
+        "command": "packages_manager_tests"
+    },
 ]
