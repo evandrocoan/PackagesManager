@@ -724,7 +724,7 @@ class PackageManager():
 
         # This is seeded since it is in a .sublime-package with ST3
         if sys.version_info >= (3,):
-            output.append('0_packagesmanager_loader')
+            output.append('0_packages_manager_loader')
 
         for name in self._list_visible_dirs(self.settings['packages_path']):
             if not self._is_dependency(name):
@@ -853,7 +853,7 @@ class PackageManager():
             A list of the dependencies required by the installed packages
         """
 
-        output = ['0_packagesmanager_loader']
+        output = ['0_packages_manager_loader']
 
         for package in self.list_packages(list_everything=True):
             if package == ignore_package:
@@ -1566,7 +1566,7 @@ class PackageManager():
         error = False
         for dependency in dependencies:
             # This is a per-machine dynamically created dependency, so we skip
-            if dependency == '0_packagesmanager_loader':
+            if dependency == '0_packages_manager_loader':
                 continue
 
             # Collect dependency information
@@ -2002,7 +2002,7 @@ class PackageManager():
 
         if not self.settings.get('submit_usage'):
             return
-        params['packagesmanager_version'] = \
+        params['packages_manager_version'] = \
             self.get_metadata('PackagesManager').get('version')
         params['sublime_platform'] = self.settings.get('platform')
         params['sublime_version'] = self.settings.get('version')

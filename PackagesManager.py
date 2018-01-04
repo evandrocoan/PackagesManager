@@ -7,7 +7,7 @@ st_version = 2 if sys.version_info < (3,) else 3
 
 
 if st_version == 3:
-    from .packagesmanager import text, sys_path
+    from .packages_manager import text, sys_path
 
     installed_dir, _ = __name__.split('.')
 
@@ -17,7 +17,7 @@ if st_version == 3:
     has_unpacked = os.path.exists(pc_python_path)
 
 elif st_version == 2:
-    from packagesmanager import text, sys_path
+    from packages_manager import text, sys_path
 
     installed_dir = os.path.basename(os.getcwd())
 
@@ -85,18 +85,18 @@ elif st_version == 3 and has_packed and has_unpacked:
 # Normal execution will finish setting up the package
 else:
     if st_version == 3:
-        from .packagesmanager.commands import *  # noqa
-        from .packagesmanager.package_cleanup import PackageCleanup
-        from .packagesmanager.unicode import tempfile_unicode_patch
-        from .packagesmanager.console_write import console_write
-        from .packagesmanager.settings import pc_settings_filename
+        from .packages_manager.commands import *  # noqa
+        from .packages_manager.package_cleanup import PackageCleanup
+        from .packages_manager.unicode import tempfile_unicode_patch
+        from .packages_manager.console_write import console_write
+        from .packages_manager.settings import pc_settings_filename
 
     else:
-        from packagesmanager.commands import *  # noqa
-        from packagesmanager.package_cleanup import PackageCleanup
-        from packagesmanager.unicode import tempfile_unicode_patch
-        from packagesmanager.console_write import console_write
-        from packagesmanager.settings import pc_settings_filename
+        from packages_manager.commands import *  # noqa
+        from packages_manager.package_cleanup import PackageCleanup
+        from packages_manager.unicode import tempfile_unicode_patch
+        from packages_manager.console_write import console_write
+        from packages_manager.settings import pc_settings_filename
 
     def plugin_loaded():
         # Make sure the user's locale can handle non-ASCII. A whole bunch of

@@ -12,7 +12,7 @@ try:
     import sublime
     ca_bundle_dir = None
 except (ImportError):
-    ca_bundle_dir = os.path.join(os.path.expanduser('~'), '.packagesmanager')
+    ca_bundle_dir = os.path.join(os.path.expanduser('~'), '.packages_manager')
 
 
 def get_ca_bundle_path(settings):
@@ -226,6 +226,6 @@ def ensure_ca_bundle_dir():
         try:
             os.mkdir(ca_bundle_dir)
         except PermissionError:
-            ca_bundle_dir = '/var/tmp/packagesmanager'
+            ca_bundle_dir = '/var/tmp/packages_manager'
             if not os.path.exists(ca_bundle_dir):
                  os.mkdir(ca_bundle_dir)

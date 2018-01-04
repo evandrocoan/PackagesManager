@@ -37,16 +37,16 @@ if sys.version_info < (3,):
         os.remove(installed_file)
 
 if sys.version_info < (3,):
-    from packagesmanager.settings import add_package_control_on_change, disable_package_control_uninstaller
-    from packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
-    from packagesmanager.package_manager import PackageManager
-    from packagesmanager import loader, text, sys_path
+    from packages_manager.settings import add_package_control_on_change, disable_package_control_uninstaller
+    from packages_manager.bootstrap import bootstrap_dependency, mark_bootstrapped
+    from packages_manager.package_manager import PackageManager
+    from packages_manager import loader, text, sys_path
 
 else:
-    from .packagesmanager.settings import add_package_control_on_change, disable_package_control_uninstaller
-    from .packagesmanager.bootstrap import bootstrap_dependency, mark_bootstrapped
-    from .packagesmanager.package_manager import PackageManager
-    from .packagesmanager import loader, text, sys_path
+    from .packages_manager.settings import add_package_control_on_change, disable_package_control_uninstaller
+    from .packages_manager.bootstrap import bootstrap_dependency, mark_bootstrapped
+    from .packages_manager.package_manager import PackageManager
+    from .packages_manager import loader, text, sys_path
 
 
 def _background_bootstrap(settings):
@@ -69,7 +69,7 @@ def _background_bootstrap(settings):
         import os
         from os.path import dirname
 
-        # This file adds the packagesmanager subdirectory of PackagesManager
+        # This file adds the packages_manager subdirectory of PackagesManager
         # to first in the sys.path so that all other packages may rely on
         # PC for utility functions, such as event helpers, adding things to
         # sys.path, downloading files from the internet, etc
@@ -130,7 +130,7 @@ def _background_bootstrap(settings):
                     pc_package_path = buf.value
 
             sys.path.insert(0, encode(pc_package_path))
-            import packagesmanager
+            import packages_manager
             # We remove the import path right away so as not to screw up
             # Sublime Text and its import machinery
             sys.path.remove(encode(pc_package_path))
@@ -140,7 +140,7 @@ def _background_bootstrap(settings):
     """
 
     base_loader_code = dedent(base_loader_code).lstrip()
-    loader.add_or_update('00', 'packagesmanager', base_loader_code)
+    loader.add_or_update('00', 'packages_manager', base_loader_code)
 
     # SSL support fo Linux
     if sublime.platform() == 'linux' and int(sublime.version()) < 3109:
@@ -298,9 +298,9 @@ def uninstall_package_control():
         return
 
     try:
-        from PackagesManager.packagesmanager.show_error import silence_error_message_box
-        from PackagesManager.packagesmanager.package_manager import PackageManager
-        from PackagesManager.packagesmanager.package_disabler import PackageDisabler
+        from PackagesManager.packages_manager.show_error import silence_error_message_box
+        from PackagesManager.packages_manager.package_manager import PackageManager
+        from PackagesManager.packages_manager.package_disabler import PackageDisabler
 
     except ImportError as error:
         print( "[2_bootstrap.py] uninstall_package_control, ImportError: %s" % error )

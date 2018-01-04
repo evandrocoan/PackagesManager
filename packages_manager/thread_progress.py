@@ -32,23 +32,23 @@ class ThreadProgress():
         active_view = self.window.active_view()
 
         if self.last_view is not None and active_view != self.last_view:
-            self.last_view.erase_status('_packagesmanager')
+            self.last_view.erase_status('_packages_manager')
             self.last_view = None
 
         if not self.thread.is_alive():
             def cleanup():
-                active_view.erase_status('_packagesmanager')
+                active_view.erase_status('_packages_manager')
             if hasattr(self.thread, 'result') and not self.thread.result:
                 cleanup()
                 return
-            active_view.set_status('_packagesmanager', self.success_message)
+            active_view.set_status('_packages_manager', self.success_message)
             sublime.set_timeout(cleanup, 1000)
             return
 
         before = i % self.size
         after = (self.size - 1) - before
 
-        active_view.set_status('_packagesmanager', '%s [%s=%s]' % (self.message, ' ' * before, ' ' * after))
+        active_view.set_status('_packages_manager', '%s [%s=%s]' % (self.message, ' ' * before, ' ' * after))
         if self.last_view is None:
             self.last_view = active_view
 

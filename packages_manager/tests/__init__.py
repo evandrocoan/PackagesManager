@@ -47,10 +47,10 @@ def runner(window, test_classes):
 
     output = StringQueue()
 
-    panel = window.get_output_panel('package_control_tests')
+    panel = window.get_output_panel('exec')
     panel.settings().set('word_wrap', True)
 
-    window.run_command('show_panel', {'panel': 'output.package_control_tests'})
+    window.run_command('show_panel', {'panel': 'output.exec'})
 
     threading.Thread(target=show_results, args=(panel, output)).start()
     threading.Thread(target=do_run, args=(test_classes, output)).start()
@@ -72,7 +72,7 @@ def do_run(test_classes, output):
 
 def show_results(panel, output):
     def write_to_panel(chars):
-        sublime.set_timeout(lambda: panel.run_command('package_control_insert', {'string': chars}), 10)
+        sublime.set_timeout(lambda: panel.run_command('packages_manager_insert', {'string': chars}), 10)
 
     write_to_panel(u'Running PackagesManager Tests\n\n')
 

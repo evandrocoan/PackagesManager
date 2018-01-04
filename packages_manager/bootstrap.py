@@ -7,12 +7,12 @@ try:
     from urlparse import urlparse
     str_cls = unicode  # noqa
     from cStringIO import StringIO as BytesIO
-    packagesmanager_dir = os.getcwd()
+    packages_manager_dir = os.getcwd()
 except (ImportError) as e:
     from urllib.parse import urlparse
     str_cls = str
     from io import BytesIO
-    packagesmanager_dir = path.dirname(path.dirname(__file__))
+    packages_manager_dir = path.dirname(path.dirname(__file__))
 
 import sublime
 

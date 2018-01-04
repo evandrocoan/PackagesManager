@@ -11,7 +11,7 @@ from ..package_manager import PackageManager
 from .existing_packages_command import ExistingPackagesCommand
 
 
-# print( "Reloading `PackagesManager\packagesmanager\commands\list_packages_command.py`" )
+# print( "Reloading `PackagesManager\packages_manager\commands\list_packages_command.py`" )
 
 class ListPackagesCommand(sublime_plugin.WindowCommand):
 

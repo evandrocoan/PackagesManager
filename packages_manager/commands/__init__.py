@@ -13,8 +13,8 @@ from .list_unmanaged_packages_command import ListUnmanagedPackagesCommand
 from .remove_package_command import RemovePackageCommand
 from .upgrade_all_packages_command import UpgradeAllPackagesCommand
 from .upgrade_package_command import UpgradePackageCommand
-from .packagesmanager_insert_command import PackagesManagerInsertCommand
-from .packagesmanager_tests_command import PackagesManagerTestsCommand
+from .packages_manager_insert_command import PackagesManagerInsertCommand
+from .packages_manager_tests_command import PackagesManagerTestsCommand
 from .remove_channel_command import RemoveChannelCommand
 from .remove_repository_command import RemoveRepositoryCommand
 from .satisfy_dependencies_command import SatisfyDependenciesCommand

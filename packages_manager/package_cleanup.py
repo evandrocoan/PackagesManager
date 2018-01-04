@@ -94,7 +94,7 @@ class PackageCleanup(threading.Thread):
                 package_name = file.replace('.sublime-package', '')
 
                 if package_name == loader.loader_package_name:
-                    # This got `0_packagesmanager_loader`, it seems to be scanning the `Installed Packages` folder
+                    # This got `0_packages_manager_loader`, it seems to be scanning the `Installed Packages` folder
                     # print( "package_cleanup.py, package_name: " + str( package_name ) )
                     found_dependencies.append(package_name)
                     continue
