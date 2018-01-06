@@ -11,8 +11,8 @@ import stat
 import sublime
 import sublime_plugin
 
-CURRENT_DIRECTORY    = os.path.dirname( os.path.realpath( __file__ ) )
-CURRENT_PACKAGE_NAME = os.path.basename( CURRENT_DIRECTORY ).rsplit('.', 1)[0]
+PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
+CURRENT_PACKAGE_NAME = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
 dummy_record_setting = "not_your_business"
 
 g_package_control_name = "Package Control"
@@ -219,7 +219,7 @@ def plugin_unloaded():
 
 
 def plugin_loaded():
-    main_directory = get_main_directory( CURRENT_DIRECTORY )
+    main_directory = get_main_directory( PACKAGE_ROOT_DIRECTORY )
 
     global g_sublime_setting_file
     global g_package_control_directory
