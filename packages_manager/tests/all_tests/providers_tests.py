@@ -1,11 +1,11 @@
 import unittest
 
-from ..providers.repository_provider import RepositoryProvider
-from ..providers.channel_provider import ChannelProvider
-from ..providers.github_repository_provider import GitHubRepositoryProvider
-from ..providers.github_user_provider import GitHubUserProvider
-from ..providers.bitbucket_repository_provider import BitBucketRepositoryProvider
-from ..http_cache import HttpCache
+from packages_manager.providers.repository_provider import RepositoryProvider
+from packages_manager.providers.channel_provider import ChannelProvider
+from packages_manager.providers.github_repository_provider import GitHubRepositoryProvider
+from packages_manager.providers.github_user_provider import GitHubUserProvider
+from packages_manager.providers.bitbucket_repository_provider import BitBucketRepositoryProvider
+from packages_manager.http_cache import HttpCache
 
 from . import LAST_COMMIT_TIMESTAMP, LAST_COMMIT_VERSION, CLIENT_ID, CLIENT_SECRET
 

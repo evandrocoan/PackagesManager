@@ -1,0 +1,11 @@
+{
+    "tests_dir" : "packages_manager/tests",
+    "pattern" : "*tests.py",
+    "async": false,
+    "deferred": true,
+    "verbosity": 1,
+    "capture_console": false,
+    "reload_package_on_testing": true,
+    "show_reload_progress": true,
+    "output": null
+}
