@@ -28,7 +28,7 @@ class GitHubClientTests(unittest.TestCase):
         self.assertEqual(
             {
                 'name': 'package_control-tester',
-                'description': 'A test of PackagesManager upgrade messages with '
+                'description': 'A test of Package Control upgrade messages with '
                                'explicit versions, but date-based releases.',
                 'homepage': 'https://github.com/packagecontrol-test/package_control-tester',
                 'author': 'packagecontrol-test',
@@ -46,7 +46,7 @@ class GitHubClientTests(unittest.TestCase):
         self.assertEqual(
             [{
                 'name': 'package_control-tester',
-                'description': 'A test of PackagesManager upgrade messages with '
+                'description': 'A test of Package Control upgrade messages with '
                                'explicit versions, but date-based releases.',
                 'homepage': 'https://github.com/packagecontrol-test/package_control-tester',
                 'author': 'packagecontrol-test',
@@ -63,8 +63,8 @@ class GitHubClientTests(unittest.TestCase):
         self.assertEqual(
             {
                 'filename': 'readme.md',
-                'contents': '# PackagesManager Tester\n\nThis repo is used to test the '
-                            'various clients and providers that are part of\nPackagesManager.\n',
+                'contents': '# Package Control Tester\n\nThis repo is used to test the '
+                            'various clients and providers that are part of\nPackage Control.\n',
                 'format': 'markdown'
             },
             client.readme_info(
@@ -141,7 +141,7 @@ class BitBucketClientTests(unittest.TestCase):
         self.assertEqual(
             {
                 'name': 'package_control-tester',
-                'description': 'A test of PackagesManager upgrade messages with '
+                'description': 'A test of Package Control upgrade messages with '
                                'explicit versions, but date-based releases.',
                 'homepage': 'https://bitbucket.org/wbond/package_control-tester',
                 'author': 'wbond',
@@ -157,8 +157,8 @@ class BitBucketClientTests(unittest.TestCase):
         self.assertEqual(
             {
                 'filename': 'readme.md',
-                'contents': '# PackagesManager Tester\n\nThis repo is used to test the various '
-                            'clients and providers that are part of\nPackagesManager.\n',
+                'contents': '# Package Control Tester\n\nThis repo is used to test the various '
+                            'clients and providers that are part of\nPackage Control.\n',
                 'format': 'markdown'
             },
             client.readme_info('https://bitbucket.org/wbond/package_control-tester/raw/master/readme.md')

@@ -52,7 +52,7 @@ class GitHubRepositoryProviderTests(unittest.TestCase):
                 'package_control-tester',
                 {
                     'name': 'package_control-tester',
-                    'description': 'A test of PackagesManager upgrade messages with '
+                    'description': 'A test of Package Control upgrade messages with '
                                    'explicit versions, but date-based releases.',
                     'homepage': 'https://github.com/packagecontrol-test/package_control-tester',
                     'author': 'packagecontrol-test',
@@ -158,7 +158,7 @@ class GitHubUserProviderTests(unittest.TestCase):
                 'package_control-tester',
                 {
                     'name': 'package_control-tester',
-                    'description': 'A test of PackagesManager upgrade messages with '
+                    'description': 'A test of Package Control upgrade messages with '
                                    'explicit versions, but date-based releases.',
                     'homepage': 'https://github.com/packagecontrol-test/package_control-tester',
                     'author': 'packagecontrol-test',
@@ -241,7 +241,7 @@ class BitBucketRepositoryProviderTests(unittest.TestCase):
                 'package_control-tester',
                 {
                     'name': 'package_control-tester',
-                    'description': 'A test of PackagesManager upgrade messages with '
+                    'description': 'A test of Package Control upgrade messages with '
                                    'explicit versions, but date-based releases.',
                     'homepage': 'https://bitbucket.org/wbond/package_control-tester',
                     'author': 'wbond',
@@ -333,7 +333,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-1.0",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -397,7 +397,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-1.2",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -461,7 +461,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-2.0",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -534,7 +534,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-2.0-gh",
                     "author": "packagecontrol-test",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -602,7 +602,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-2.0-bb",
                     "author": "wbond",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://bitbucket.org/wbond/package_control-tester",
                     "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -664,7 +664,7 @@ class RepositoryProviderTests(unittest.TestCase):
                 {
                     "name": "package_control-tester-3.0.0",
                     "author": ["packagecontrol", "wbond"],
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -812,7 +812,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-gh-tags",
                         "author": "packagecontrol-test",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                         "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -869,7 +869,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-gh-tags_base",
                         "author": "packagecontrol",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                         "issues": None,
@@ -924,7 +924,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-gh-tags_prefix",
                         "author": "packagecontrol-test",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                         "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -957,7 +957,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-gh-branch",
                         "author": "packagecontrol-test",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                         "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1003,7 +1003,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-bb-tags",
                         "author": "wbond",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://bitbucket.org/wbond/package_control-tester",
                         "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1055,7 +1055,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-bb-tags_prefix",
                         "author": "wbond",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://bitbucket.org/wbond/package_control-tester",
                         "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1086,7 +1086,7 @@ class RepositoryProviderTests(unittest.TestCase):
                     {
                         "name": "package_control-tester-3.0.0-bb-branch",
                         "author": "wbond",
-                        "description": "A test of PackagesManager upgrade messages with "
+                        "description": "A test of Package Control upgrade messages with "
                                        "explicit versions, but date-based releases.",
                         "homepage": "https://bitbucket.org/wbond/package_control-tester",
                         "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1182,7 +1182,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-1.0": {
                     "name": "package_control-tester-1.0",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1229,7 +1229,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-1.2": {
                     "name": "package_control-tester-1.2",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1345,7 +1345,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-1.0": {
                     "name": "package_control-tester-1.0",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1392,7 +1392,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-1.2": {
                     "name": "package_control-tester-1.2",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1439,7 +1439,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-2.0": {
                     "name": "package_control-tester-2.0",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1494,7 +1494,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-2.0-gh": {
                     "name": "package_control-tester-2.0-gh",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1551,7 +1551,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-2.0-bb": {
                     "name": "package_control-tester-2.0-bb",
                     "author": "wbond",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://bitbucket.org/wbond/package_control-tester",
                     "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1664,7 +1664,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0": {
                     "name": "package_control-tester-3.0.0",
                     "author": ["packagecontrol", "wbond"],
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": None,
@@ -1720,7 +1720,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-gh-tags": {
                     "name": "package_control-tester-3.0.0-gh-tags",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1769,7 +1769,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-gh-tags_base": {
                     "name": "package_control-tester-3.0.0-gh-tags_base",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1818,7 +1818,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-gh-tags_prefix": {
                     "name": "package_control-tester-3.0.0-gh-tags_prefix",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1843,7 +1843,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-gh-branch": {
                     "name": "package_control-tester-3.0.0-gh-branch",
                     "author": "packagecontrol",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://github.com/packagecontrol-test/package_control-tester",
                     "issues": "https://github.com/packagecontrol-test/package_control-tester/issues",
@@ -1876,7 +1876,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-bb-tags": {
                     "name": "package_control-tester-3.0.0-bb-tags",
                     "author": "wbond",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://bitbucket.org/wbond/package_control-tester",
                     "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1921,7 +1921,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-bb-tags_prefix": {
                     "name": "package_control-tester-3.0.0-bb-tags_prefix",
                     "author": "wbond",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://bitbucket.org/wbond/package_control-tester",
                     "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
@@ -1944,7 +1944,7 @@ class ChannelProviderTests(unittest.TestCase):
                 "package_control-tester-3.0.0-bb-branch": {
                     "name": "package_control-tester-3.0.0-bb-branch",
                     "author": "wbond",
-                    "description": "A test of PackagesManager upgrade messages with "
+                    "description": "A test of Package Control upgrade messages with "
                                    "explicit versions, but date-based releases.",
                     "homepage": "https://bitbucket.org/wbond/package_control-tester",
                     "issues": "https://bitbucket.org/wbond/package_control-tester/issues",
