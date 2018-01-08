@@ -14,6 +14,7 @@ class GitHubClientTests(unittest.TestCase):
     def github_settings(self):
         return {
             'debug': True,
+            'user_agent': "Package Control %s",
             'cache': HttpCache(604800),
             'query_string_params': {
                 'api.github.com': {
