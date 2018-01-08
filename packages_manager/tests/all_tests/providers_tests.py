@@ -17,6 +17,7 @@ class GitHubRepositoryProviderTests(unittest.TestCase):
         return {
             'debug': True,
             'cache': HttpCache(604800),
+            'user_agent': "Package Control %s",
             'query_string_params': {
                 'api.github.com': {
                     'client_id': CLIENT_ID,
