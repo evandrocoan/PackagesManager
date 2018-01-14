@@ -4,6 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/PackagesManager?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PackagesManager/branch/master)
 [![codecov](https://codecov.io/gh/evandrocoan/PackagesManager/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/PackagesManager)
 [![Coverage Status](https://coveralls.io/repos/github/evandrocoan/PackagesManager/badge.svg?branch=master)](https://coveralls.io/github/evandrocoan/PackagesManager?branch=master)
+[![Latest Release](https://img.shields.io/github/tag/evandrocoan/PackagesManager.svg?label=version)](https://github.com/evandrocoan/PackagesManager/releases)
 <a href="https://packagecontrol.io/packages/Package Control"><img src="https://packagecontrol.herokuapp.com/downloads/Package Control.svg"></a>
 
 The [Sublime Text](http://www.sublimetext.com) package manager. Visit
