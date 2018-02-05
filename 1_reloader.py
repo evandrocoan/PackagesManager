@@ -19,7 +19,7 @@ if sys.version_info >= (3,):
     mod_prefix = 'PackagesManager.' + mod_prefix
     from imp import reload
 
-# When reloading the package, we also need to reload the base "packages_manager"
+# When reloading the package, we also need to reload the base "package_control"
 # module in ST3. This flag inidicates we should re-add the PC package path
 # to the beginning of sys.path before we try to reload.
 do_insert = False
@@ -59,7 +59,7 @@ if commands_name in sys.modules and sys.version_info >= (3,) and st_build < 3112
 # to understand.
 reload_mods = []
 for mod in sys.modules:
-    if mod[0:15] in set(['packages_manager', 'PackagesManager']) and sys.modules[mod] is not None:
+    if mod[0:15] in set(['package_control', 'PackagesManager']) and sys.modules[mod] is not None:
         reload_mods.append(mod)
 
 mods_load_order = [

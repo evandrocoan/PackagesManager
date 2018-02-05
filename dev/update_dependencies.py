@@ -70,7 +70,7 @@ REQUIRED_FROM_OSCRYPTO = [
     'version.py',
 ]
 
-deps_path = os.path.join(os.path.dirname(__file__), '..', 'packages_manager', 'deps')
+deps_path = os.path.join(os.path.dirname(__file__), '..', 'package_control', 'deps')
 
 asn1crypto_dst = os.path.join(deps_path, 'asn1crypto')
 oscrypto_dst = os.path.join(deps_path, 'oscrypto')

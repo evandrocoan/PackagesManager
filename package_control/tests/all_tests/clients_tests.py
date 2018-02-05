@@ -1,9 +1,9 @@
 import unittest
 
-from packages_manager.clients.readme_client import ReadmeClient
-from packages_manager.clients.github_client import GitHubClient
-from packages_manager.clients.bitbucket_client import BitBucketClient
-from packages_manager.http_cache import HttpCache
+from package_control.clients.readme_client import ReadmeClient
+from package_control.clients.github_client import GitHubClient
+from package_control.clients.bitbucket_client import BitBucketClient
+from package_control.http_cache import HttpCache
 
 from . import LAST_COMMIT_TIMESTAMP, LAST_COMMIT_VERSION, CLIENT_ID, CLIENT_SECRET
 

@@ -1,5 +1,5 @@
 {
-    "tests_dir" : "packages_manager/tests",
+    "tests_dir" : "package_control/tests",
     "pattern" : "*tests.py",
     "async": false,
     "deferred": true,

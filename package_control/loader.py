@@ -470,10 +470,10 @@ def _default_loader(name):
 
     code = """
         try:
-            from packages_manager import sys_path
+            from package_control import sys_path
 
         except ImportError:
-            from PackagesManager.packages_manager import sys_path
+            from PackagesManager.package_control import sys_path
 
         sys_path.add_dependency(%s)
     """ % repr(name)
