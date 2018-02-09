@@ -292,9 +292,8 @@ class PackageCleanup(threading.Thread):
                 continue
 
             metadata = self.manager.get_metadata(package)
-            if metadata:
-                if not self.is_compatible(metadata):
-                    invalid_packages.append(package)
+            if metadata and not self.is_compatible(metadata):
+                invalid_packages.append(package)
 
         # print( "package_cleanup.py, found_dependencies:     %d\n" % len( found_dependencies ) + str( found_dependencies ) )
 
@@ -302,7 +301,7 @@ class PackageCleanup(threading.Thread):
         for dependency in found_dependencies:
             metadata = self.manager.get_metadata(dependency, is_dependency=True)
             if metadata and not self.is_compatible(metadata):
-                invalid_dependencies.append(package)
+                invalid_dependencies.append(dependency)
 
         if invalid_packages or invalid_dependencies:
             def show_sync_error():
