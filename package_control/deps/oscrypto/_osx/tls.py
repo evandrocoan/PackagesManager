@@ -35,7 +35,7 @@ from .._ffi import (
 from .._types import type_name, str_cls, byte_cls, int_types
 from .._cipher_suites import CIPHER_SUITE_MAP
 from .util import rand_bytes
-from ..errors import TLSError
+from ..errors import TLSError, TLSDisconnectError, TLSGracefulDisconnectError
 from .._tls import (
     detect_client_auth_request,
     detect_other_protocol,
@@ -50,6 +50,7 @@ from .._tls import (
     raise_hostname,
     raise_no_issuer,
     raise_protocol_error,
+    raise_protocol_version,
     raise_revoked,
     raise_self_signed,
     raise_verification,
@@ -901,6 +902,9 @@ class TLSSocket(object):
             if handshake_result == SecurityConst.errSSLWeakPeerEphemeralDHKey:
                 raise_dh_params()
 
+            if handshake_result == SecurityConst.errSSLPeerProtocolVersion:
+                raise_protocol_version()
+
             if handshake_result in set([SecurityConst.errSSLRecordOverflow, SecurityConst.errSSLProtocol]):
                 self._server_hello += _read_remaining(self._socket)
                 raise_protocol_error(self._server_hello)
@@ -1002,6 +1006,8 @@ class TLSSocket(object):
         :raises:
             socket.socket - when a non-TLS socket error occurs
             oscrypto.errors.TLSError - when a TLS-related error occurs
+            oscrypto.errors.TLSDisconnectError - when the connection disconnects
+            oscrypto.errors.TLSGracefulDisconnectError - when the remote end gracefully closed the connection
             ValueError - when any of the parameters contain an invalid value
             TypeError - when any of the parameters are of the wrong type
             OSError - when an error is returned by the OS crypto library
@@ -1062,6 +1068,10 @@ class TLSSocket(object):
         if result and result not in set([SecurityConst.errSSLWouldBlock, SecurityConst.errSSLClosedGraceful]):
             handle_sec_error(result, TLSError)
 
+        if result and result == SecurityConst.errSSLClosedGraceful:
+            self._shutdown(False)
+            self._raise_closed()
+
         bytes_read = deref(processed_pointer)
         output = self._decrypted_bytes + bytes_from_buffer(read_buffer, bytes_read)
 
@@ -1095,7 +1105,9 @@ class TLSSocket(object):
 
         :param marker:
             A byte string or regex object from re.compile(). Used to determine
-            when to stop reading.
+            when to stop reading. Regex objects are more inefficient since
+            they must scan the entire byte string of read data each time data
+            is read off the socket.
 
         :return:
             A byte string of the data read, including the marker
@@ -1121,19 +1133,22 @@ class TLSSocket(object):
                 to_read = self._os_buffered_size() or 8192
                 chunk = self.read(to_read)
 
+            offset = len(output)
             output += chunk
 
             if is_regex:
-                match = marker.search(chunk)
+                match = marker.search(output)
                 if match is not None:
-                    offset = len(output) - len(chunk)
-                    end = offset + match.end()
+                    end = match.end()
                     break
             else:
-                match = chunk.find(marker)
+                # If the marker was not found last time, we have to start
+                # at a position where the marker would have its final char
+                # in the newly read chunk
+                start = max(0, offset - len(marker) - 1)
+                match = output.find(marker, start)
                 if match != -1:
-                    offset = len(output) - len(chunk)
-                    end = offset + match + len(marker)
+                    end = match + len(marker)
                     break
 
         self._decrypted_bytes = output[end:] + self._decrypted_bytes
@@ -1198,6 +1213,8 @@ class TLSSocket(object):
         :raises:
             socket.socket - when a non-TLS socket error occurs
             oscrypto.errors.TLSError - when a TLS-related error occurs
+            oscrypto.errors.TLSDisconnectError - when the connection disconnects
+            oscrypto.errors.TLSGracefulDisconnectError - when the remote end gracefully closed the connection
             ValueError - when any of the parameters contain an invalid value
             TypeError - when any of the parameters are of the wrong type
             OSError - when an error is returned by the OS crypto library
@@ -1245,9 +1262,12 @@ class TLSSocket(object):
         _, write_ready, _ = select.select([], [self._socket], [], timeout)
         return len(write_ready) > 0
 
-    def shutdown(self):
+    def _shutdown(self, manual):
         """
         Shuts down the TLS session and then shuts down the underlying socket
+
+        :param manual:
+            A boolean if the connection was manually shutdown
         """
 
         if self._session_context is None:
@@ -1265,12 +1285,20 @@ class TLSSocket(object):
 
         self._session_context = None
 
-        self._local_closed = True
+        if manual:
+            self._local_closed = True
 
         try:
             self._socket.shutdown(socket_.SHUT_RDWR)
         except (socket_.error):
             pass
+
+    def shutdown(self):
+        """
+        Shuts down the TLS session and then shuts down the underlying socket
+        """
+
+        self._shutdown(True)
 
     def close(self):
         """
@@ -1350,10 +1378,9 @@ class TLSSocket(object):
         """
 
         if self._local_closed:
-            message = 'The connection was already closed'
+            raise TLSDisconnectError('The connection was already closed')
         else:
-            message = 'The remote end closed the connection'
-        raise TLSError(message)
+            raise TLSGracefulDisconnectError('The remote end closed the connection')
 
     @property
     def certificate(self):
