@@ -12,8 +12,8 @@ import sublime
 import sublime_plugin
 
 PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
-CURRENT_PACKAGE_NAME = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
-dummy_record_setting = "not_your_business"
+CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
+dummy_record_setting   = "not_your_business"
 
 g_package_control_name = "Package Control"
 g_packages_loader_name = "0_package_control_loader"
