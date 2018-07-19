@@ -31,6 +31,9 @@ def console_write(string, params=None, strip=True, indent=None, prefix=True):
         If the string "PackagesManager: " should be prefixed to the string
     """
 
+    if not isinstance( params, (tuple, list) ):
+        params = (params)
+
     string = text.format(str_cls(string), params, strip=strip, indent=indent)
 
     if sys.version_info < (3,):
