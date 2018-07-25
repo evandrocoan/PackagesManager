@@ -597,7 +597,7 @@ def load_data_file(file_path, wait_on_error=True):
 
     if os.path.exists( file_path ):
         error = None
-        maximum_attempts = 10
+        maximum_attempts = 3
 
         while maximum_attempts > 0:
 
