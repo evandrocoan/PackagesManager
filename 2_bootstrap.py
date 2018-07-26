@@ -503,7 +503,7 @@ def sort_dictionary(dictionary):
 
 def get_ignored_packages():
     sublime_setting = load_data_file( g_sublime_setting_file )
-    return get_dictionary_key( sublime_setting, "ignored_packages", [] )
+    return sublime_setting.get( "ignored_packages", [] )
 
 
 def set_ignored_packages(ignored_packages):
@@ -572,13 +572,6 @@ def get_main_directory(current_directory):
             return sublime_text_packages
 
     return possible_main_directory
-
-def get_dictionary_key(dictionary, key, default=None):
-
-    if key in dictionary:
-        return dictionary[key]
-
-    return default
 
 
 def write_data_file(file_path, dictionary_data):
