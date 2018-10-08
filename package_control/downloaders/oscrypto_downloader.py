@@ -165,7 +165,7 @@ class OscryptoDownloader(DecodingDownloader, LimitingDownloader, CachingDownload
                         raise OscryptoDownloaderException('Missing or duplicate Location HTTP header')
                     if not re.match(r'https?://', location):
                         if not location.startswith('/'):
-                            location = os.path.dirname(url_info.path) + locaation
+                            location = os.path.dirname(url_info.path) + location
                         location = url_info.scheme + '://' + url_info.netloc + location
                     return self.download(location, error_message, timeout, tried, prefer_cached)
 
@@ -197,7 +197,7 @@ class OscryptoDownloader(DecodingDownloader, LimitingDownloader, CachingDownload
             except (oscrypto_errors.TLSVerificationError) as e:
                 self.close()
                 if debug:
-                    self.dump_cert(e.certificate)
+                    self.dump_certificate(e.certificate)
                 error_string = text.format(
                     '''
                     %s TLS verification error %s downloading %s.
@@ -205,7 +205,7 @@ class OscryptoDownloader(DecodingDownloader, LimitingDownloader, CachingDownload
                     (error_message, str_cls(e), url)
                 )
 
-            except (oscrypto_errors.TLSGracefulDisconnectError) as e:
+            except (oscrypto_errors.TLSDisconnectError) as e:
                 error_string = text.format(
                     '''
                     %s TLS was gracefully closed while downloading %s, trying again.
@@ -472,10 +472,7 @@ class OscryptoDownloader(DecodingDownloader, LimitingDownloader, CachingDownload
                     name = parts[0].strip().lower()
                     value = parts[1].strip()
                     if name in headers:
-                        if isinstance(headers[name], tuple):
-                            headers[name] = headers[name] + (value,)
-                        else:
-                            headers[name] = (headers[name], value)
+                        headers[name] += ', %s' % value
                     else:
                         headers[name] = value
 
