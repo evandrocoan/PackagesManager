@@ -16,6 +16,7 @@ CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 
 dummy_record_setting   = "not_your_business"
 
 g_package_control_name = "Package Control"
+g_packagesmanager_name = "PackagesManager"
 g_packages_loader_name = "0_package_control_loader"
 g_sublime_setting_name = "Preferences"
 
@@ -29,8 +30,8 @@ if sys.version_info < (3,):
     sublime_dir = os.path.dirname(sublime.packages_path())
     pristine_dir = os.path.join(sublime_dir, 'Pristine Packages')
     installed_dir = os.path.join(sublime_dir, 'Installed Packages')
-    pristine_file = os.path.join(pristine_dir, 'PackagesManager.sublime-package')
-    installed_file = os.path.join(installed_dir, 'PackagesManager.sublime-package')
+    pristine_file = os.path.join(pristine_dir, '%s.sublime-package' % g_packagesmanager_name)
+    installed_file = os.path.join(installed_dir, '%s.sublime-package' % g_packagesmanager_name)
     if os.path.exists(pristine_file):
         os.remove(pristine_file)
     if os.path.exists(installed_file):
@@ -69,7 +70,7 @@ def _background_bootstrap(settings):
         import os
         from os.path import dirname
 
-        # This file adds the package_control subdirectory of PackagesManager
+        # This file adds the package_control subdirectory of {g_packagesmanager_name}
         # to first in the sys.path so that all other packages may rely on
         # PC for utility functions, such as event helpers, adding things to
         # sys.path, downloading files from the internet, etc
@@ -103,13 +104,13 @@ def _background_bootstrap(settings):
         found = False
         if sys.version_info >= (3,):
             installed_packages_dir = os.path.join(st_dir, u'Installed Packages')
-            pc_package_path = os.path.join(installed_packages_dir, u'PackagesManager.sublime-package')
+            pc_package_path = os.path.join(installed_packages_dir, u'{g_packagesmanager_name}.sublime-package')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
         if not found:
             packages_dir = os.path.join(st_dir, u'Packages')
-            pc_package_path = os.path.join(packages_dir, u'PackagesManager')
+            pc_package_path = os.path.join(packages_dir, u'{g_packagesmanager_name}')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
@@ -118,7 +119,7 @@ def _background_bootstrap(settings):
             import Default.sort
             if os.path.basename(Default.sort.__file__) == 'sort.py':
                 packages_dir = dirname(dirname(Default.sort.__file__))
-                pc_package_path = os.path.join(packages_dir, u'PackagesManager')
+                pc_package_path = os.path.join(packages_dir, u'{g_packagesmanager_name}')
                 if os.path.exists(encode(pc_package_path)):
                     found = True
 
@@ -136,8 +137,8 @@ def _background_bootstrap(settings):
             sys.path.remove(encode(pc_package_path))
 
         else:
-            print( u'PackagesManager: Error finding main directory from loader' )
-    """
+            print( u'{g_packagesmanager_name}: Error finding main directory from loader' )
+    """.format( g_packagesmanager_name=g_packagesmanager_name )
 
     base_loader_code = dedent(base_loader_code).lstrip()
     loader.add_or_update('00', 'package_control', base_loader_code)
@@ -152,14 +153,14 @@ def _background_bootstrap(settings):
         def linux_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                PackagesManager
+                {g_packagesmanager_name}
 
-                PackagesManager just installed or upgraded the missing Python
+                {g_packagesmanager_name} just installed or upgraded the missing Python
                 _ssl module for Linux since Sublime Text does not include it.
 
                 Please restart Sublime Text to make SSL available to all
                 packages.
-                '''
+                '''.format(g_packagesmanager_name=g_packagesmanager_name)
             ))
 
         threading.Thread(
@@ -184,14 +185,14 @@ def _background_bootstrap(settings):
         def win_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                PackagesManager
+                {g_packagesmanager_name}
 
-                PackagesManager just upgraded the Python _ssl module for ST2 on
+                {g_packagesmanager_name} just upgraded the Python _ssl module for ST2 on
                 Windows because the bundled one does not include support for
                 modern SSL certificates.
 
                 Please restart Sublime Text to complete the upgrade.
-                '''
+                '''.format( g_packagesmanager_name=g_packagesmanager_name )
             ))
 
         threading.Thread(
@@ -219,7 +220,8 @@ def plugin_unloaded():
 
 
 def plugin_loaded():
-    main_directory = get_main_directory( PACKAGE_ROOT_DIRECTORY )
+    global g_main_directory
+    g_main_directory = get_main_directory( PACKAGE_ROOT_DIRECTORY )
 
     global g_sublime_setting_file
     global g_package_control_directory
@@ -227,30 +229,34 @@ def plugin_loaded():
     global g_package_control_package
     global g_package_control_loader_file
     global g_package_control_setting_file
+    global g_packagesmanager_setting_file
 
     manager  = PackageManager()
     settings = manager.settings.copy()
 
-    g_package_control_directory = os.path.join( main_directory,
+    g_package_control_directory = os.path.join( g_main_directory,
             "Packages", g_package_control_name )
 
-    g_sublime_setting_file = os.path.join( main_directory,
+    g_sublime_setting_file = os.path.join( g_main_directory,
             "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
 
-    g_package_control_setting_file = os.path.join( main_directory,
+    g_package_control_setting_file = os.path.join( g_main_directory,
             "Packages", "User", "%s.sublime-settings" % g_package_control_name )
 
-    g_package_control_package = os.path.join( main_directory,
+    g_packagesmanager_setting_file = os.path.join( g_main_directory,
+            "Packages", "User", "%s.sublime-settings" % g_packagesmanager_name )
+
+    g_package_control_package = os.path.join( g_main_directory,
             "Installed Packages", "%s.sublime-package" % g_package_control_name )
 
-    g_package_control_loader_file = os.path.join( main_directory,
+    g_package_control_loader_file = os.path.join( g_main_directory,
             "Installed Packages", "%s.sublime-package" % g_packages_loader_name )
 
     global g_settings_names
     global g_settings_files
 
-    g_settings_names = [g_package_control_name, g_sublime_setting_name]
-    g_settings_files = [g_package_control_setting_file, g_sublime_setting_file]
+    g_settings_names = [g_package_control_name, g_packagesmanager_name, g_sublime_setting_name]
+    g_settings_files = [g_package_control_setting_file, g_packagesmanager_setting_file, g_sublime_setting_file]
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     threading.Thread(target=configure_package_control_uninstaller).start()
@@ -260,10 +266,10 @@ def configure_package_control_uninstaller():
     clean_package_control_settings()
     add_package_control_on_change( uninstall_package_control )
 
-    # print( " is_package_control_installed()   " + str( is_package_control_installed() ) )
-    # print( " g_package_control_package:          " + str( g_package_control_package ) )
-    # print( " g_package_control_directory:     " + str( g_package_control_directory ) )
-    # print( " g_package_control_loader_file:   " + str( g_package_control_loader_file ) )
+    # print( " is_package_control_installed()  " + str( is_package_control_installed() ) )
+    # print( " g_package_control_package:      " + str( g_package_control_package ) )
+    # print( " g_package_control_directory:    " + str( g_package_control_directory ) )
+    # print( " g_package_control_loader_file:  " + str( g_package_control_loader_file ) )
     # print( " g_package_control_setting_file: " + str( g_package_control_setting_file ) )
 
     if is_package_control_installed():
@@ -289,6 +295,21 @@ def clean_up_sublime_settings():
                 write_data_file( setting_file, sublime_setting )
 
                 time.sleep( 0.1 )
+
+
+def _remove_package_control_from_installed_packages_setting(setting_file_name):
+    setting_file = os.path.join( g_main_directory,
+            "Packages", "User", "%s.sublime-settings" % setting_file_name )
+
+    settings = load_data_file( setting_file )
+
+    if 'installed_packages' in settings \
+            and g_package_control_name in settings['installed_packages']:
+
+        settings['installed_packages'].remove(g_package_control_name)
+        settings = sort_dictionary( settings )
+
+        write_data_file( setting_file, settings )
 
 
 def uninstall_package_control():
@@ -338,6 +359,9 @@ def uninstall_package_control():
         safe_remove( g_package_control_package )
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
+
+        _remove_package_control_from_installed_packages_setting(g_packagesmanager_name)
+        _remove_package_control_from_installed_packages_setting(g_package_control_name)
 
     try:
         _uninstall_package_control()
@@ -578,7 +602,7 @@ def write_data_file(file_path, dictionary_data):
     # print( "[2_bootstrap.py] Writing to the data file: " + file_path )
 
     with open( file_path, 'w', newline='\n', encoding='utf-8' ) as output_file:
-        json.dump( dictionary_data, output_file, indent=4, separators=(',', ': ') )
+        json.dump( dictionary_data, output_file, indent='\t', separators=(',', ': ') )
 
 
 def load_data_file(file_path, wait_on_error=True):
