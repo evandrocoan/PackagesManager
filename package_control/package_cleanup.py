@@ -1,5 +1,6 @@
 import threading
 import os
+import shlex
 import functools
 
 import sublime
@@ -13,6 +14,7 @@ from .package_manager import PackageManager
 from .open_compat import open_compat
 from .package_io import package_file_exists
 from .settings import preferences_filename, pc_settings_filename, load_list_setting, save_list_setting, increment_dependencies_installed
+from . import cmd
 from . import loader, text, __version__
 from .providers.release_selector import is_compatible_version
 
@@ -148,7 +150,12 @@ class PackageCleanup(threading.Thread):
             # Make sure when cleaning up the dependency files that we remove the loader for it also
             loader.remove(dependency)
 
+        # command_line_interface = cmd.Cli( None, True )
+        # command_line_interface.execute( shlex.split( "ls %s" % sublime.packages_path().replace('\\', '/') ),
+        #         sublime.packages_path(), live_output=True, short_errors=True )
+
         for package_name in os.listdir(sublime.packages_path()):
+            # print( "package_cleanup.py, Processing package: " + str( package_name ) )
             found = True
 
             package_dir = os.path.join(sublime.packages_path(), package_name)
