@@ -280,7 +280,7 @@ def configure_package_control_uninstaller():
 
 def clean_up_sublime_settings():
     """
-        Removes the dummy setting added by setup_sublime_settings().
+        Removes the dummy setting added by setup_all_settings().
     """
 
     for setting_file in g_settings_files:
@@ -389,23 +389,30 @@ def clean_package_control_settings(is_already_called=False):
     def _clean_package_control_settings():
         flush_settings = False
         package_control_settings = load_data_file( g_package_control_setting_file )
+        packagesmanager_settings = load_data_file( g_packagesmanager_setting_file )
+
+        flush_settings |= ensure_packages_list_are_equal(package_control_settings, packagesmanager_settings)
 
         if 'bootstrapped' not in package_control_settings:
-            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
 
         elif package_control_settings['bootstrapped']:
-            flush_settings = ensure_not_removed_bootstrapped( package_control_settings )
+            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
 
         if 'remove_orphaned' not in package_control_settings:
-            flush_settings = ensure_not_removed_orphaned( package_control_settings )
+            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
 
         elif package_control_settings['remove_orphaned']:
-            flush_settings = ensure_not_removed_orphaned( package_control_settings )
+            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
 
-        # Avoid infinity loop of writing to the settings file
+        def write_settings(setting_file, settings):
+            settings = sort_dictionary( settings )
+            write_data_file( setting_file, settings )
+
+        # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            package_control_settings = sort_dictionary( package_control_settings )
-            write_data_file( g_package_control_setting_file, package_control_settings )
+            write_settings(g_package_control_setting_file, package_control_settings)
+            write_settings(g_packagesmanager_setting_file, packagesmanager_settings)
 
     try:
         _clean_package_control_settings()
@@ -413,6 +420,41 @@ def clean_package_control_settings(is_already_called=False):
     except:
         setup_all_settings()
         _clean_package_control_settings()
+
+
+def ensure_packages_list_are_equal(package_control_settings, packagesmanager_settings):
+    """
+        Makes sure that Package Control and PackagesManager have the same `installed_packages`, to
+        avoid PackagesManager uninstalling all packages after removing Package Control.
+
+        @return True, if the settings files need to be flushed/written to the file system.
+    """
+    packages_count = 0
+    flush_settings = False
+    all_packages = []
+
+    if 'installed_packages' in package_control_settings:
+        installed_packages = package_control_settings['installed_packages']
+        packages_count += len( installed_packages )
+        all_packages.extend( installed_packages )
+    else:
+        flush_settings = True
+
+    if 'installed_packages' in packagesmanager_settings:
+        installed_packages = packagesmanager_settings['installed_packages']
+        packages_count += len( installed_packages )
+        all_packages.extend( installed_packages )
+    else:
+        flush_settings = True
+
+    if packages_count != len( all_packages ):
+        flush_settings = True
+
+    packagesmanager_settings['installed_packages'] = all_packages
+    package_control_settings['installed_packages'] = all_packages
+
+    print( "[2_bootstrap.py] ensure_packages_list_are_equal: " + str( all_packages ) )
+    return flush_settings
 
 
 def ensure_not_removed_bootstrapped(package_control_settings):
