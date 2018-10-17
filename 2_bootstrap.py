@@ -453,7 +453,7 @@ def ensure_packages_list_are_equal(package_control_settings, packagesmanager_set
     packagesmanager_settings['installed_packages'] = all_packages
     package_control_settings['installed_packages'] = all_packages
 
-    print( "[2_bootstrap.py] ensure_packages_list_are_equal: " + str( all_packages ) )
+    # print( "[2_bootstrap.py] ensure_packages_list_are_equal: " + str( all_packages ) )
     return flush_settings
 
 
