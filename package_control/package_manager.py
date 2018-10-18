@@ -33,7 +33,7 @@ from .cache import clear_cache, set_cache, get_cache, merge_cache_under_settings
 from .versions import version_comparable, version_sort
 from .downloaders.background_downloader import BackgroundDownloader
 from .downloaders.downloader_exception import DownloaderException
-from .providers.provider_exception import ProviderException
+from .providers.provider_exception import ProviderException, get_package_metadata
 from .clients.client_exception import ClientException
 from .download_manager import downloader
 from .providers.release_selector import filter_releases, is_compatible_version
@@ -550,6 +550,7 @@ class PackageManager():
                 )
             )
 
+        debug = self.settings.get('debug')
         cache_ttl = self.settings.get('cache_length')
         repositories = self.list_repositories()
         packages = {}
@@ -658,6 +659,53 @@ class PackageManager():
                 cache_ttl,
                 list_=True
             )
+
+        # filter out packages which should not be renamed
+        repositories_names = set()
+
+        for package in packages: repositories_names.add(package)
+        for package in dependencies: repositories_names.add(package)
+
+        new_renamed = {}
+        renamed_packages = self.settings.get('renamed_packages', {})
+
+        for old_name, new_name in renamed_packages.items():
+
+            # ignore the renaming if already there is another package with the old name,
+            # otherwise it would create an infinite loop of install-rename.
+            if old_name in repositories_names:
+                if debug:
+                    console_write(
+                        u'''
+                        Warning: The package `%s` is not being renamed to `%s` because there is another package
+                        with the same name in one of your channels.
+                        ''',
+                        (old_name, new_name)
+                    )
+                continue
+
+            package_metadata = get_package_metadata(old_name)
+
+            if 'url' in package_metadata \
+                    and 'homepage' in packages:
+
+                if package_metadata['url'] == packages['homepage']:
+                    new_renamed[old_name] = new_name
+
+                else:
+                    console_write(
+                        u'''
+                        Warning: The package `%s` is not being renamed because their upstream links changed:
+                        url: %s
+                        homepage: %s
+                        ''',
+                        (package, package_metadata['url'], packages['homepage'])
+                    )
+
+            else:
+                new_renamed[old_name] = new_name
+
+        self.settings['renamed_packages'] = new_renamed
 
         return (packages, dependencies)
 

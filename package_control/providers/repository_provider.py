@@ -14,7 +14,7 @@ except (ImportError):
 
 from .. import text
 from ..console_write import console_write
-from .provider_exception import ProviderException
+from .provider_exception import ProviderException, do_old_new_names_mapping
 from .schema_compat import platforms_to_releases
 from ..downloaders.downloader_exception import DownloaderException
 from ..clients.client_exception import ClientException
@@ -894,15 +894,10 @@ class RepositoryProvider():
             return self.repo_info.get('renamed_packages', {})
 
         output = {}
-        for package in self.repo_info['packages']:
-            if 'previous_names' not in package:
-                continue
+        packages = self.repo_info['packages']
 
-            previous_names = package['previous_names']
-            if not isinstance(previous_names, list):
-                previous_names = [previous_names]
-
-            for previous_name in previous_names:
-                output[previous_name] = package['name']
+        for package in packages:
+            if 'previous_names' not in package: continue
+            do_old_new_names_mapping(package, output)
 
         return output

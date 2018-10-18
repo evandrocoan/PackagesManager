@@ -13,7 +13,7 @@ except (ImportError):
 
 from .. import text
 from ..console_write import console_write
-from .provider_exception import ProviderException
+from .provider_exception import ProviderException, do_old_new_names_mapping
 from .schema_compat import platforms_to_releases
 from ..download_manager import downloader, update_url
 from ..versions import version_sort
@@ -176,14 +176,15 @@ class ChannelProvider():
 
         if self.schema_major_version >= 2:
             output = {}
+
             if 'packages_cache' in self.channel_info:
+
                 for repo in self.channel_info['packages_cache']:
-                    for package in self.channel_info['packages_cache'][repo]:
-                        previous_names = package.get('previous_names', [])
-                        if not isinstance(previous_names, list):
-                            previous_names = [previous_names]
-                        for previous_name in previous_names:
-                            output[previous_name] = package['name']
+                    repositories = self.channel_info['packages_cache'][repo]
+
+                    for package in repositories:
+                        do_old_new_names_mapping(package, output)
+
             return output
 
         return self.channel_info.get('renamed_packages', {})
