@@ -411,7 +411,7 @@ class PackageManager():
 
         cache_ttl = self.settings.get('cache_length')
 
-        repositories = self.settings.get('repositories')[:]
+        repositories = self.settings.get('repositories', [])[:]
         channels = self.settings.get('channels')
 
         # Update any old default channel URLs users have in their config
