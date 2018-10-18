@@ -414,6 +414,9 @@ class PackageManager():
         repositories = self.settings.get('repositories', [])[:]
         channels = self.settings.get('channels')
 
+        if not repositories:
+            console_write("Could not fetch the repositories this time.\n\nPlease restart Sublime Text.")
+
         # Update any old default channel URLs users have in their config
         updated_channels = []
         found_default = False
@@ -710,9 +713,8 @@ class PackageManager():
             packages |= self._list_sublime_package_files(self.settings['installed_packages_path'])
 
         if not list_everything:
-            packages -= set(self.list_default_packages())
             packages -= set(self.list_dependencies())
-            packages -= set(['Default','User'])
+            packages -= set(['User'])
 
         return sorted(packages, key=lambda s: s.lower())
 
