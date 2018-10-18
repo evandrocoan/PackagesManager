@@ -409,13 +409,10 @@ class PackageManager():
             A list of all available repositories
         """
 
-        cache_ttl = self.settings.get('cache_length')
+        cache_ttl = self.settings.get('cache_length', 0)
 
         repositories = self.settings.get('repositories', [])[:]
         channels = self.settings.get('channels')
-
-        if not repositories:
-            console_write("Could not fetch the repositories this time.\n\nPlease restart Sublime Text.")
 
         # Update any old default channel URLs users have in their config
         updated_channels = []
