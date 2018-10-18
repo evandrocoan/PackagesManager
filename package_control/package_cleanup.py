@@ -402,15 +402,7 @@ class PackageCleanup(threading.Thread):
 
             finally:
                 # Always re-enable the package so it doesn't get stuck
-                pref_filename = preferences_filename()
-                settings = sublime.load_settings(pref_filename)
-                ignored = load_list_setting(settings, 'ignored_packages')
-                new_ignored = list(ignored)
-                try:
-                    new_ignored.remove(name)
-                except (ValueError):
-                    pass
-                save_list_setting(settings, pref_filename, 'ignored_packages', new_ignored, ignored)
+                self.disabler.reenable_package(name, 'remove')
 
         # Disable the package so any filesystem locks are released
         self.disabler.disable_packages(name)
