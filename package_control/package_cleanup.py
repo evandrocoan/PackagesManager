@@ -413,12 +413,7 @@ class PackageCleanup(threading.Thread):
                 save_list_setting(settings, pref_filename, 'ignored_packages', new_ignored, ignored)
 
         # Disable the package so any filesystem locks are released
-        pref_filename = preferences_filename()
-        settings = sublime.load_settings(pref_filename)
-        ignored = load_list_setting(settings, 'ignored_packages')
-        new_ignored = list(ignored)
-        new_ignored.append(name)
-        save_list_setting(settings, pref_filename, 'ignored_packages', new_ignored, ignored)
+        self.disabler.disable_packages(name)
 
         sublime.set_timeout(do_remove, 700)
 
