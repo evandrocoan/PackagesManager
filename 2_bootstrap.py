@@ -373,21 +373,74 @@ def uninstall_package_control():
 
     finally:
         setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
-
         add_package_control_on_change( uninstall_package_control )
+
         clean_package_control_settings()
+        copy_package_control_settings()
 
         global g_is_running
         g_is_running = False
 
 
-def clean_package_control_settings(is_already_called=False):
+def clean_package_control_settings():
     """
         Clean it a few times because Package Control is kinda running and still flushing stuff down
         to its settings file.
     """
 
     def _clean_package_control_settings():
+        flush_settings = False
+        package_control_settings = load_data_file( g_package_control_setting_file )
+
+        if 'bootstrapped' not in package_control_settings:
+            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
+
+        elif package_control_settings['bootstrapped']:
+            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
+
+        if 'remove_orphaned' not in package_control_settings:
+            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
+
+        elif package_control_settings['remove_orphaned']:
+            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
+
+        # Avoid infinity loop of writing to the settings file, because this is called every time they change
+        if flush_settings:
+            write_settings(g_package_control_setting_file, package_control_settings)
+
+    try:
+        _clean_package_control_settings()
+
+    except:
+        setup_all_settings()
+        _clean_package_control_settings()
+
+
+def ensure_not_removed_bootstrapped(package_control_settings):
+    """
+        Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
+        immediately.
+    """
+    print( "[2_bootstrap.py] ensure_not_removed_bootstrapped, finishing Package Control Uninstallation, setting bootstrapped..." )
+    package_control_settings['bootstrapped']  = False
+    return True
+
+
+def ensure_not_removed_orphaned(package_control_settings):
+    """
+        Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
+        restored later.
+    """
+    print( "[2_bootstrap.py] ensure_not_removed_orphaned, finishing Package Control Uninstallation, setting remove_orphaned..." )
+    package_control_settings['remove_orphaned'] = False
+    package_control_settings['remove_orphaned_backup'] = True
+    return True
+
+
+def copy_package_control_settings():
+    print( "[2_bootstrap.py] Coping Package Control settings to PackagesManager..." )
+
+    def _copy_package_control_settings():
         flush_settings = False
         package_control_settings = load_data_file( g_package_control_setting_file )
         packagesmanager_settings = load_data_file( g_packagesmanager_setting_file )
@@ -414,6 +467,13 @@ def clean_package_control_settings(is_already_called=False):
         remove_name(g_packagesmanager_name, 'in_process_packages', packagesmanager_settings)
         remove_name(g_package_control_loader_name, 'in_process_packages', packagesmanager_settings)
         remove_name(g_packagesmanager_loader_name, 'in_process_packages', packagesmanager_settings)
+
+        # Assure Package Control `installed_packages` setting is cleaned out in case the user
+        # accidentally install Package Control, then, Package Control will not attempt to install
+        # packages which where removed later by PackagesManager. Packages Control will not attempt
+        # to uninstall all the packages because its setting `remove_orphaned` packages is set to
+        # `false` by clean_package_control_settings().
+        flush_settings |= copy_value_setting( 'installed_packages', { 'installed_packages': [] }, package_control_settings)
 
         flush_settings |= copy_list_setting( 'channels', package_control_settings, packagesmanager_settings)
         flush_settings |= copy_list_setting( 'repositories', package_control_settings, packagesmanager_settings)
@@ -447,22 +507,6 @@ def clean_package_control_settings(is_already_called=False):
         flush_settings |= copy_value_setting( 'package_destination', package_control_settings, packagesmanager_settings)
         flush_settings |= copy_value_setting( 'package_profiles', package_control_settings, packagesmanager_settings)
 
-        if 'bootstrapped' not in package_control_settings:
-            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
-
-        elif package_control_settings['bootstrapped']:
-            flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
-
-        if 'remove_orphaned' not in package_control_settings:
-            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
-
-        elif package_control_settings['remove_orphaned']:
-            flush_settings |= ensure_not_removed_orphaned( package_control_settings )
-
-        def write_settings(setting_file, settings):
-            settings = sort_dictionary( settings )
-            write_data_file( setting_file, settings )
-
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
             write_settings(g_package_control_setting_file, package_control_settings)
@@ -470,11 +514,16 @@ def clean_package_control_settings(is_already_called=False):
             write_settings(g_sublime_setting_file, sublime_settings)
 
     try:
-        _clean_package_control_settings()
+        _copy_package_control_settings()
 
     except:
         setup_all_settings()
-        _clean_package_control_settings()
+        _copy_package_control_settings()
+
+
+def write_settings(setting_file, settings):
+    settings = sort_dictionary( settings )
+    write_data_file( setting_file, settings )
 
 
 def copy_list_setting(setting_name, package_control_settings, packagesmanager_settings, alternative=None):
@@ -508,41 +557,17 @@ def copy_list_setting(setting_name, package_control_settings, packagesmanager_se
     return flush_settings
 
 
-def copy_value_setting(setting_name, package_control_settings, packagesmanager_settings):
+def copy_value_setting(setting_name, source_settings, destine_settings):
     flush_settings = False
 
-    if setting_name in package_control_settings:
+    if setting_name in source_settings:
 
-        if setting_name in packagesmanager_settings:
-            flush_settings = packagesmanager_settings[setting_name] != package_control_settings[setting_name]
+        if setting_name in destine_settings:
+            flush_settings = destine_settings[setting_name] != source_settings[setting_name]
 
-        packagesmanager_settings[setting_name] = package_control_settings[setting_name]
+        destine_settings[setting_name] = source_settings[setting_name]
 
     return flush_settings
-
-
-def ensure_not_removed_bootstrapped(package_control_settings):
-    """
-        Forces the `Package Control.sublime-settings` to be reloaded, so we can uninstall it
-        immediately.
-    """
-    print( "[2_bootstrap.py] ensure_not_removed_bootstrapped, finishing Package Control Uninstallation, setting bootstrapped..." )
-
-    package_control_settings['bootstrapped']  = False
-    return True
-
-
-def ensure_not_removed_orphaned(package_control_settings):
-    """
-        Save the default user value for `remove_orphaned` on `_remove_orphaned`, so it can be
-        restored later.
-    """
-    print( "[2_bootstrap.py] ensure_not_removed_orphaned, finishing Package Control Uninstallation, setting remove_orphaned..." )
-
-    package_control_settings['remove_orphaned'] = False
-    package_control_settings['remove_orphaned_backup'] = True
-
-    return True
 
 
 def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
