@@ -136,9 +136,10 @@ class AutomaticUpgrader(threading.Thread):
             dependency_s = 'ies' if total_missing_dependencies != 1 else 'y'
             console_write(
                 u'''
-                Installing %s missing dependenc%s
+                Installing %s missing dependenc%s:
+                %s
                 ''',
-                (total_missing_dependencies, dependency_s)
+                (total_missing_dependencies, dependency_s, self.missing_dependencies)
             )
 
             for dependency in self.missing_dependencies:
@@ -171,9 +172,10 @@ class AutomaticUpgrader(threading.Thread):
             package_s = 's' if total_missing_packages != 1 else ''
             console_write(
                 u'''
-                Installing %s missing package%s
+                Installing %s missing package%s:
+                %s
                 ''',
-                (total_missing_packages, package_s)
+                (total_missing_packages, package_s, self.missing_packages)
             )
 
         # Fetching the list of packages also grabs the renamed packages
@@ -285,9 +287,10 @@ class AutomaticUpgrader(threading.Thread):
 
         console_write(
             u'''
-            Installing %s upgrades
+            Installing %s upgrades:
+            %s
             ''',
-            len(package_list)
+            (len(package_list), package_list)
         )
 
         disabled_packages = []

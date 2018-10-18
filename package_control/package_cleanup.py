@@ -10,6 +10,7 @@ from .console_write import console_write
 from .unicode import unicode_from_os
 from .clear_directory import clear_directory, delete_directory, clean_old_files
 from .automatic_upgrader import AutomaticUpgrader
+from .package_disabler import PackageDisabler
 from .package_manager import PackageManager
 from .open_compat import open_compat
 from .package_io import package_file_exists
@@ -28,6 +29,8 @@ class PackageCleanup(threading.Thread):
 
     def __init__(self):
         self.manager = PackageManager()
+        self.disabler = PackageDisabler()
+        self.ignored_in_process_packages = False
 
         settings = sublime.load_settings(pc_settings_filename())
 
@@ -79,8 +82,20 @@ class PackageCleanup(threading.Thread):
                 if file[-20:] == '.sublime-package-new' and file != loader.loader_package_name + '.sublime-package-new':
                     package_name = file.replace('.sublime-package-new', '')
                     package_file = os.path.join(installed_path, package_name + '.sublime-package')
-                    if os.path.exists(package_file):
-                        os.remove(package_file)
+                    try:
+                        if os.path.exists(package_file):
+                            os.remove(package_file)
+                    except Exception as error:
+                        console_write(
+                            u'''
+                            Error: %s
+                            ''',
+                            error
+                        )
+                        self.disabler.disable_packages(package_name)
+                        self.ignored_in_process_packages = True
+                        continue
+
                     os.rename(os.path.join(installed_path, file), package_file)
                     console_write(
                         u'''
@@ -468,7 +483,7 @@ class PackageCleanup(threading.Thread):
         pc_settings = sublime.load_settings(pc_filename)
 
         in_process = load_list_setting(pc_settings, 'in_process_packages')
-        if in_process:
+        if in_process and not self.ignored_in_process_packages:
             filename = preferences_filename()
             settings = sublime.load_settings(filename)
 

@@ -53,6 +53,8 @@ def format(string, params=None, strip=True, indent=None):
     if output[-1] == u'\n' and strip and output[-2] != u'\n':
         output = output[0:-1]
 
+    # print('params:', params)
+    # print('output:', output)
     if params is not None:
         output = output % params
 

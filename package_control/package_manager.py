@@ -409,7 +409,7 @@ class PackageManager():
             A list of all available repositories
         """
 
-        cache_ttl = self.settings.get('cache_length', 0)
+        cache_ttl = self.settings.get('cache_length', 1)
 
         repositories = self.settings.get('repositories', [])[:]
         channels = self.settings.get('channels')
