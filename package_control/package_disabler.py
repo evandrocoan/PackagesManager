@@ -69,6 +69,11 @@ class PackageDisabler():
         :return:
             A list of package names that were disabled
         """
+        settings = sublime.load_settings(preferences_filename())
+        pc_settings = sublime.load_settings(pc_settings_filename())
+
+        debug = pc_settings.get('debug')
+        if debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, type))
 
         global events
 
@@ -79,11 +84,7 @@ class PackageDisabler():
             packages = [packages]
 
         disabled = []
-
-        settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')
-
-        pc_settings = sublime.load_settings(pc_settings_filename())
         in_process = load_list_setting(pc_settings, 'in_process_packages')
 
         PackageDisabler.old_color_scheme_package = None
@@ -160,13 +161,17 @@ class PackageDisabler():
              - "enable"
              - "loader"
         """
+        settings = sublime.load_settings(preferences_filename())
+        pc_settings = sublime.load_settings(pc_settings_filename())
+
+        debug = pc_settings.get('debug')
+        if debug: console_write(u'Calling reenable_package() with: %s, type: %s', (package, type))
 
         global events
 
         if events is None:
             from package_control import events
 
-        settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')
 
         if package in ignored:
@@ -271,7 +276,6 @@ class PackageDisabler():
 
             sublime.set_timeout(delayed_settings_restore, 1000)
 
-        pc_settings = sublime.load_settings(pc_settings_filename())
         in_process = load_list_setting(pc_settings, 'in_process_packages')
 
         if package in in_process:
