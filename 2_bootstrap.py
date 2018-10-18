@@ -17,7 +17,8 @@ dummy_record_setting   = "not_your_business"
 
 g_package_control_name = "Package Control"
 g_packagesmanager_name = "PackagesManager"
-g_packages_loader_name = "0_package_control_loader"
+g_package_control_loader_name = "0_package_control_loader"
+g_packagesmanager_loader_name = "0_packagesmanager_loader"
 g_sublime_setting_name = "Preferences"
 
 g_is_running = False
@@ -250,7 +251,7 @@ def plugin_loaded():
             "Installed Packages", "%s.sublime-package" % g_package_control_name )
 
     g_package_control_loader_file = os.path.join( g_main_directory,
-            "Installed Packages", "%s.sublime-package" % g_packages_loader_name )
+            "Installed Packages", "%s.sublime-package" % g_package_control_loader_name )
 
     global g_settings_names
     global g_settings_files
@@ -286,13 +287,13 @@ def clean_up_sublime_settings():
     for setting_file in g_settings_files:
 
         for index in range( 0, 3 ):
-            sublime_setting = load_data_file( setting_file )
+            sublime_settings = load_data_file( setting_file )
 
-            if dummy_record_setting in sublime_setting:
-                del sublime_setting[dummy_record_setting]
+            if dummy_record_setting in sublime_settings:
+                del sublime_settings[dummy_record_setting]
 
-                sublime_setting = sort_dictionary( sublime_setting )
-                write_data_file( setting_file, sublime_setting )
+                sublime_settings = sort_dictionary( sublime_settings )
+                write_data_file( setting_file, sublime_settings )
 
                 time.sleep( 0.1 )
 
@@ -334,7 +335,7 @@ def uninstall_package_control():
     print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
     package_disabler   = PackageDisabler()
-    packages_to_ignore = [g_package_control_name, g_packages_loader_name]
+    packages_to_ignore = [g_package_control_name, g_package_control_loader_name]
 
     def _uninstall_package_control():
         silence_error_message_box( 63.0 )
@@ -354,7 +355,7 @@ def uninstall_package_control():
         package_manager = PackageManager()
 
         package_manager.remove_package( g_package_control_name, False )
-        package_manager.remove_package( g_packages_loader_name, False )
+        package_manager.remove_package( g_package_control_loader_name, False )
 
         safe_remove( g_package_control_package )
         safe_remove( g_package_control_loader_file )
@@ -390,8 +391,61 @@ def clean_package_control_settings(is_already_called=False):
         flush_settings = False
         package_control_settings = load_data_file( g_package_control_setting_file )
         packagesmanager_settings = load_data_file( g_packagesmanager_setting_file )
+        sublime_settings = load_data_file( g_sublime_setting_file )
 
-        flush_settings |= ensure_packages_list_are_equal(package_control_settings, packagesmanager_settings)
+        def remove_name(name_to, setting_name, settings):
+            # Assure Package Control name is not copied
+            while setting_name in settings and \
+                    name_to in settings[setting_name]:
+                settings[setting_name].remove( name_to )
+
+        # Assure any lost package on `in_process_packages` is added
+        flush_settings |= copy_list_setting( 'in_process_packages', package_control_settings, packagesmanager_settings, 'installed_packages')
+        flush_settings |= copy_list_setting( 'in_process_packages', packagesmanager_settings, packagesmanager_settings, 'installed_packages')
+        flush_settings |= copy_list_setting( 'installed_packages', package_control_settings, packagesmanager_settings)
+
+        remove_name(g_packagesmanager_name, 'ignored_packages', sublime_settings)
+        remove_name(g_package_control_loader_name, 'ignored_packages', sublime_settings)
+
+        remove_name(g_package_control_name, 'installed_packages', packagesmanager_settings)
+        remove_name(g_package_control_loader_name, 'installed_packages', packagesmanager_settings)
+
+        remove_name(g_package_control_name, 'in_process_packages', packagesmanager_settings)
+        remove_name(g_packagesmanager_name, 'in_process_packages', packagesmanager_settings)
+        remove_name(g_package_control_loader_name, 'in_process_packages', packagesmanager_settings)
+        remove_name(g_packagesmanager_loader_name, 'in_process_packages', packagesmanager_settings)
+
+        flush_settings |= copy_list_setting( 'channels', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'repositories', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'install_prereleases', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'auto_upgrade_ignore', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'git_binary', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'hg_binary', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'dirs_to_ignore', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'files_to_ignore', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_list_setting( 'files_to_include', package_control_settings, packagesmanager_settings)
+
+        flush_settings |= copy_value_setting( 'debug', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'submit_usage', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'submit_url', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'auto_upgrade', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'install_missing', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'auto_upgrade_frequency', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'timeout', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'cache_length', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'http_proxy', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'https_proxy', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'proxy_username', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'proxy_password', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'http_cache', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'http_cache_length', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'user_agent', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'ignore_vcs_packages', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'git_update_command', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'hg_update_command', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'downloader_precedence', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'package_destination', package_control_settings, packagesmanager_settings)
+        flush_settings |= copy_value_setting( 'package_profiles', package_control_settings, packagesmanager_settings)
 
         if 'bootstrapped' not in package_control_settings:
             flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
@@ -413,6 +467,7 @@ def clean_package_control_settings(is_already_called=False):
         if flush_settings:
             write_settings(g_package_control_setting_file, package_control_settings)
             write_settings(g_packagesmanager_setting_file, packagesmanager_settings)
+            write_settings(g_sublime_setting_file, sublime_settings)
 
     try:
         _clean_package_control_settings()
@@ -422,38 +477,47 @@ def clean_package_control_settings(is_already_called=False):
         _clean_package_control_settings()
 
 
-def ensure_packages_list_are_equal(package_control_settings, packagesmanager_settings):
+def copy_list_setting(setting_name, package_control_settings, packagesmanager_settings, alternative=None):
     """
-        Makes sure that Package Control and PackagesManager have the same `installed_packages`, to
-        avoid PackagesManager uninstalling all packages after removing Package Control.
+        Makes sure that Package Control and PackagesManager have the same `setting_name`, as
+        `installed_packages` to avoid PackagesManager uninstalling all packages after removing
+        Package Control.
 
         @return True, if the settings files need to be flushed/written to the file system.
     """
-    packages_count = 0
     flush_settings = False
-    all_packages = []
+    alternative = alternative if alternative else setting_name
 
-    if 'installed_packages' in package_control_settings:
-        installed_packages = package_control_settings['installed_packages']
-        packages_count += len( installed_packages )
-        all_packages.extend( installed_packages )
-    else:
-        flush_settings = True
+    if setting_name in package_control_settings:
 
-    if 'installed_packages' in packagesmanager_settings:
-        installed_packages = packagesmanager_settings['installed_packages']
-        packages_count += len( installed_packages )
-        all_packages.extend( installed_packages )
-    else:
-        flush_settings = True
+        if alternative in packagesmanager_settings:
+            setting_data = packagesmanager_settings[alternative]
+            packagesmanager_set = set(setting_data)
 
-    if packages_count != len( all_packages ):
-        flush_settings = True
+        else:
+            packagesmanager_set = set()
+            packagesmanager_settings[alternative] = []
 
-    packagesmanager_settings['installed_packages'] = all_packages
-    package_control_settings['installed_packages'] = all_packages
+        for element in package_control_settings[setting_name]:
 
-    # print( "[2_bootstrap.py] ensure_packages_list_are_equal: " + str( all_packages ) )
+            if element not in packagesmanager_set:
+                flush_settings = True
+                packagesmanager_set.add(element)
+                packagesmanager_settings[alternative].append(element)
+
+    return flush_settings
+
+
+def copy_value_setting(setting_name, package_control_settings, packagesmanager_settings):
+    flush_settings = False
+
+    if setting_name in package_control_settings:
+
+        if setting_name in packagesmanager_settings:
+            flush_settings = packagesmanager_settings[setting_name] != package_control_settings[setting_name]
+
+        packagesmanager_settings[setting_name] = package_control_settings[setting_name]
+
     return flush_settings
 
 
@@ -550,8 +614,8 @@ def setup_sublime_settings(setting_file_name):
     """
 
     for index in range( 0, 10 ):
-        sublime_setting = sublime.load_settings( setting_file_name )
-        sublime_setting.set( dummy_record_setting, index )
+        sublime_settings = sublime.load_settings( setting_file_name )
+        sublime_settings.set( dummy_record_setting, index )
 
         sublime.save_settings( setting_file_name )
         time.sleep( 0.1 )
@@ -568,8 +632,8 @@ def sort_dictionary(dictionary):
 
 
 def get_ignored_packages():
-    sublime_setting = load_data_file( g_sublime_setting_file )
-    return sublime_setting.get( "ignored_packages", [] )
+    sublime_settings = load_data_file( g_sublime_setting_file )
+    return sublime_settings.get( "ignored_packages", [] )
 
 
 def set_ignored_packages(ignored_packages):
@@ -577,11 +641,11 @@ def set_ignored_packages(ignored_packages):
     if ignored_packages:
         ignored_packages.sort()
 
-    sublime_setting = load_data_file( g_sublime_setting_file )
-    sublime_setting["ignored_packages"] = ignored_packages
+    sublime_settings = load_data_file( g_sublime_setting_file )
+    sublime_settings["ignored_packages"] = ignored_packages
 
-    sublime_setting = sort_dictionary( sublime_setting )
-    write_data_file( g_sublime_setting_file, sublime_setting )
+    sublime_settings = sort_dictionary( sublime_settings )
+    write_data_file( g_sublime_setting_file, sublime_settings )
 
 
 def is_allowed_to_run():
