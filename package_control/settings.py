@@ -20,6 +20,9 @@ g_package_control_name = "Package Control"
 DUMMY_RECORD_SETTING   = "not_your_business"
 g_sublime_setting_name = "Preferences"
 
+g_settings_names = []
+g_settings_files = []
+
 
 def increment_dependencies_installed():
     global g_dependencies_installed
@@ -176,19 +179,6 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
         Randomly reverting back the `ignored_packages` setting on batch operations
         https://github.com/SublimeTextIssues/Core/issues/2132
     """
-    currently_ignored = get_ignored_packages()
-
-    packages_to_add.sort()
-    packages_to_remove.sort()
-
-    print( "[package_io] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
-    print( "[package_io] setup_packages_ignored_list, ignoring the packages:      " + str( packages_to_add ) )
-    print( "[package_io] setup_packages_ignored_list, unignoring the packages:    " + str( packages_to_remove ) )
-
-    currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
-    unique_list_append( currently_ignored, packages_to_add )
-
-    currently_ignored.sort()
     ignoring_type = "remove"
 
     # This adds them to the `in_process` list on the Package Control.sublime-settings file
@@ -198,25 +188,10 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
 
     # This should remove them from the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_remove ):
-        package_disabler.reenable_package( packages_to_remove, ignoring_type )
-        time.sleep( 0.1 )
 
-    # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
-    # ensure we override this.
-    for interval in range( 0, 30 ):
-        set_ignored_packages( currently_ignored )
-        time.sleep( 0.1 )
-
-        if len( packages_to_remove ):
-            new_ignored_list = get_ignored_packages()
-            print( "[package_io] packages_to_remove, currently ignored packages: " + str( new_ignored_list ) )
-
-            if new_ignored_list:
-
-                if len( new_ignored_list ) == len( currently_ignored ) \
-                        and new_ignored_list == currently_ignored:
-
-                    break
+        for package in packages_to_remove:
+            package_disabler.reenable_package( package, ignoring_type )
+            time.sleep( 0.1 )
 
 
 def load_constants(PACKAGE_ROOT_DIRECTORY):
@@ -260,6 +235,9 @@ def get_main_directory(current_directory):
 
 
 def setup_all_settings(settings_names=g_settings_names):
+    """
+        Converts from Sublime Text settings to valid JSON objects.
+    """
 
     for setting_name in settings_names:
         setup_sublime_settings( setting_name + ".sublime-settings" )
