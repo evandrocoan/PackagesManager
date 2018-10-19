@@ -252,7 +252,8 @@ def configure_package_control_uninstaller():
     # print( " g_package_control_setting_file: " + str( g_settings.g_package_control_setting_file ) )
 
     if is_package_control_installed():
-        uninstall_package_control()
+        thread = uninstall_package_control()
+        if thread: thread.join()
 
     g_settings.clean_up_sublime_settings()
 
@@ -278,6 +279,16 @@ def uninstall_package_control():
         print( "[2_bootstrap.py] uninstall_package_control, is_package_control_installed: False" )
         return
 
+    if not is_allowed_to_run():
+        print( "[2_bootstrap.py] uninstall_package_control, is_allowed_to_run: False" )
+        return
+
+    thread = threading.Thread(target=_uninstall_package_control).start()
+    return thread
+
+
+def _uninstall_package_control():
+
     try:
         from PackagesManager.package_control.show_error import silence_error_message_box
         from PackagesManager.package_control.package_manager import PackageManager
@@ -287,17 +298,13 @@ def uninstall_package_control():
         print( "[2_bootstrap.py] uninstall_package_control, ImportError: %s" % error )
         return
 
-    if not is_allowed_to_run():
-        print( "[2_bootstrap.py] uninstall_package_control, is_allowed_to_run: False" )
-        return
-
     print( "" )
     print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
     package_disabler   = PackageDisabler()
     packages_to_ignore = [g_package_control_name, g_package_control_loader_name]
 
-    def _uninstall_package_control():
+    def _try_uninstall_package_control():
         silence_error_message_box( 63.0 )
         g_settings.disable_package_control_uninstaller()
 
@@ -325,11 +332,13 @@ def uninstall_package_control():
         _remove_package_control_from_installed_packages_setting(g_package_control_name)
 
     try:
-        _uninstall_package_control()
+        _try_uninstall_package_control()
 
     except:
         g_settings.setup_all_settings()
-        _uninstall_package_control()
+
+        _try_uninstall_package_control()
+        g_settings.clean_up_sublime_settings()
 
     finally:
         g_settings.setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
