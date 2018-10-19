@@ -45,14 +45,16 @@ def show_error(string, params=None, strip=True, indent=None):
             console_write( string )
 
         else:
+            maximum_length = 1000
             sublime.error_message(u'PackagesManager\n\n%s\n%s' % (
-                string,
+                string[:maximum_length],
                 u'''
                 If there will be new messages on the next seconds,
                 they will be show on the Sublime Text console
                 '''
                 ) )
 
+            if len(string) > maximum_length: print(string[maximum_length:])
             silence_error_message_box(60.1)
 
     else:
