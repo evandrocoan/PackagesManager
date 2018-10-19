@@ -295,9 +295,9 @@ class PackageDisabler():
         currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_add if package_name not in currently_ignored]
 
-        print( "[package_io] setup_packages_ignored_list, currently ignored packages: %s" % ( currently_ignored ) )
-        print( "[package_io] setup_packages_ignored_list, ignoring the packages:      %s" % ( packages_to_add ) )
-        print( "[package_io] setup_packages_ignored_list, effectively added:          %s" % ( effectively_added ) )
+        if self.debug: console_write( "_force_add, currently ignored packages: %s", ( currently_ignored ) )
+        if self.debug: console_write( "_force_add, ignoring the packages:      %s", ( packages_to_add ) )
+        if self.debug: console_write( "_force_add, effectively added:          %s", ( effectively_added ) )
 
         g_settings.unique_list_append( currently_ignored, packages_to_add )
         currently_ignored.sort()
@@ -309,7 +309,7 @@ class PackageDisabler():
             time.sleep( 0.1 )
 
             new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
-            print( "[package_io] currently `%s` packages: %s%s" % ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
+            if self.debug: console_write( "currently `%s` packages: %s%s", ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
 
             if new_ignored_list:
 
@@ -334,9 +334,9 @@ class PackageDisabler():
         currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_remove if package_name in currently_ignored]
 
-        print( "[package_io] setup_packages_ignored_list, currently ignored packages: %s" % ( currently_ignored ) )
-        print( "[package_io] setup_packages_ignored_list, unignoring the packages:    %s" % ( packages_to_remove ) )
-        print( "[package_io] setup_packages_ignored_list, effectively added:          %s" % ( effectively_added ) )
+        if self.debug: console_write( "_force_add, currently ignored packages: %s", ( currently_ignored ) )
+        if self.debug: console_write( "_force_add, unignoring the packages:    %s", ( packages_to_remove ) )
+        if self.debug: console_write( "_force_add, effectively added:          %s", ( effectively_added ) )
 
         currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
         currently_ignored.sort()
@@ -348,7 +348,7 @@ class PackageDisabler():
             time.sleep( 0.1 )
 
             new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
-            print( "[package_io] currently `%s` packages: %s%s" % ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
+            if self.debug: console_write( "currently `%s` packages: %s%s", ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
 
             if new_ignored_list:
 
