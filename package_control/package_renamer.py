@@ -16,6 +16,9 @@ class PackageRenamer(PackageDisabler):
     gathered from channels and repositories.
     """
 
+    def __init__(self):
+        PackageDisabler.__init__(self)
+
     def load_settings(self):
         """
         Loads the list of installed packages

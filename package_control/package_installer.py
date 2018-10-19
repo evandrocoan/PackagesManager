@@ -17,6 +17,7 @@ class PackageInstaller(PackageDisabler):
     """
 
     def __init__(self):
+        PackageDisabler.__init__(self)
         self.manager = PackageManager()
         # Track what the color scheme was before upgrade so we can restore it
         self.old_color_scheme_package = None

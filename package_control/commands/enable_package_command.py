@@ -13,6 +13,10 @@ class EnablePackageCommand(sublime_plugin.WindowCommand, PackageDisabler):
     A command that removes a package from Sublime Text's ignored packages list
     """
 
+    def __init__(self, window):
+        PackageDisabler.__init__(self)
+        self.window = window
+
     def run(self):
         self.settings = sublime.load_settings(preferences_filename())
         self.disabled_packages = load_list_setting(self.settings, 'ignored_packages')

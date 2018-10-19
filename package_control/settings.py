@@ -20,6 +20,11 @@ g_package_control_name = "Package Control"
 DUMMY_RECORD_SETTING   = "not_your_business"
 g_sublime_setting_name = "Preferences"
 
+g_main_directory = ""
+g_sublime_setting_file = ""
+g_package_control_setting_file = ""
+g_packagesmanager_setting_file = ""
+
 g_settings_names = []
 g_settings_files = []
 
@@ -280,21 +285,21 @@ def sort_dictionary(dictionary):
     return OrderedDict( sorted( dictionary.items() ) )
 
 
-def get_setting(setting_name):
-    sublime_settings = load_data_file( g_sublime_setting_file )
+def get_setting(setting_name, full_setting_path=g_sublime_setting_file):
+    sublime_settings = load_data_file( full_setting_path )
     return sublime_settings.get( setting_name, [] )
 
 
-def set_setting(setting_name, ignored_packages):
+def set_setting(setting_name, new_value, full_setting_path=g_sublime_setting_file):
 
-    if ignored_packages:
-        ignored_packages.sort()
+    if new_value:
+        new_value.sort()
 
-    sublime_settings = load_data_file( g_sublime_setting_file )
-    sublime_settings[setting_name] = ignored_packages
+    sublime_settings = load_data_file( full_setting_path )
+    sublime_settings[setting_name] = new_value
 
     sublime_settings = sort_dictionary( sublime_settings )
-    write_data_file( g_sublime_setting_file, sublime_settings )
+    write_data_file( full_setting_path, sublime_settings )
 
 
 def unique_list_append(a_list, *lists):

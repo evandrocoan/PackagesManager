@@ -90,6 +90,7 @@ class AdvancedInstallPackageThread(threading.Thread, PackageDisabler):
             An instance of :class:`sublime.Window` that represents the Sublime
             Text window to show the available package list in.
         """
+        PackageDisabler.__init__(self)
 
         self.manager = PackageManager()
         self.packages = packages

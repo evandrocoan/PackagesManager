@@ -25,6 +25,7 @@ class RemovePackageCommand(sublime_plugin.WindowCommand, ExistingPackagesCommand
             An instance of :class:`sublime.Window` that represents the Sublime
             Text window to show the list of installed packages in.
         """
+        PackageDisabler.__init__(self)
 
         self.window = window
         self.manager = PackageManager()
@@ -74,6 +75,7 @@ class RemovePackageThread(threading.Thread, PackageDisabler):
     """
 
     def __init__(self, manager, package, is_dependency=False):
+        PackageDisabler.__init__(self)
         self.manager = manager
         self.package = package
         self.is_dependency = is_dependency

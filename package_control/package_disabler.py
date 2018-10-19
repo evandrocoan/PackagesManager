@@ -30,6 +30,10 @@ class PackageDisabler():
     old_syntaxes = None
     old_color_schemes = None
 
+    def __init__(self):
+        self.pc_settings = sublime.load_settings(pc_settings_filename())
+        self.debug = self.pc_settings.get('debug')
+
     def get_version(self, package):
         """
         Gets the current version of a package
@@ -51,7 +55,7 @@ class PackageDisabler():
 
         return 'unknown version'
 
-    def disable_packages(self, packages, type='upgrade'):
+    def disable_packages(self, packages, operation_type='upgrade'):
         """
         Disables one or more packages before installing or upgrading to prevent
         errors where Sublime Text tries to read files that no longer exist, or
@@ -60,7 +64,7 @@ class PackageDisabler():
         :param packages:
             The string package name, or an array of strings
 
-        :param type:
+        :param operation_type:
             The type of operation that caused the package to be disabled:
              - "upgrade"
              - "remove"
@@ -71,12 +75,9 @@ class PackageDisabler():
         :return:
             A list of package names that were disabled
         """
+        if self.debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, operation_type))
+
         settings = sublime.load_settings(preferences_filename())
-        pc_settings = sublime.load_settings(pc_settings_filename())
-
-        debug = pc_settings.get('debug')
-        if debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, type))
-
         global events
 
         if events is None:
@@ -84,10 +85,6 @@ class PackageDisabler():
 
         if not isinstance(packages, list):
             packages = [packages]
-
-        disabled = []
-        ignored = load_list_setting(settings, 'ignored_packages')
-        in_process = load_list_setting(pc_settings, 'in_process_packages')
 
         PackageDisabler.old_color_scheme_package = None
         PackageDisabler.old_color_scheme = None
@@ -99,14 +96,10 @@ class PackageDisabler():
         PackageDisabler.old_color_schemes = {}
 
         for package in packages:
-            if package not in ignored:
-                in_process.append(package)
-                ignored.append(package)
-                disabled.append(package)
 
-            if type in ['upgrade', 'remove']:
+            if operation_type in ['upgrade', 'remove']:
                 version = self.get_version(package)
-                tracker_type = 'pre_upgrade' if type == 'upgrade' else type
+                tracker_type = 'pre_upgrade' if operation_type == 'upgrade' else operation_type
                 events.add(tracker_type, package, version)
 
             global_color_scheme = settings.get('color_scheme')
@@ -141,21 +134,20 @@ class PackageDisabler():
 
         # We don't mark a package as in-process when disabling it, otherwise
         # it automatically gets re-enabled the next time Sublime Text starts
-        if type != 'disable':
-            save_list_setting(pc_settings, pc_settings_filename(), 'in_process_packages', in_process)
+        if operation_type != 'disable':
+            self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.g_packagesmanager_setting_file )
 
         # Force Sublime Text to understand the package is to be ignored
-        self._force_setting(self._force_add, 'ignored_packages', packages )
-        return disabled
+        return self._force_setting(self._force_add, 'ignored_packages', packages )
 
-    def reenable_package(self, package, type='upgrade'):
+    def reenable_package(self, package, operation_type='upgrade'):
         """
         Re-enables a package after it has been installed or upgraded
 
         :param package:
             The string package name
 
-        :param type:
+        :param operation_type:
             The type of operation that caused the package to be re-enabled:
              - "upgrade"
              - "remove"
@@ -163,14 +155,10 @@ class PackageDisabler():
              - "enable"
              - "loader"
         """
+        if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (package, operation_type))
         settings = sublime.load_settings(preferences_filename())
-        pc_settings = sublime.load_settings(pc_settings_filename())
-
-        debug = pc_settings.get('debug')
-        if debug: console_write(u'Calling reenable_package() with: %s, type: %s', (package, type))
 
         global events
-
         if events is None:
             from package_control import events
 
@@ -178,15 +166,15 @@ class PackageDisabler():
 
         if package in ignored:
 
-            if type in ['install', 'upgrade']:
+            if operation_type in ['install', 'upgrade']:
                 version = self.get_version(package)
-                tracker_type = 'post_upgrade' if type == 'upgrade' else type
+                tracker_type = 'post_upgrade' if operation_type == 'upgrade' else operation_type
                 events.add(tracker_type, package, version)
                 events.clear(tracker_type, package, future=True)
-                if type == 'upgrade':
+                if operation_type == 'upgrade':
                     events.clear('pre_upgrade', package)
 
-            elif type == 'remove':
+            elif operation_type == 'remove':
                 events.clear('remove', package)
 
             # Force Sublime Text to understand the package is to be unignored
@@ -194,7 +182,7 @@ class PackageDisabler():
 
             corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
 
-            if type == 'remove' and PackageDisabler.old_theme_package == package:
+            if operation_type == 'remove' and PackageDisabler.old_theme_package == package:
                 message = text.format(u'''
                     PackagesManager
 
@@ -216,7 +204,7 @@ class PackageDisabler():
                 if PackageDisabler.old_color_schemes is None:
                     PackageDisabler.old_color_schemes = {}
 
-                if type == 'upgrade' and package in PackageDisabler.old_syntaxes:
+                if operation_type == 'upgrade' and package in PackageDisabler.old_syntaxes:
                     for view_syntax in PackageDisabler.old_syntaxes[package]:
                         view, syntax = view_syntax
                         if resource_exists(syntax):
@@ -225,7 +213,7 @@ class PackageDisabler():
                             console_write(u'The syntax "%s" no longer exists' % syntax)
                             syntax_errors.add(syntax)
 
-                if type == 'upgrade' and PackageDisabler.old_color_scheme_package == package:
+                if operation_type == 'upgrade' and PackageDisabler.old_color_scheme_package == package:
                     if resource_exists(PackageDisabler.old_color_scheme):
                         settings.set('color_scheme', PackageDisabler.old_color_scheme)
                     else:
@@ -241,7 +229,7 @@ class PackageDisabler():
                             '''
                         ))
 
-                if type == 'upgrade' and package in PackageDisabler.old_color_schemes:
+                if operation_type == 'upgrade' and package in PackageDisabler.old_color_schemes:
                     for view_scheme in PackageDisabler.old_color_schemes[package]:
                         view, scheme = view_scheme
                         if resource_exists(scheme):
@@ -250,7 +238,7 @@ class PackageDisabler():
                             console_write(u'The color scheme "%s" no longer exists' % scheme)
                             color_scheme_errors.add(scheme)
 
-                if type == 'upgrade' and PackageDisabler.old_theme_package == package:
+                if operation_type == 'upgrade' and PackageDisabler.old_theme_package == package:
                     if package_file_exists(package, PackageDisabler.old_theme):
                         settings.set('theme', PackageDisabler.old_theme)
                         message = text.format(u'''
@@ -278,23 +266,21 @@ class PackageDisabler():
 
             sublime.set_timeout(delayed_settings_restore, 1000)
 
-        in_process = load_list_setting(pc_settings, 'in_process_packages')
-
-        if package in in_process:
-            in_process.remove(package)
-            save_list_setting(pc_settings, pc_settings_filename(), 'in_process_packages', in_process)
+        in_process = load_list_setting(self.pc_settings, 'in_process_packages')
+        self._force_setting(self._force_remove, 'in_process_packages', in_process, g_settings.g_packagesmanager_setting_file )
 
     def _force_setting(self, callback, *args, **kwargs):
         try:
-            callback(*args, **kwargs)
+            return callback(*args, **kwargs)
 
         except Exception as e:
             g_settings.setup_all_settings()
+            result = callback(*args, **kwargs)
 
-            callback(*args, **kwargs)
             g_settings.clean_up_sublime_settings()
+            return result
 
-    def _force_add(self, setting_name, packages_to_add=[]):
+    def _force_add(self, setting_name, packages_to_add, full_setting_path=None):
         """
             Keeps it running continually because something is setting it back. Flush just a few
             items each time. Let the packages be unloaded by Sublime Text while ensuring anyone is
@@ -303,11 +289,15 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        currently_ignored = g_settings.get_setting(setting_name)
+        if not full_setting_path: full_setting_path = g_settings.g_sublime_setting_file
         packages_to_add.sort()
 
-        print( "[package_io] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
-        print( "[package_io] setup_packages_ignored_list, ignoring the packages:      " + str( packages_to_add ) )
+        currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
+        effectively_added = [package_name for package_name in packages_to_add if package_name not in currently_ignored]
+
+        print( "[package_io] setup_packages_ignored_list, currently ignored packages: %s" % ( currently_ignored ) )
+        print( "[package_io] setup_packages_ignored_list, ignoring the packages:      %s" % ( packages_to_add ) )
+        print( "[package_io] setup_packages_ignored_list, effectively added:          %s" % ( effectively_added ) )
 
         g_settings.unique_list_append( currently_ignored, packages_to_add )
         currently_ignored.sort()
@@ -315,11 +305,11 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_setting( 'ignored_packages', currently_ignored )
+            g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_setting(setting_name)
-            print( "[package_io] currently ignored packages:                              " + str( new_ignored_list ) )
+            new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
+            print( "[package_io] currently `%s` packages: %s%s" % ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
 
             if new_ignored_list:
 
@@ -327,7 +317,9 @@ class PackageDisabler():
                         and new_ignored_list == currently_ignored:
                     break
 
-    def _force_remove(self, setting_name, packages_to_remove=[]):
+        return effectively_added
+
+    def _force_remove(self, setting_name, packages_to_remove, full_setting_path=None):
         """
             Keeps it running continually because something is setting it back. Flush just a few
             items each time. Let the packages be unloaded by Sublime Text while ensuring anyone is
@@ -336,11 +328,15 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        currently_ignored = g_settings.get_setting(setting_name)
+        if not full_setting_path: full_setting_path = g_settings.g_sublime_setting_file
         packages_to_remove.sort()
 
-        print( "[package_io] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
-        print( "[package_io] setup_packages_ignored_list, unignoring the packages:    " + str( packages_to_remove ) )
+        currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
+        effectively_added = [package_name for package_name in packages_to_remove if package_name in currently_ignored]
+
+        print( "[package_io] setup_packages_ignored_list, currently ignored packages: %s" % ( currently_ignored ) )
+        print( "[package_io] setup_packages_ignored_list, unignoring the packages:    %s" % ( packages_to_remove ) )
+        print( "[package_io] setup_packages_ignored_list, effectively added:          %s" % ( effectively_added ) )
 
         currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
         currently_ignored.sort()
@@ -348,11 +344,11 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_setting( 'ignored_packages', currently_ignored )
+            g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_setting(setting_name)
-            print( "[package_io] currently ignored packages:                              " + str( new_ignored_list ) )
+            new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
+            print( "[package_io] currently `%s` packages: %s%s" % ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
 
             if new_ignored_list:
 
@@ -360,6 +356,7 @@ class PackageDisabler():
                         and new_ignored_list == currently_ignored:
                     break
 
+        return effectively_added
 
 def resource_exists(path):
     """

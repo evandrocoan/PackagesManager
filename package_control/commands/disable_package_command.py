@@ -14,6 +14,10 @@ class DisablePackageCommand(sublime_plugin.WindowCommand, PackageDisabler):
     A command that adds a package to Sublime Text's ignored packages list
     """
 
+    def __init__(self, window):
+        PackageDisabler.__init__(self)
+        self.window = window
+
     def run(self):
         manager = PackageManager()
         packages = manager.list_all_packages()
