@@ -4,6 +4,7 @@ import re
 import json
 import zipfile
 import shutil
+from collections import OrderedDict
 from fnmatch import fnmatch
 import datetime
 import tempfile
@@ -1484,8 +1485,8 @@ class PackageManager():
                     "description": packages[package_name]['description']
                 }
                 if not is_dependency:
-                    metadata['dependencies'] = release.get('dependencies', [])
-                json.dump(metadata, f)
+                    metadata['dependencies'] = list( sorted( release.get( 'dependencies', [] ) ) )
+                json.dump( OrderedDict( sorted( metadata.items() ) ), f )
 
             # Submit install and upgrade info
             if is_upgrade:
