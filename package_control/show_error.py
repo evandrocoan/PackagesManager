@@ -60,7 +60,7 @@ def show_error(string, params=None, strip=True, indent=None):
 
 def _restart_error_messages():
     global accumulated_time
-    console_write( "Unsilencing Error Messages Boxes... Accumulated time: " + str( accumulated_time ) )
+    console_write( "Unsilencing Error Messages Boxes... Accumulated time: %.2f" % accumulated_time )
 
     if accumulated_time > 0:
         thread = Timer(accumulated_time, _restart_error_messages)
@@ -77,7 +77,7 @@ def silence_error_message_box(how_many_seconds=60.0):
     global accumulated_time
 
     global is_error_recentely_displayed
-    console_write( "Silencing Error Messages Boxes for %s seconds... Accumulated time: %s" % ( str( how_many_seconds ), str( accumulated_time ) ) )
+    console_write( "Silencing Error Messages Boxes for %.2f seconds... Accumulated time: %.2f", ( how_many_seconds, accumulated_time ) )
 
     # Enable the message dialog after x.x seconds
     if is_error_recentely_displayed:
