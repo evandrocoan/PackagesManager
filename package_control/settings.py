@@ -3,6 +3,7 @@ import sublime
 import os
 import time
 import json
+import traceback
 
 from collections import OrderedDict
 
@@ -10,6 +11,9 @@ try:
     str_cls = unicode
 except (NameError):
     str_cls = str
+
+PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) )
+CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
 
 # Globally used to count how many dependencies are found installed
 g_dependencies_installed = 0
@@ -27,6 +31,22 @@ g_packagesmanager_setting_file = ""
 
 g_settings_names = []
 g_settings_files = []
+
+
+def main_directory():
+    return get_main_directory( PACKAGE_ROOT_DIRECTORY )
+
+
+def sublime_setting_file():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
+
+
+def package_control_setting_file():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_package_control_name )
+
+
+def packagesmanager_setting_file():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_packagesmanager_name )
 
 
 def increment_dependencies_installed():
@@ -170,7 +190,8 @@ def load_data_file(file_path, wait_on_error=True):
             raise ValueError( "file_path: %s, error: %s" % ( file_path, error ) )
 
     else:
-        print( "[package_io] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
+        print( "[package_io] Error on load_data_file(1), the file '%s' does not exists! \n%s\n" % (
+               file_path, "".join( traceback.format_stack() ) ) )
 
     return dictionary_data
 
@@ -198,21 +219,18 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
             time.sleep( 0.1 )
 
 
-def load_constants(PACKAGE_ROOT_DIRECTORY):
+def load_constants():
     global g_main_directory
-    g_main_directory = get_main_directory( PACKAGE_ROOT_DIRECTORY )
+    g_main_directory = main_directory()
 
     global g_sublime_setting_file
-    g_sublime_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
+    g_sublime_setting_file = sublime_setting_file()
 
     global g_package_control_setting_file
-    g_package_control_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_package_control_name )
+    g_package_control_setting_file = package_control_setting_file()
 
     global g_packagesmanager_setting_file
-    g_packagesmanager_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_packagesmanager_name )
+    g_packagesmanager_setting_file = packagesmanager_setting_file()
 
     global g_settings_names
     global g_settings_files

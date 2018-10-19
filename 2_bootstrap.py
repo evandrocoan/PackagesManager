@@ -220,7 +220,7 @@ def plugin_unloaded():
 
 def plugin_loaded():
     global g_main_directory
-    g_main_directory = g_settings.load_constants( PACKAGE_ROOT_DIRECTORY )
+    g_main_directory = g_settings.load_constants()
 
     global g_package_control_directory
     g_package_control_directory = os.path.join( g_main_directory,
@@ -249,7 +249,7 @@ def configure_package_control_uninstaller():
     # print( " g_package_control_package:      " + str( g_package_control_package ) )
     # print( " g_package_control_directory:    " + str( g_package_control_directory ) )
     # print( " g_package_control_loader_file:  " + str( g_package_control_loader_file ) )
-    # print( " g_package_control_setting_file: " + str( g_settings.g_package_control_setting_file ) )
+    # print( " g_package_control_setting_file: " + str( g_settings.package_control_setting_file() ) )
 
     if is_package_control_installed():
         thread = uninstall_package_control()
@@ -325,8 +325,8 @@ def _uninstall_package_control():
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
 
-        _remove_package_control_from_installed_packages_setting(g_settings.g_packagesmanager_setting_file)
-        _remove_package_control_from_installed_packages_setting(g_settings.g_package_control_setting_file)
+        _remove_package_control_from_installed_packages_setting(g_settings.packagesmanager_setting_file())
+        _remove_package_control_from_installed_packages_setting(g_settings.package_control_setting_file())
 
     try:
         _try_uninstall_package_control()
@@ -356,7 +356,7 @@ def clean_package_control_settings():
 
     def _clean_package_control_settings():
         flush_settings = False
-        package_control_settings = g_settings.load_data_file( g_settings.g_package_control_setting_file )
+        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_file() )
 
         if 'bootstrapped' not in package_control_settings:
             flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
@@ -372,7 +372,7 @@ def clean_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_settings.g_package_control_setting_file, package_control_settings)
+            write_settings(g_settings.package_control_setting_file(), package_control_settings)
 
     try:
         _clean_package_control_settings()
@@ -408,9 +408,9 @@ def copy_package_control_settings():
 
     def _copy_package_control_settings():
         flush_settings = False
-        package_control_settings = g_settings.load_data_file( g_settings.g_package_control_setting_file )
-        packagesmanager_settings = g_settings.load_data_file( g_settings.g_packagesmanager_setting_file )
-        sublime_settings = g_settings.load_data_file( g_settings.g_sublime_setting_file )
+        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_file() )
+        packagesmanager_settings = g_settings.load_data_file( g_settings.packagesmanager_setting_file() )
+        sublime_settings = g_settings.load_data_file( g_settings.sublime_setting_file() )
 
         def remove_name(name_to, setting_name, settings):
             # Assure Package Control name is not copied
@@ -475,9 +475,9 @@ def copy_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_settings.g_package_control_setting_file, package_control_settings)
-            write_settings(g_settings.g_packagesmanager_setting_file, packagesmanager_settings)
-            write_settings(g_settings.g_sublime_setting_file, sublime_settings)
+            write_settings(g_settings.package_control_setting_file(), package_control_settings)
+            write_settings(g_settings.packagesmanager_setting_file(), packagesmanager_settings)
+            write_settings(g_settings.sublime_setting_file(), sublime_settings)
 
     try:
         _copy_package_control_settings()
