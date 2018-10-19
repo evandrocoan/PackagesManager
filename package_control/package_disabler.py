@@ -1,5 +1,6 @@
 import sublime
 
+import os
 import json
 import time
 
@@ -33,6 +34,7 @@ class PackageDisabler():
     def __init__(self):
         self.pc_settings = sublime.load_settings(pc_settings_filename())
         self.debug = self.pc_settings.get('debug')
+        # self.debug = True
 
     def get_version(self, package):
         """
@@ -295,9 +297,10 @@ class PackageDisabler():
         currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_add if package_name not in currently_ignored]
 
-        if self.debug: console_write( "_force_add, currently ignored packages: %s", ( currently_ignored ) )
-        if self.debug: console_write( "_force_add, ignoring the packages:      %s", ( packages_to_add ) )
-        if self.debug: console_write( "_force_add, effectively added:          %s", ( effectively_added ) )
+        if self.debug: console_write( "_force_rem, full_setting_path:                %s", ( full_setting_path ) )
+        if self.debug: console_write( "_force_add, currently add packages:           %s", ( currently_ignored ) )
+        if self.debug: console_write( "_force_add, adding the packages:              %s", ( packages_to_add ) )
+        if self.debug: console_write( "_force_add, effectively added:                %s", ( effectively_added ) )
 
         g_settings.unique_list_append( currently_ignored, packages_to_add )
         currently_ignored.sort()
@@ -308,14 +311,17 @@ class PackageDisabler():
             g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
-            if self.debug: console_write( "currently `%s` packages: %s%s", ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
+            sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
+            new_ignored_list = g_settings.get_setting( setting_name, full_setting_path )
 
-            if new_ignored_list:
+            g_settings.unique_list_append( new_ignored_list, sublime_settings.get( setting_name, [] ) )
 
-                if len( new_ignored_list ) == len( currently_ignored ) \
-                        and new_ignored_list == currently_ignored:
-                    break
+            if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
+                    " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
+
+            if len( new_ignored_list ) == len( currently_ignored ) \
+                    and new_ignored_list == currently_ignored:
+                break
 
         return effectively_added
 
@@ -334,12 +340,13 @@ class PackageDisabler():
         currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_remove if package_name in currently_ignored]
 
-        if self.debug: console_write( "_force_add, currently ignored packages: %s", ( currently_ignored ) )
-        if self.debug: console_write( "_force_add, unignoring the packages:    %s", ( packages_to_remove ) )
-        if self.debug: console_write( "_force_add, effectively added:          %s", ( effectively_added ) )
+        if self.debug: console_write( "_force_rem, full_setting_path:                %s", ( full_setting_path ) )
+        if self.debug: console_write( "_force_rem, currently add packages:           %s", ( currently_ignored ) )
+        if self.debug: console_write( "_force_rem, removing the packages:            %s", ( packages_to_remove ) )
+        if self.debug: console_write( "_force_rem, effectively added:                %s", ( effectively_added ) )
 
-        currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
         currently_ignored.sort()
+        currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
 
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
@@ -347,14 +354,17 @@ class PackageDisabler():
             g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_setting(setting_name, full_setting_path)
-            if self.debug: console_write( "currently `%s` packages: %s%s", ( setting_name, " "*(34-len(setting_name)), new_ignored_list ) )
+            sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
+            new_ignored_list = g_settings.get_setting( setting_name, full_setting_path )
 
-            if new_ignored_list:
+            g_settings.unique_list_append( new_ignored_list, sublime_settings.get( setting_name, [] ) )
 
-                if len( new_ignored_list ) == len( currently_ignored ) \
-                        and new_ignored_list == currently_ignored:
-                    break
+            if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
+                    " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
+
+            if len( new_ignored_list ) == len( currently_ignored ) \
+                    and new_ignored_list == currently_ignored:
+                break
 
         return effectively_added
 

@@ -1,6 +1,6 @@
 import sublime
-import os
 
+import os
 import time
 import json
 
@@ -137,7 +137,6 @@ def save_list_setting(settings, filename, name, new_value, old_value=None):
 
 
 def write_data_file(file_path, dictionary_data):
-    # print( "[package_io] Writing to the data file: " + file_path )
 
     with open( file_path, 'w', newline='\n', encoding='utf-8' ) as output_file:
         json.dump( dictionary_data, output_file, indent='\t', separators=(',', ': ') )
@@ -294,6 +293,9 @@ def set_setting(setting_name, new_value, full_setting_path=g_sublime_setting_fil
 
     if new_value:
         new_value.sort()
+
+    sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
+    sublime_settings.set( setting_name, new_value )
 
     sublime_settings = load_data_file( full_setting_path )
     sublime_settings[setting_name] = new_value

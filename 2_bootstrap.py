@@ -258,10 +258,7 @@ def configure_package_control_uninstaller():
     g_settings.clean_up_sublime_settings()
 
 
-def _remove_package_control_from_installed_packages_setting(setting_file_name):
-    setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % setting_file_name )
-
+def _remove_package_control_from_installed_packages_setting(setting_file):
     settings = g_settings.load_data_file( setting_file )
 
     if 'installed_packages' in settings \
@@ -309,7 +306,7 @@ def _uninstall_package_control():
         g_settings.disable_package_control_uninstaller()
 
         # Keeps it running continually because something is setting it back, enabling Package Control again
-        g_settings.setup_packages_ignored_list( package_disabler, packages_to_ignore )
+        g_settings.setup_packages_ignored_list( package_disabler, packages_to_add=packages_to_ignore )
 
         # Wait some time until `Package Control` finally get ignored
         for interval in range( 0, 10 ):
@@ -328,8 +325,8 @@ def _uninstall_package_control():
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
 
-        _remove_package_control_from_installed_packages_setting(g_packagesmanager_name)
-        _remove_package_control_from_installed_packages_setting(g_package_control_name)
+        _remove_package_control_from_installed_packages_setting(g_settings.g_packagesmanager_setting_file)
+        _remove_package_control_from_installed_packages_setting(g_settings.g_package_control_setting_file)
 
     try:
         _try_uninstall_package_control()
