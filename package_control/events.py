@@ -2,6 +2,7 @@ import threading
 
 import sublime
 
+from .console_write import console_write
 
 # This ensures we don't run into issues calling the event tracking methods
 # from threads
@@ -60,8 +61,13 @@ def clear(type, package, future=False):
 
     def do_clear():
         _lock.acquire()
-        del _tracker[type][package]
-        _lock.release()
+        try:
+            del _tracker[type][package]
+        except Exception as e:
+            console_write("events.clear: %s", (console_write))
+        finally:
+            _lock.release()
+
     if future:
         sublime.set_timeout(do_clear, 5000)
     else:
