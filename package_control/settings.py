@@ -280,18 +280,18 @@ def sort_dictionary(dictionary):
     return OrderedDict( sorted( dictionary.items() ) )
 
 
-def get_ignored_packages():
+def get_setting(setting_name):
     sublime_settings = load_data_file( g_sublime_setting_file )
-    return sublime_settings.get( "ignored_packages", [] )
+    return sublime_settings.get( setting_name, [] )
 
 
-def set_ignored_packages(ignored_packages):
+def set_setting(setting_name, ignored_packages):
 
     if ignored_packages:
         ignored_packages.sort()
 
     sublime_settings = load_data_file( g_sublime_setting_file )
-    sublime_settings["ignored_packages"] = ignored_packages
+    sublime_settings[setting_name] = ignored_packages
 
     sublime_settings = sort_dictionary( sublime_settings )
     write_data_file( g_sublime_setting_file, sublime_settings )

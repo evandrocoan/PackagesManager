@@ -291,6 +291,7 @@ def uninstall_package_control():
         print( "[2_bootstrap.py] uninstall_package_control, is_allowed_to_run: False" )
         return
 
+    print( "" )
     print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
     package_disabler   = PackageDisabler()

@@ -145,18 +145,20 @@ class PackageDisabler():
             save_list_setting(pc_settings, pc_settings_filename(), 'in_process_packages', in_process)
 
         # Force Sublime Text to understand the package is to be ignored
+        self._force_setting(self._force_add, 'ignored_packages', packages )
+        return disabled
+
+    def _force_setting(self, callback, *args, **kwargs):
         try:
-            self._force_ignore_packages(packages_to_add=packages)
+            callback(*args, **kwargs)
 
         except Exception as e:
             g_settings.setup_all_settings()
 
-            self._force_ignore_packages(packages_to_add=packages)
+            callback(*args, **kwargs)
             g_settings.clean_up_sublime_settings()
 
-        return disabled
-
-    def _force_ignore_packages(self, packages_to_add=[]):
+    def _force_add(self, setting_name, packages_to_add=[]):
         """
             Keeps it running continually because something is setting it back. Flush just a few
             items each time. Let the packages be unloaded by Sublime Text while ensuring anyone is
@@ -165,7 +167,7 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        currently_ignored = g_settings.get_ignored_packages()
+        currently_ignored = g_settings.get_setting(setting_name)
         packages_to_add.sort()
 
         print( "[package_io] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
@@ -177,11 +179,11 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_ignored_packages( currently_ignored )
+            g_settings.set_setting( 'ignored_packages', currently_ignored )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_ignored_packages()
-            print( "[package_io] currently ignored packages: " + str( new_ignored_list ) )
+            new_ignored_list = g_settings.get_setting(setting_name)
+            print( "[package_io] currently ignored packages:                              " + str( new_ignored_list ) )
 
             if new_ignored_list:
 
@@ -189,7 +191,7 @@ class PackageDisabler():
                         and new_ignored_list == currently_ignored:
                     break
 
-    def _force_unignore_packages(self, packages_to_remove=[]):
+    def _force_remove(self, setting_name, packages_to_remove=[]):
         """
             Keeps it running continually because something is setting it back. Flush just a few
             items each time. Let the packages be unloaded by Sublime Text while ensuring anyone is
@@ -198,7 +200,7 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        currently_ignored = g_settings.get_ignored_packages()
+        currently_ignored = g_settings.get_setting(setting_name)
         packages_to_remove.sort()
 
         print( "[package_io] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
@@ -210,11 +212,11 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_ignored_packages( currently_ignored )
+            g_settings.set_setting( 'ignored_packages', currently_ignored )
             time.sleep( 0.1 )
 
-            new_ignored_list = g_settings.get_ignored_packages()
-            print( "[package_io] currently ignored packages: " + str( new_ignored_list ) )
+            new_ignored_list = g_settings.get_setting(setting_name)
+            print( "[package_io] currently ignored packages:                              " + str( new_ignored_list ) )
 
             if new_ignored_list:
 
@@ -264,14 +266,7 @@ class PackageDisabler():
                 events.clear('remove', package)
 
             # Force Sublime Text to understand the package is to be unignored
-            try:
-                self._force_unignore_packages(packages_to_remove=[package])
-
-            except Exception as e:
-                g_settings.setup_all_settings()
-
-                self._force_unignore_packages(packages_to_remove=[package])
-                g_settings.clean_up_sublime_settings()
+            self._force_setting(self._force_remove, 'ignored_packages', [package] )
 
             corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
 
