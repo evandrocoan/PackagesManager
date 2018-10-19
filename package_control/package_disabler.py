@@ -319,9 +319,9 @@ class PackageDisabler():
             if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
                     " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
 
-            if len( new_ignored_list ) == len( currently_ignored ) \
-                    and new_ignored_list == currently_ignored:
-                break
+            # if len( new_ignored_list ) == len( currently_ignored ) \
+            #         and new_ignored_list == currently_ignored:
+            #     break
 
         return effectively_added
 
@@ -362,9 +362,9 @@ class PackageDisabler():
             if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
                     " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
 
-            if len( new_ignored_list ) == len( currently_ignored ) \
-                    and new_ignored_list == currently_ignored:
-                break
+            # if len( new_ignored_list ) == len( currently_ignored ) \
+            #         and new_ignored_list == currently_ignored:
+            #     break
 
         return effectively_added
 
