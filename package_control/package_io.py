@@ -1,11 +1,10 @@
+import sublime
+
 import os
 import zipfile
 
-import sublime
-
 from .console_write import console_write
 from .open_compat import open_compat, read_compat
-
 
 def read_package_file(package, relative_path, binary=False):
     """
@@ -174,3 +173,4 @@ def _zip_file_exists(package, relative_path):
 
     except (KeyError):
         return False
+

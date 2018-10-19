@@ -13,13 +13,11 @@ import sublime_plugin
 
 PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
 CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
-dummy_record_setting   = "not_your_business"
 
 g_package_control_name = "Package Control"
 g_packagesmanager_name = "PackagesManager"
 g_package_control_loader_name = "0_package_control_loader"
 g_packagesmanager_loader_name = "0_packagesmanager_loader"
-g_sublime_setting_name = "Preferences"
 
 g_is_running = False
 IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
@@ -39,13 +37,13 @@ if sys.version_info < (3,):
         os.remove(installed_file)
 
 if sys.version_info < (3,):
-    from package_control.settings import add_package_control_on_change, disable_package_control_uninstaller
+    from package_control import settings as g_settings
     from package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from package_control.package_manager import PackageManager
     from package_control import loader, text, sys_path
 
 else:
-    from .package_control.settings import add_package_control_on_change, disable_package_control_uninstaller
+    from .package_control import settings as g_settings
     from .package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from .package_control.package_manager import PackageManager
     from .package_control import loader, text, sys_path
@@ -217,47 +215,27 @@ if sys.version_info < (3,):
 
 
 def plugin_unloaded():
-    disable_package_control_uninstaller()
+    g_settings.disable_package_control_uninstaller()
 
 
 def plugin_loaded():
     global g_main_directory
-    g_main_directory = get_main_directory( PACKAGE_ROOT_DIRECTORY )
+    g_main_directory = g_settings.load_constants( PACKAGE_ROOT_DIRECTORY )
 
-    global g_sublime_setting_file
     global g_package_control_directory
-
-    global g_package_control_package
-    global g_package_control_loader_file
-    global g_package_control_setting_file
-    global g_packagesmanager_setting_file
-
-    manager  = PackageManager()
-    settings = manager.settings.copy()
-
     g_package_control_directory = os.path.join( g_main_directory,
             "Packages", g_package_control_name )
 
-    g_sublime_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
-
-    g_package_control_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_package_control_name )
-
-    g_packagesmanager_setting_file = os.path.join( g_main_directory,
-            "Packages", "User", "%s.sublime-settings" % g_packagesmanager_name )
-
+    global g_package_control_package
     g_package_control_package = os.path.join( g_main_directory,
             "Installed Packages", "%s.sublime-package" % g_package_control_name )
 
+    global g_package_control_loader_file
     g_package_control_loader_file = os.path.join( g_main_directory,
             "Installed Packages", "%s.sublime-package" % g_package_control_loader_name )
 
-    global g_settings_names
-    global g_settings_files
-
-    g_settings_names = [g_package_control_name, g_packagesmanager_name, g_sublime_setting_name]
-    g_settings_files = [g_package_control_setting_file, g_packagesmanager_setting_file, g_sublime_setting_file]
+    manager  = PackageManager()
+    settings = manager.settings.copy()
 
     threading.Thread(target=_background_bootstrap, args=(settings,)).start()
     threading.Thread(target=configure_package_control_uninstaller).start()
@@ -265,52 +243,33 @@ def plugin_loaded():
 
 def configure_package_control_uninstaller():
     clean_package_control_settings()
-    add_package_control_on_change( uninstall_package_control )
+    g_settings.add_package_control_on_change( uninstall_package_control )
 
     # print( " is_package_control_installed()  " + str( is_package_control_installed() ) )
     # print( " g_package_control_package:      " + str( g_package_control_package ) )
     # print( " g_package_control_directory:    " + str( g_package_control_directory ) )
     # print( " g_package_control_loader_file:  " + str( g_package_control_loader_file ) )
-    # print( " g_package_control_setting_file: " + str( g_package_control_setting_file ) )
+    # print( " g_package_control_setting_file: " + str( g_settings.g_package_control_setting_file ) )
 
     if is_package_control_installed():
         uninstall_package_control()
 
-    clean_up_sublime_settings()
-
-
-def clean_up_sublime_settings():
-    """
-        Removes the dummy setting added by setup_all_settings().
-    """
-
-    for setting_file in g_settings_files:
-
-        for index in range( 0, 3 ):
-            sublime_settings = load_data_file( setting_file )
-
-            if dummy_record_setting in sublime_settings:
-                del sublime_settings[dummy_record_setting]
-
-                sublime_settings = sort_dictionary( sublime_settings )
-                write_data_file( setting_file, sublime_settings )
-
-                time.sleep( 0.1 )
+    g_settings.clean_up_sublime_settings()
 
 
 def _remove_package_control_from_installed_packages_setting(setting_file_name):
     setting_file = os.path.join( g_main_directory,
             "Packages", "User", "%s.sublime-settings" % setting_file_name )
 
-    settings = load_data_file( setting_file )
+    settings = g_settings.load_data_file( setting_file )
 
     if 'installed_packages' in settings \
             and g_package_control_name in settings['installed_packages']:
 
         settings['installed_packages'].remove(g_package_control_name)
-        settings = sort_dictionary( settings )
+        settings = g_settings.sort_dictionary( settings )
 
-        write_data_file( setting_file, settings )
+        g_settings.write_data_file( setting_file, settings )
 
 
 def uninstall_package_control():
@@ -339,10 +298,10 @@ def uninstall_package_control():
 
     def _uninstall_package_control():
         silence_error_message_box( 63.0 )
-        disable_package_control_uninstaller()
+        g_settings.disable_package_control_uninstaller()
 
         # Keeps it running continually because something is setting it back, enabling Package Control again
-        setup_packages_ignored_list( package_disabler, packages_to_ignore )
+        g_settings.setup_packages_ignored_list( package_disabler, packages_to_ignore )
 
         # Wait some time until `Package Control` finally get ignored
         for interval in range( 0, 10 ):
@@ -368,12 +327,12 @@ def uninstall_package_control():
         _uninstall_package_control()
 
     except:
-        setup_all_settings()
+        g_settings.setup_all_settings()
         _uninstall_package_control()
 
     finally:
-        setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
-        add_package_control_on_change( uninstall_package_control )
+        g_settings.setup_packages_ignored_list( package_disabler, packages_to_remove=packages_to_ignore )
+        g_settings.add_package_control_on_change( uninstall_package_control )
 
         clean_package_control_settings()
         copy_package_control_settings()
@@ -390,7 +349,7 @@ def clean_package_control_settings():
 
     def _clean_package_control_settings():
         flush_settings = False
-        package_control_settings = load_data_file( g_package_control_setting_file )
+        package_control_settings = g_settings.load_data_file( g_settings.g_package_control_setting_file )
 
         if 'bootstrapped' not in package_control_settings:
             flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
@@ -406,13 +365,13 @@ def clean_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_package_control_setting_file, package_control_settings)
+            write_settings(g_settings.g_package_control_setting_file, package_control_settings)
 
     try:
         _clean_package_control_settings()
 
     except:
-        setup_all_settings()
+        g_settings.setup_all_settings()
         _clean_package_control_settings()
 
 
@@ -442,9 +401,9 @@ def copy_package_control_settings():
 
     def _copy_package_control_settings():
         flush_settings = False
-        package_control_settings = load_data_file( g_package_control_setting_file )
-        packagesmanager_settings = load_data_file( g_packagesmanager_setting_file )
-        sublime_settings = load_data_file( g_sublime_setting_file )
+        package_control_settings = g_settings.load_data_file( g_settings.g_package_control_setting_file )
+        packagesmanager_settings = g_settings.load_data_file( g_settings.g_packagesmanager_setting_file )
+        sublime_settings = g_settings.load_data_file( g_settings.g_sublime_setting_file )
 
         def remove_name(name_to, setting_name, settings):
             # Assure Package Control name is not copied
@@ -509,21 +468,21 @@ def copy_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_package_control_setting_file, package_control_settings)
-            write_settings(g_packagesmanager_setting_file, packagesmanager_settings)
-            write_settings(g_sublime_setting_file, sublime_settings)
+            write_settings(g_settings.g_package_control_setting_file, package_control_settings)
+            write_settings(g_settings.g_packagesmanager_setting_file, packagesmanager_settings)
+            write_settings(g_settings.g_sublime_setting_file, sublime_settings)
 
     try:
         _copy_package_control_settings()
 
     except:
-        setup_all_settings()
+        g_settings.setup_all_settings()
         _copy_package_control_settings()
 
 
 def write_settings(setting_file, settings):
-    settings = sort_dictionary( settings )
-    write_data_file( setting_file, settings )
+    settings = g_settings.sort_dictionary( settings )
+    g_settings.write_data_file( setting_file, settings )
 
 
 def copy_list_setting(setting_name, package_control_settings, packagesmanager_settings, alternative=None):
@@ -570,107 +529,10 @@ def copy_value_setting(setting_name, source_settings, destine_settings):
     return flush_settings
 
 
-def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_to_remove=[]):
-    """
-        Flush just a few items each time. Let the packages be unloaded by Sublime Text while
-        ensuring anyone is putting them back in.
-
-        Randomly reverting back the `ignored_packages` setting on batch operations
-        https://github.com/SublimeTextIssues/Core/issues/2132
-    """
-    currently_ignored = get_ignored_packages()
-
-    packages_to_add.sort()
-    packages_to_remove.sort()
-
-    print( "[2_bootstrap.py] setup_packages_ignored_list, currently ignored packages: " + str( currently_ignored ) )
-    print( "[2_bootstrap.py] setup_packages_ignored_list, ignoring the packages:      " + str( packages_to_add ) )
-    print( "[2_bootstrap.py] setup_packages_ignored_list, unignoring the packages:    " + str( packages_to_remove ) )
-
-    currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
-    unique_list_append( currently_ignored, packages_to_add )
-
-    currently_ignored.sort()
-    ignoring_type = "remove"
-
-    # This adds them to the `in_process` list on the Package Control.sublime-settings file
-    if len( packages_to_add ):
-        package_disabler.disable_packages( packages_to_add, ignoring_type )
-        time.sleep( 0.1 )
-
-    # This should remove them from the `in_process` list on the Package Control.sublime-settings file
-    if len( packages_to_remove ):
-        package_disabler.reenable_package( packages_to_remove, ignoring_type )
-        time.sleep( 0.1 )
-
-    # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
-    # ensure we override this.
-    for interval in range( 0, 30 ):
-        set_ignored_packages( currently_ignored )
-        time.sleep( 0.1 )
-
-        if len( packages_to_add ):
-
-            if not is_package_control_installed():
-                break
-
-        if len( packages_to_remove ):
-            new_ignored_list = get_ignored_packages()
-            print( "[2_bootstrap.py] packages_to_remove, currently ignored packages: " + str( new_ignored_list ) )
-
-            if new_ignored_list:
-
-                if len( new_ignored_list ) == len( currently_ignored ) \
-                        and new_ignored_list == currently_ignored:
-
-                    break
-
-
-def setup_all_settings():
-
-    for setting_name in g_settings_names:
-        setup_sublime_settings( setting_name + ".sublime-settings" )
-
-
-def setup_sublime_settings(setting_file_name):
-    """
-        Removes trailing commas and comments from the settings file, allowing it to be loaded by
-        json parser.
-    """
-
-    for index in range( 0, 10 ):
-        sublime_settings = sublime.load_settings( setting_file_name )
-        sublime_settings.set( dummy_record_setting, index )
-
-        sublime.save_settings( setting_file_name )
-        time.sleep( 0.1 )
-
-
 def is_package_control_installed():
     return os.path.exists( g_package_control_loader_file ) \
             or os.path.exists( g_package_control_package ) \
             or os.path.exists( g_package_control_directory )
-
-
-def sort_dictionary(dictionary):
-    return OrderedDict( sorted( dictionary.items() ) )
-
-
-def get_ignored_packages():
-    sublime_settings = load_data_file( g_sublime_setting_file )
-    return sublime_settings.get( "ignored_packages", [] )
-
-
-def set_ignored_packages(ignored_packages):
-
-    if ignored_packages:
-        ignored_packages.sort()
-
-    sublime_settings = load_data_file( g_sublime_setting_file )
-    sublime_settings["ignored_packages"] = ignored_packages
-
-    sublime_settings = sort_dictionary( sublime_settings )
-    write_data_file( g_sublime_setting_file, sublime_settings )
 
 
 def is_allowed_to_run():
@@ -682,16 +544,6 @@ def is_allowed_to_run():
 
     g_is_running = True
     return True
-
-
-def unique_list_append(a_list, *lists):
-
-    for _list in lists:
-
-        for item in _list:
-
-            if item not in a_list:
-                a_list.append( item )
 
 
 def safe_remove(absolute_path):
@@ -713,58 +565,4 @@ def _delete_read_only_file(action, name, exc):
     os.chmod( name, stat.S_IWRITE )
     os.remove( name )
 
-
-def get_main_directory(current_directory):
-    possible_main_directory = os.path.normpath( os.path.dirname( os.path.dirname( current_directory ) ) )
-
-    if sublime:
-        sublime_text_packages = os.path.normpath( os.path.dirname( sublime.packages_path() ) )
-
-        if possible_main_directory == sublime_text_packages:
-            return possible_main_directory
-
-        else:
-            return sublime_text_packages
-
-    return possible_main_directory
-
-
-def write_data_file(file_path, dictionary_data):
-    # print( "[2_bootstrap.py] Writing to the data file: " + file_path )
-
-    with open( file_path, 'w', newline='\n', encoding='utf-8' ) as output_file:
-        json.dump( dictionary_data, output_file, indent='\t', separators=(',', ': ') )
-
-
-def load_data_file(file_path, wait_on_error=True):
-    """
-        Attempt to read the file some times when there is a value error. This could happen when the
-        file is currently being written by Sublime Text.
-    """
-    dictionary_data = {}
-
-    if os.path.exists( file_path ):
-        error = None
-        maximum_attempts = 3
-
-        while maximum_attempts > 0:
-
-            try:
-                with open( file_path, 'r', encoding='utf-8' ) as studio_channel_data:
-                    return json.load( studio_channel_data, object_pairs_hook=OrderedDict )
-
-            except ValueError as error:
-                print( "[2_bootstrap.py] Error, maximum_attempts %d, load_data_file: %s" % ( maximum_attempts, error ) )
-                maximum_attempts -= 1
-
-                if wait_on_error:
-                    time.sleep( 0.1 )
-
-        if maximum_attempts < 1:
-            raise ValueError( "file_path: %s, error: %s" % ( file_path, error ) )
-
-    else:
-        print( "[2_bootstrap.py] Error on load_data_file(1), the file '%s' does not exists!" % file_path )
-
-    return dictionary_data
 
