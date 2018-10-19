@@ -33,6 +33,7 @@ class PackageCleanup(threading.Thread):
         self.ignored_in_process_packages = False
 
         settings = sublime.load_settings(pc_settings_filename())
+        self.debug = settings.get('debug')
 
         # We no longer use the installed_dependencies setting because it is not
         # necessary and created issues with settings shared across operating systems
@@ -46,6 +47,8 @@ class PackageCleanup(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        if self.debug: console_write(u'Calling PackageCleanup.run()')
+
         # This song and dance is necessary so PackagesManager doesn't try to clean
         # itself up, but also get properly marked as installed in the settings
         installed_packages_at_start = list(self.original_installed_packages)
@@ -463,6 +466,7 @@ class PackageCleanup(threading.Thread):
             A list of the string package names of all dependencies that are
             currently installed on the filesystem.
         """
+        if self.debug: console_write(u'Calling PackageCleanup.finish()')
 
         # Make sure we didn't accidentally ignore packages because something
         # was interrupted before it completed.
@@ -470,30 +474,21 @@ class PackageCleanup(threading.Thread):
         pc_settings = sublime.load_settings(pc_filename)
 
         in_process = load_list_setting(pc_settings, 'in_process_packages')
-        if in_process and not self.ignored_in_process_packages:
-            filename = preferences_filename()
-            settings = sublime.load_settings(filename)
-
-            ignored = load_list_setting(settings, 'ignored_packages')
-            new_ignored = list(ignored)
+        if not self.ignored_in_process_packages:
             for package in in_process:
-                if package in new_ignored:
-                    # This prevents removing unused dependencies from being messed up by
-                    # the functionality to re-enable packages that were left disabled
-                    # by an error.
-                    if loader.loader_package_name == package and loader.is_swapping():
-                        continue
-                    console_write(
-                        u'''
-                        The package %s is being re-enabled after a PackagesManager
-                        operation was interrupted
-                        ''',
-                        package
-                    )
-                    new_ignored.remove(package)
-
-            save_list_setting(settings, filename, 'ignored_packages', new_ignored, ignored)
-            save_list_setting(pc_settings, pc_filename, 'in_process_packages', [])
+                # This prevents removing unused dependencies from being messed up by
+                # the functionality to re-enable packages that were left disabled
+                # by an error.
+                if loader.loader_package_name == package and loader.is_swapping():
+                    continue
+                console_write(
+                    u'''
+                    The package %s is being re-enabled after a PackagesManager
+                    operation was interrupted
+                    ''',
+                    package
+                )
+                self.disabler.reenable_package(package, 'enable')
 
         save_list_setting(
             pc_settings,
