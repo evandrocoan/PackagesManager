@@ -30,7 +30,7 @@ class PackageCleanup(threading.Thread):
     def __init__(self):
         self.manager = PackageManager()
         self.disabler = PackageDisabler()
-        self.ignored_in_process_packages = False
+        self.ignore_in_process_packages = False
 
         settings = sublime.load_settings(pc_settings_filename())
         self.debug = settings.get('debug')
@@ -96,7 +96,7 @@ class PackageCleanup(threading.Thread):
                             error
                         )
                         self.disabler.disable_packages(package_name)
-                        self.ignored_in_process_packages = True
+                        self.ignore_in_process_packages = True
                         continue
 
                     os.rename(os.path.join(installed_path, file), package_file)
@@ -474,7 +474,7 @@ class PackageCleanup(threading.Thread):
         pc_settings = sublime.load_settings(pc_filename)
 
         in_process = load_list_setting(pc_settings, 'in_process_packages')
-        if not self.ignored_in_process_packages:
+        if not self.ignore_in_process_packages:
             for package in in_process:
                 # This prevents removing unused dependencies from being messed up by
                 # the functionality to re-enable packages that were left disabled

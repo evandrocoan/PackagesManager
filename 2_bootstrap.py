@@ -413,26 +413,20 @@ def copy_package_control_settings():
         sublime_settings = g_settings.load_data_file( g_settings.sublime_setting_file() )
 
         def remove_name(name_to, setting_name, settings):
-            # Assure Package Control name is not copied
             while setting_name in settings and \
                     name_to in settings[setting_name]:
                 settings[setting_name].remove( name_to )
 
         # Assure any lost package on `in_process_packages` is added
         flush_settings |= copy_list_setting( 'in_process_packages', package_control_settings, packagesmanager_settings, 'installed_packages')
-        flush_settings |= copy_list_setting( 'in_process_packages', packagesmanager_settings, packagesmanager_settings, 'installed_packages')
         flush_settings |= copy_list_setting( 'installed_packages', package_control_settings, packagesmanager_settings)
 
-        remove_name(g_packagesmanager_name, 'ignored_packages', sublime_settings)
-        remove_name(g_package_control_loader_name, 'ignored_packages', sublime_settings)
-
+        # Assure Package Control name is not copied
         remove_name(g_package_control_name, 'installed_packages', packagesmanager_settings)
         remove_name(g_package_control_loader_name, 'installed_packages', packagesmanager_settings)
 
-        remove_name(g_package_control_name, 'in_process_packages', packagesmanager_settings)
-        remove_name(g_packagesmanager_name, 'in_process_packages', packagesmanager_settings)
-        remove_name(g_package_control_loader_name, 'in_process_packages', packagesmanager_settings)
-        remove_name(g_packagesmanager_loader_name, 'in_process_packages', packagesmanager_settings)
+        remove_name(g_packagesmanager_name, 'ignored_packages', sublime_settings)
+        remove_name(g_packagesmanager_loader_name, 'ignored_packages', sublime_settings)
 
         # Assure Package Control `installed_packages` setting is cleaned out in case the user
         # accidentally install Package Control, then, Package Control will not attempt to install

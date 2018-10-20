@@ -302,24 +302,35 @@ def sort_dictionary(dictionary):
     return OrderedDict( sorted( dictionary.items() ) )
 
 
-def get_setting(setting_name, full_setting_path=g_sublime_setting_file):
+def get_list_setting(setting_name, full_setting_path=g_sublime_setting_file):
+    setting_base_name = os.path.basename( full_setting_path )
+    sublime_settings = sublime.load_settings( setting_base_name )
+    sublime_setting_value = sublime_settings.get( setting_name, [] )
+
     sublime_settings = load_data_file( full_setting_path )
-    return sublime_settings.get( setting_name, [] )
+    json_setting_value = sublime_settings.get( setting_name, [] )
+
+    unique_list_append( json_setting_value, sublime_setting_value )
+    return json_setting_value
 
 
-def set_setting(setting_name, new_value, full_setting_path=g_sublime_setting_file):
+def set_list_setting(setting_name, new_value, full_setting_path=g_sublime_setting_file):
+    setting_base_name = os.path.basename( full_setting_path )
 
     if new_value:
         new_value.sort()
-
-    sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
-    sublime_settings.set( setting_name, new_value )
 
     sublime_settings = load_data_file( full_setting_path )
     sublime_settings[setting_name] = new_value
 
     sublime_settings = sort_dictionary( sublime_settings )
     write_data_file( full_setting_path, sublime_settings )
+
+    # Sublime Text saves the file asynchronously, then, this will corrupt the file when the next
+    # call to load_data_file() is performed. Then, we only force Sublime Text to reload the file.
+    sublime_settings = sublime.load_settings( setting_base_name )
+    # sublime_settings.set( setting_name, new_value )
+    # sublime.save_settings( setting_base_name)
 
 
 def unique_list_append(a_list, *lists):

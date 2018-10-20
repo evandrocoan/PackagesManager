@@ -63,8 +63,8 @@ def clear(type, package, future=False):
         _lock.acquire()
         try:
             del _tracker[type][package]
-        except Exception as e:
-            console_write("events.clear: %s", (console_write))
+        except Exception as error:
+            console_write("events.clear key error: %s", (error))
         finally:
             _lock.release()
 

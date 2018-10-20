@@ -3,6 +3,8 @@ import sublime
 import os
 import json
 import time
+import random
+import threading
 
 from . import text
 from . import settings as g_settings
@@ -79,14 +81,14 @@ class PackageDisabler():
         """
         if self.debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, operation_type))
 
-        settings = sublime.load_settings(preferences_filename())
         global events
-
         if events is None:
             from PackagesManager.package_control import events
 
         if not isinstance(packages, list):
             packages = [packages]
+
+        settings = sublime.load_settings(preferences_filename())
 
         PackageDisabler.old_color_scheme_package = None
         PackageDisabler.old_color_scheme = None
@@ -158,12 +160,12 @@ class PackageDisabler():
              - "loader"
         """
         if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (package, operation_type))
-        settings = sublime.load_settings(preferences_filename())
 
         global events
         if events is None:
             from package_control import events
 
+        settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')
 
         if package in ignored:
@@ -268,8 +270,25 @@ class PackageDisabler():
 
             sublime.set_timeout(delayed_settings_restore, 1000)
 
-        in_process = load_list_setting(self.pc_settings, 'in_process_packages')
-        self._force_setting(self._force_remove, 'in_process_packages', in_process, g_settings.packagesmanager_setting_file() )
+        threading.Thread(target=self._delayed_in_progress_removal, args=(package,)).start()
+
+    def _delayed_in_progress_removal(self, package_name):
+        sleep_delay = 10 + random.randint( 0, 10 )
+        time.sleep( sleep_delay )
+
+        settings = sublime.load_settings(preferences_filename())
+        ignored = load_list_setting(settings, 'ignored_packages')
+
+        if package_name in ignored:
+            console_write( "The package `%s` should not "
+                    "be in your User `ignored_packages` package settings, after %d seconds.",
+                    ( package_name, sleep_delay ) )
+
+        else:
+            console_write( "Finishing the package `%s` changes "
+                    "after randomly %s seconds delay.", ( package_name, sleep_delay ) )
+
+            self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_file() )
 
     def _force_setting(self, callback, *args, **kwargs):
         try:
@@ -294,7 +313,7 @@ class PackageDisabler():
         if not full_setting_path: full_setting_path = g_settings.sublime_setting_file()
         packages_to_add.sort()
 
-        currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
+        currently_ignored = g_settings.get_list_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_add if package_name not in currently_ignored]
 
         if self.debug: console_write( "_force_rem, full_setting_path:                %s", ( full_setting_path ) )
@@ -308,20 +327,17 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
+            g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
-            new_ignored_list = g_settings.get_setting( setting_name, full_setting_path )
-
-            g_settings.unique_list_append( new_ignored_list, sublime_settings.get( setting_name, [] ) )
+            new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
 
             if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
                     " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
 
-            # if len( new_ignored_list ) == len( currently_ignored ) \
-            #         and new_ignored_list == currently_ignored:
-            #     break
+            if len( new_ignored_list ) == len( currently_ignored ) \
+                    and new_ignored_list == currently_ignored:
+                break
 
         return effectively_added
 
@@ -337,7 +353,7 @@ class PackageDisabler():
         if not full_setting_path: full_setting_path = g_settings.sublime_setting_file()
         packages_to_remove.sort()
 
-        currently_ignored = g_settings.get_setting(setting_name, full_setting_path)
+        currently_ignored = g_settings.get_list_setting(setting_name, full_setting_path)
         effectively_added = [package_name for package_name in packages_to_remove if package_name in currently_ignored]
 
         if self.debug: console_write( "_force_rem, full_setting_path:                %s", ( full_setting_path ) )
@@ -351,20 +367,17 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
-            g_settings.set_setting( setting_name, currently_ignored, full_setting_path )
+            g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
             time.sleep( 0.1 )
 
-            sublime_settings = sublime.load_settings( os.path.basename( full_setting_path ) )
-            new_ignored_list = g_settings.get_setting( setting_name, full_setting_path )
-
-            g_settings.unique_list_append( new_ignored_list, sublime_settings.get( setting_name, [] ) )
+            new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
 
             if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
                     " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
 
-            # if len( new_ignored_list ) == len( currently_ignored ) \
-            #         and new_ignored_list == currently_ignored:
-            #     break
+            if len( new_ignored_list ) == len( currently_ignored ) \
+                    and new_ignored_list == currently_ignored:
+                break
 
         return effectively_added
 
