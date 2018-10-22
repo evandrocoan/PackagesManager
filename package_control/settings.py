@@ -18,35 +18,35 @@ CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 
 # Globally used to count how many dependencies are found installed
 g_dependencies_installed = 0
 
-g_packagesmanager_name = "PackagesManager"
-g_package_control_name = "Package Control"
+PACKAGESMANAGER_NAME = "PackagesManager"
+PACKAGE_CONTROL_NAME = "Package Control"
 
-DUMMY_RECORD_SETTING   = "not_your_business"
-g_sublime_setting_name = "Preferences"
+SUBLIME_SETTING_NAME = "Preferences"
+DUMMY_RECORD_SETTING = "not_your_business"
 
 g_main_directory = ""
-g_sublime_setting_file = ""
-g_package_control_setting_file = ""
-g_packagesmanager_setting_file = ""
+g_sublime_setting_path = ""
+g_package_control_setting_path = ""
+g_packagesmanager_setting_path = ""
 
 g_settings_names = []
-g_settings_files = []
+g_settings_paths = []
 
 
 def main_directory():
     return get_main_directory( PACKAGE_ROOT_DIRECTORY )
 
 
-def sublime_setting_file():
-    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_sublime_setting_name )
+def sublime_setting_path():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % SUBLIME_SETTING_NAME )
 
 
-def package_control_setting_file():
-    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_package_control_name )
+def package_control_setting_path():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % PACKAGE_CONTROL_NAME )
 
 
-def packagesmanager_setting_file():
-    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % g_packagesmanager_name )
+def packagesmanager_setting_path():
+    return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % PACKAGESMANAGER_NAME )
 
 
 def increment_dependencies_installed():
@@ -59,11 +59,11 @@ def get_dependencies_installed():
 
 
 def get_package_control_sublime_settings():
-    return sublime.load_settings( "%s.sublime-settings" % g_package_control_name )
+    return sublime.load_settings( "%s.sublime-settings" % PACKAGE_CONTROL_NAME )
 
 
 def add_package_control_on_change(callback):
-    get_package_control_sublime_settings().add_on_change( g_package_control_name, callback )
+    get_package_control_sublime_settings().add_on_change( PACKAGE_CONTROL_NAME, callback )
 
 
 def disable_package_control_uninstaller():
@@ -71,7 +71,7 @@ def disable_package_control_uninstaller():
         This is required to be called when uninstalling PackagesManager, otherwise we could never
         install Package Control just before uninstalling PackagesManager.
     """
-    get_package_control_sublime_settings().clear_on_change( g_package_control_name )
+    get_package_control_sublime_settings().clear_on_change( PACKAGE_CONTROL_NAME )
 
 
 def preferences_filename():
@@ -223,20 +223,20 @@ def load_constants():
     global g_main_directory
     g_main_directory = main_directory()
 
-    global g_sublime_setting_file
-    g_sublime_setting_file = sublime_setting_file()
+    global g_sublime_setting_path
+    g_sublime_setting_path = sublime_setting_path()
 
-    global g_package_control_setting_file
-    g_package_control_setting_file = package_control_setting_file()
+    global g_package_control_setting_path
+    g_package_control_setting_path = package_control_setting_path()
 
-    global g_packagesmanager_setting_file
-    g_packagesmanager_setting_file = packagesmanager_setting_file()
+    global g_packagesmanager_setting_path
+    g_packagesmanager_setting_path = packagesmanager_setting_path()
 
     global g_settings_names
-    global g_settings_files
+    global g_settings_paths
 
-    g_settings_names = [g_package_control_name, g_packagesmanager_name, g_sublime_setting_name]
-    g_settings_files = [g_package_control_setting_file, g_packagesmanager_setting_file, g_sublime_setting_file]
+    g_settings_names = [PACKAGE_CONTROL_NAME, PACKAGESMANAGER_NAME, SUBLIME_SETTING_NAME]
+    g_settings_paths = [g_package_control_setting_path, g_packagesmanager_setting_path, g_sublime_setting_path]
 
     return g_main_directory
 
@@ -279,7 +279,7 @@ def setup_sublime_settings(setting_file_name):
         time.sleep( 0.1 )
 
 
-def clean_up_sublime_settings(settings_files=g_settings_files):
+def clean_up_sublime_settings(settings_files=g_settings_paths):
     """
         Removes the dummy setting added by setup_all_settings().
     """
@@ -302,7 +302,7 @@ def sort_dictionary(dictionary):
     return OrderedDict( sorted( dictionary.items() ) )
 
 
-def get_list_setting(setting_name, full_setting_path=g_sublime_setting_file):
+def get_list_setting(setting_name, full_setting_path=g_sublime_setting_path):
     setting_base_name = os.path.basename( full_setting_path )
     sublime_settings = sublime.load_settings( setting_base_name )
     sublime_setting_value = sublime_settings.get( setting_name, [] )
@@ -314,7 +314,7 @@ def get_list_setting(setting_name, full_setting_path=g_sublime_setting_file):
     return json_setting_value
 
 
-def set_list_setting(setting_name, new_value, full_setting_path=g_sublime_setting_file):
+def set_list_setting(setting_name, new_value, full_setting_path=g_sublime_setting_path):
     setting_base_name = os.path.basename( full_setting_path )
 
     if new_value:

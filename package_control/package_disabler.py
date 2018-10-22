@@ -139,7 +139,7 @@ class PackageDisabler():
         # We don't mark a package as in-process when disabling it, otherwise
         # it automatically gets re-enabled the next time Sublime Text starts
         if operation_type != 'disable':
-            self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.packagesmanager_setting_file() )
+            self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
 
         # Force Sublime Text to understand the package is to be ignored
         return self._force_setting(self._force_add, 'ignored_packages', packages )
@@ -288,7 +288,7 @@ class PackageDisabler():
             console_write( "Finishing the package `%s` changes "
                     "after randomly %s seconds delay.", ( package_name, sleep_delay ) )
 
-            self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_file() )
+            self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
         try:
@@ -310,7 +310,7 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        if not full_setting_path: full_setting_path = g_settings.sublime_setting_file()
+        if not full_setting_path: full_setting_path = g_settings.sublime_setting_path()
         packages_to_add.sort()
 
         currently_ignored = g_settings.get_list_setting(setting_name, full_setting_path)
@@ -350,7 +350,7 @@ class PackageDisabler():
             Randomly reverting back the `ignored_packages` setting on batch operations
             https://github.com/SublimeTextIssues/Core/issues/2132
         """
-        if not full_setting_path: full_setting_path = g_settings.sublime_setting_file()
+        if not full_setting_path: full_setting_path = g_settings.sublime_setting_path()
         packages_to_remove.sort()
 
         currently_ignored = g_settings.get_list_setting(setting_name, full_setting_path)

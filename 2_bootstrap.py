@@ -14,10 +14,10 @@ import sublime_plugin
 PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
 CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
 
-g_package_control_name = "Package Control"
-g_packagesmanager_name = "PackagesManager"
-g_package_control_loader_name = "0_package_control_loader"
-g_packagesmanager_loader_name = "0_packagesmanager_loader"
+PACKAGE_CONTROL_NAME = "Package Control"
+PACKAGESMANAGER_NAME = "PackagesManager"
+PACKAGE_CONTROL_LOADER_NAME = "0_package_control_loader"
+PACKAGESMANAGER_LOADER_NAME = "0_packagesmanager_loader"
 
 g_is_running = False
 IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
@@ -29,8 +29,8 @@ if sys.version_info < (3,):
     sublime_dir = os.path.dirname(sublime.packages_path())
     pristine_dir = os.path.join(sublime_dir, 'Pristine Packages')
     installed_dir = os.path.join(sublime_dir, 'Installed Packages')
-    pristine_file = os.path.join(pristine_dir, '%s.sublime-package' % g_packagesmanager_name)
-    installed_file = os.path.join(installed_dir, '%s.sublime-package' % g_packagesmanager_name)
+    pristine_file = os.path.join(pristine_dir, '%s.sublime-package' % PACKAGESMANAGER_NAME)
+    installed_file = os.path.join(installed_dir, '%s.sublime-package' % PACKAGESMANAGER_NAME)
     if os.path.exists(pristine_file):
         os.remove(pristine_file)
     if os.path.exists(installed_file):
@@ -69,7 +69,7 @@ def _background_bootstrap(settings):
         import os
         from os.path import dirname
 
-        # This file adds the package_control subdirectory of {g_packagesmanager_name}
+        # This file adds the package_control subdirectory of {PACKAGESMANAGER_NAME}
         # to first in the sys.path so that all other packages may rely on
         # PC for utility functions, such as event helpers, adding things to
         # sys.path, downloading files from the internet, etc
@@ -103,13 +103,13 @@ def _background_bootstrap(settings):
         found = False
         if sys.version_info >= (3,):
             installed_packages_dir = os.path.join(st_dir, u'Installed Packages')
-            pc_package_path = os.path.join(installed_packages_dir, u'{g_packagesmanager_name}.sublime-package')
+            pc_package_path = os.path.join(installed_packages_dir, u'{PACKAGESMANAGER_NAME}.sublime-package')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
         if not found:
             packages_dir = os.path.join(st_dir, u'Packages')
-            pc_package_path = os.path.join(packages_dir, u'{g_packagesmanager_name}')
+            pc_package_path = os.path.join(packages_dir, u'{PACKAGESMANAGER_NAME}')
             if os.path.exists(encode(pc_package_path)):
                 found = True
 
@@ -118,7 +118,7 @@ def _background_bootstrap(settings):
             import Default.sort
             if os.path.basename(Default.sort.__file__) == 'sort.py':
                 packages_dir = dirname(dirname(Default.sort.__file__))
-                pc_package_path = os.path.join(packages_dir, u'{g_packagesmanager_name}')
+                pc_package_path = os.path.join(packages_dir, u'{PACKAGESMANAGER_NAME}')
                 if os.path.exists(encode(pc_package_path)):
                     found = True
 
@@ -136,8 +136,8 @@ def _background_bootstrap(settings):
             sys.path.remove(encode(pc_package_path))
 
         else:
-            print( u'{g_packagesmanager_name}: Error finding main directory from loader' )
-    """.format( g_packagesmanager_name=g_packagesmanager_name )
+            print( u'{PACKAGESMANAGER_NAME}: Error finding main directory from loader' )
+    """.format( PACKAGESMANAGER_NAME=PACKAGESMANAGER_NAME )
 
     base_loader_code = dedent(base_loader_code).lstrip()
     loader.add_or_update('00', 'package_control', base_loader_code)
@@ -152,14 +152,14 @@ def _background_bootstrap(settings):
         def linux_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                {g_packagesmanager_name}
+                {PACKAGESMANAGER_NAME}
 
-                {g_packagesmanager_name} just installed or upgraded the missing Python
+                {PACKAGESMANAGER_NAME} just installed or upgraded the missing Python
                 _ssl module for Linux since Sublime Text does not include it.
 
                 Please restart Sublime Text to make SSL available to all
                 packages.
-                '''.format(g_packagesmanager_name=g_packagesmanager_name)
+                '''.format(PACKAGESMANAGER_NAME=PACKAGESMANAGER_NAME)
             ))
 
         threading.Thread(
@@ -184,14 +184,14 @@ def _background_bootstrap(settings):
         def win_ssl_show_restart():
             sublime.message_dialog(text.format(
                 u'''
-                {g_packagesmanager_name}
+                {PACKAGESMANAGER_NAME}
 
-                {g_packagesmanager_name} just upgraded the Python _ssl module for ST2 on
+                {PACKAGESMANAGER_NAME} just upgraded the Python _ssl module for ST2 on
                 Windows because the bundled one does not include support for
                 modern SSL certificates.
 
                 Please restart Sublime Text to complete the upgrade.
-                '''.format( g_packagesmanager_name=g_packagesmanager_name )
+                '''.format( PACKAGESMANAGER_NAME=PACKAGESMANAGER_NAME )
             ))
 
         threading.Thread(
@@ -224,15 +224,15 @@ def plugin_loaded():
 
     global g_package_control_directory
     g_package_control_directory = os.path.join( g_main_directory,
-            "Packages", g_package_control_name )
+            "Packages", PACKAGE_CONTROL_NAME )
 
     global g_package_control_package
     g_package_control_package = os.path.join( g_main_directory,
-            "Installed Packages", "%s.sublime-package" % g_package_control_name )
+            "Installed Packages", "%s.sublime-package" % PACKAGE_CONTROL_NAME )
 
     global g_package_control_loader_file
     g_package_control_loader_file = os.path.join( g_main_directory,
-            "Installed Packages", "%s.sublime-package" % g_package_control_loader_name )
+            "Installed Packages", "%s.sublime-package" % PACKAGE_CONTROL_LOADER_NAME )
 
     manager  = PackageManager()
     settings = manager.settings.copy()
@@ -249,7 +249,7 @@ def configure_package_control_uninstaller():
     # print( " g_package_control_package:      " + str( g_package_control_package ) )
     # print( " g_package_control_directory:    " + str( g_package_control_directory ) )
     # print( " g_package_control_loader_file:  " + str( g_package_control_loader_file ) )
-    # print( " g_package_control_setting_file: " + str( g_settings.package_control_setting_file() ) )
+    # print( " package_control_setting_path(): " + str( g_settings.package_control_setting_path() ) )
 
     if is_package_control_installed():
         thread = uninstall_package_control()
@@ -262,9 +262,9 @@ def _remove_package_control_from_installed_packages_setting(setting_file):
     settings = g_settings.load_data_file( setting_file )
 
     if 'installed_packages' in settings \
-            and g_package_control_name in settings['installed_packages']:
+            and PACKAGE_CONTROL_NAME in settings['installed_packages']:
 
-        settings['installed_packages'].remove(g_package_control_name)
+        settings['installed_packages'].remove(PACKAGE_CONTROL_NAME)
         settings = g_settings.sort_dictionary( settings )
 
         g_settings.write_data_file( setting_file, settings )
@@ -299,7 +299,7 @@ def _uninstall_package_control():
     print( "[2_bootstrap.py] uninstall_package_control, Running uninstall_package_control..." )
 
     package_disabler   = PackageDisabler()
-    packages_to_ignore = [g_package_control_name, g_package_control_loader_name]
+    packages_to_ignore = [PACKAGE_CONTROL_NAME, PACKAGE_CONTROL_LOADER_NAME]
 
     def _try_uninstall_package_control():
         silence_error_message_box( 63.0 )
@@ -318,15 +318,15 @@ def _uninstall_package_control():
         time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
         package_manager = PackageManager()
 
-        package_manager.remove_package( g_package_control_name, False )
-        package_manager.remove_package( g_package_control_loader_name, False )
+        package_manager.remove_package( PACKAGE_CONTROL_NAME, False )
+        package_manager.remove_package( PACKAGE_CONTROL_LOADER_NAME, False )
 
         safe_remove( g_package_control_package )
         safe_remove( g_package_control_loader_file )
         safe_remove( g_package_control_loader_file + "-new" )
 
-        _remove_package_control_from_installed_packages_setting(g_settings.packagesmanager_setting_file())
-        _remove_package_control_from_installed_packages_setting(g_settings.package_control_setting_file())
+        _remove_package_control_from_installed_packages_setting(g_settings.packagesmanager_setting_path())
+        _remove_package_control_from_installed_packages_setting(g_settings.package_control_setting_path())
 
     try:
         _try_uninstall_package_control()
@@ -356,7 +356,7 @@ def clean_package_control_settings():
 
     def _clean_package_control_settings():
         flush_settings = False
-        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_file() )
+        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_path() )
 
         if 'bootstrapped' not in package_control_settings:
             flush_settings |= ensure_not_removed_bootstrapped( package_control_settings )
@@ -372,7 +372,7 @@ def clean_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_settings.package_control_setting_file(), package_control_settings)
+            write_settings(g_settings.package_control_setting_path(), package_control_settings)
 
     try:
         _clean_package_control_settings()
@@ -408,9 +408,9 @@ def copy_package_control_settings():
 
     def _copy_package_control_settings():
         flush_settings = False
-        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_file() )
-        packagesmanager_settings = g_settings.load_data_file( g_settings.packagesmanager_setting_file() )
-        sublime_settings = g_settings.load_data_file( g_settings.sublime_setting_file() )
+        package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_path() )
+        packagesmanager_settings = g_settings.load_data_file( g_settings.packagesmanager_setting_path() )
+        sublime_settings = g_settings.load_data_file( g_settings.sublime_setting_path() )
 
         def remove_name(name_to, setting_name, settings):
             while setting_name in settings and \
@@ -422,11 +422,11 @@ def copy_package_control_settings():
         flush_settings |= copy_list_setting( 'installed_packages', package_control_settings, packagesmanager_settings)
 
         # Assure Package Control name is not copied
-        remove_name(g_package_control_name, 'installed_packages', packagesmanager_settings)
-        remove_name(g_package_control_loader_name, 'installed_packages', packagesmanager_settings)
+        remove_name(PACKAGE_CONTROL_NAME, 'installed_packages', packagesmanager_settings)
+        remove_name(PACKAGE_CONTROL_LOADER_NAME, 'installed_packages', packagesmanager_settings)
 
-        remove_name(g_packagesmanager_name, 'ignored_packages', sublime_settings)
-        remove_name(g_packagesmanager_loader_name, 'ignored_packages', sublime_settings)
+        remove_name(PACKAGESMANAGER_NAME, 'ignored_packages', sublime_settings)
+        remove_name(PACKAGESMANAGER_LOADER_NAME, 'ignored_packages', sublime_settings)
 
         # Assure Package Control `installed_packages` setting is cleaned out in case the user
         # accidentally install Package Control, then, Package Control will not attempt to install
@@ -469,9 +469,9 @@ def copy_package_control_settings():
 
         # Avoid infinity loop of writing to the settings file, because this is called every time they change
         if flush_settings:
-            write_settings(g_settings.package_control_setting_file(), package_control_settings)
-            write_settings(g_settings.packagesmanager_setting_file(), packagesmanager_settings)
-            write_settings(g_settings.sublime_setting_file(), sublime_settings)
+            write_settings(g_settings.package_control_setting_path(), package_control_settings)
+            write_settings(g_settings.packagesmanager_setting_path(), packagesmanager_settings)
+            write_settings(g_settings.sublime_setting_path(), sublime_settings)
 
     try:
         _copy_package_control_settings()
