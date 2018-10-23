@@ -49,6 +49,16 @@ else:
     from .package_control import loader, text, sys_path
 
 
+def compare_text_with_file(input_text, file):
+    """
+        Return `True` when the provided text and the `file` contents are equal.
+    """
+
+    with open( file, "r", encoding='utf-8' ) as file:
+        text = file.read()
+        return input_text == text
+
+
 def _background_bootstrap(settings):
     """
     Runs the bootstrap process in a thread since it may need to block to update
@@ -203,10 +213,12 @@ def _background_bootstrap(settings):
 
     packages_directory = os.path.dirname( PACKAGE_ROOT_DIRECTORY )
     reenable_package_code = dedent(reenable_package_code).lstrip()
-    reloader_package_file = os.path.join( packages_directory, "zz_packagesmanager_reenabler.py" )
+    reenable_package_file = os.path.join( packages_directory, "zz_packagesmanager_reenabler.py" )
 
-    with open( reloader_package_file, 'w', newline='\n', encoding='utf-8' ) as output_file:
-        output_file.write( reenable_package_code )
+    if not compare_text_with_file(reenable_package_code, reenable_package_file):
+
+        with open( reenable_package_file, 'w', newline='\n', encoding='utf-8' ) as output_file:
+            output_file.write( reenable_package_code )
 
     base_loader_code = r"""
         import sys
