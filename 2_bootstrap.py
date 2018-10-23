@@ -54,9 +54,11 @@ def compare_text_with_file(input_text, file):
         Return `True` when the provided text and the `file` contents are equal.
     """
 
-    with open( file, "r", encoding='utf-8' ) as file:
-        text = file.read()
-        return input_text == text
+    if os.path.exists( file ):
+
+        with open( file, "r", encoding='utf-8' ) as file:
+            text = file.read()
+            return input_text == text
 
 
 def _background_bootstrap(settings):
@@ -382,7 +384,7 @@ def plugin_unloaded():
 
 def plugin_loaded():
     global g_main_directory
-    g_main_directory = g_settings.load_constants()
+    g_main_directory = g_settings.main_directory()
 
     global g_package_control_directory
     g_package_control_directory = os.path.join( g_main_directory,

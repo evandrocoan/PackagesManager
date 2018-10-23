@@ -19,6 +19,7 @@ class PackageInstaller(PackageDisabler):
     def __init__(self):
         PackageDisabler.__init__(self)
         self.manager = PackageManager()
+        self.debug = self.manager.settings.get('debug')
         # Track what the color scheme was before upgrade so we can restore it
         self.old_color_scheme_package = None
         self.old_color_scheme = None
@@ -70,6 +71,7 @@ class PackageInstaller(PackageDisabler):
             if package in installed_packages:
                 installed = True
                 metadata = self.manager.get_metadata(package)
+                if self.debug: print('package', package, 'metadata', metadata.get('version'), 'release_version', release['version'])
                 if metadata.get('version'):
                     installed_version = metadata['version']
                 else:

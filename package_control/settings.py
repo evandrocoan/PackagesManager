@@ -24,14 +24,6 @@ PACKAGE_CONTROL_NAME = "Package Control"
 SUBLIME_SETTING_NAME = "Preferences"
 DUMMY_RECORD_SETTING = "not_your_business"
 
-g_main_directory = ""
-g_sublime_setting_path = ""
-g_package_control_setting_path = ""
-g_packagesmanager_setting_path = ""
-
-g_settings_names = []
-g_settings_paths = []
-
 
 def main_directory():
     return get_main_directory( PACKAGE_ROOT_DIRECTORY )
@@ -47,6 +39,14 @@ def package_control_setting_path():
 
 def packagesmanager_setting_path():
     return os.path.join( main_directory(), "Packages", "User", "%s.sublime-settings" % PACKAGESMANAGER_NAME )
+
+
+def settings_names():
+    return [PACKAGE_CONTROL_NAME, PACKAGESMANAGER_NAME, SUBLIME_SETTING_NAME]
+
+
+def settings_paths():
+    return [package_control_setting_path(), packagesmanager_setting_path(), sublime_setting_path()]
 
 
 def increment_dependencies_installed():
@@ -170,7 +170,6 @@ def load_data_file(file_path, wait_on_error=True):
     dictionary_data = {}
 
     if os.path.exists( file_path ):
-        error = None
         maximum_attempts = 3
 
         while maximum_attempts > 0:
@@ -187,7 +186,7 @@ def load_data_file(file_path, wait_on_error=True):
                     time.sleep( 0.1 )
 
         if maximum_attempts < 1:
-            raise ValueError( "file_path: %s, error: %s" % ( file_path, error ) )
+            raise ValueError( "maximum_attempts < 1 on file_path: %s" % file_path )
 
     else:
         print( "[package_io] Error on load_data_file(1), the file '%s' does not exists! \n%s\n" % (
@@ -219,28 +218,6 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
             time.sleep( 0.1 )
 
 
-def load_constants():
-    global g_main_directory
-    g_main_directory = main_directory()
-
-    global g_sublime_setting_path
-    g_sublime_setting_path = sublime_setting_path()
-
-    global g_package_control_setting_path
-    g_package_control_setting_path = package_control_setting_path()
-
-    global g_packagesmanager_setting_path
-    g_packagesmanager_setting_path = packagesmanager_setting_path()
-
-    global g_settings_names
-    global g_settings_paths
-
-    g_settings_names = [PACKAGE_CONTROL_NAME, PACKAGESMANAGER_NAME, SUBLIME_SETTING_NAME]
-    g_settings_paths = [g_package_control_setting_path, g_packagesmanager_setting_path, g_sublime_setting_path]
-
-    return g_main_directory
-
-
 def get_main_directory(current_directory):
     possible_main_directory = os.path.normpath( os.path.dirname( os.path.dirname( current_directory ) ) )
 
@@ -256,12 +233,13 @@ def get_main_directory(current_directory):
     return possible_main_directory
 
 
-def setup_all_settings(settings_names=g_settings_names):
+def setup_all_settings(_settings_names=None):
     """
         Converts from Sublime Text settings to valid JSON objects.
     """
+    if not _settings_names: _settings_names = settings_names()
 
-    for setting_name in settings_names:
+    for setting_name in _settings_names:
         setup_sublime_settings( setting_name + ".sublime-settings" )
 
 
@@ -279,21 +257,35 @@ def setup_sublime_settings(setting_file_name):
         time.sleep( 0.1 )
 
 
-def clean_up_sublime_settings(settings_files=g_settings_paths):
+def clean_up_sublime_settings(_settings_paths=None, _settings_names=None):
     """
         Removes the dummy setting added by setup_all_settings().
     """
 
-    for setting_file in settings_files:
+    try:
+        _clean_up_sublime_settings(_settings_paths)
+
+    except Exception:
+        setup_all_settings( _settings_names )
+        _clean_up_sublime_settings( _settings_paths )
+
+
+def _clean_up_sublime_settings(_settings_paths=None):
+    """
+        Removes the dummy setting added by setup_all_settings().
+    """
+    if not _settings_paths: _settings_paths = settings_paths()
+
+    for setting_path in _settings_paths:
 
         for index in range( 0, 3 ):
-            sublime_settings = load_data_file( setting_file )
+            sublime_settings = load_data_file( setting_path )
 
             if DUMMY_RECORD_SETTING in sublime_settings:
                 del sublime_settings[DUMMY_RECORD_SETTING]
 
                 sublime_settings = sort_dictionary( sublime_settings )
-                write_data_file( setting_file, sublime_settings )
+                write_data_file( setting_path, sublime_settings )
 
                 time.sleep( 0.1 )
 
@@ -302,7 +294,9 @@ def sort_dictionary(dictionary):
     return OrderedDict( sorted( dictionary.items() ) )
 
 
-def get_list_setting(setting_name, full_setting_path=g_sublime_setting_path):
+def get_list_setting(setting_name, full_setting_path=None):
+    if not full_setting_path: full_setting_path = sublime_setting_path()
+
     setting_base_name = os.path.basename( full_setting_path )
     sublime_settings = sublime.load_settings( setting_base_name )
     sublime_setting_value = sublime_settings.get( setting_name, [] )
@@ -314,12 +308,13 @@ def get_list_setting(setting_name, full_setting_path=g_sublime_setting_path):
     return json_setting_value
 
 
-def set_list_setting(setting_name, new_value, full_setting_path=g_sublime_setting_path):
-    setting_base_name = os.path.basename( full_setting_path )
+def set_list_setting(setting_name, new_value, full_setting_path=None):
+    if not full_setting_path: full_setting_path = sublime_setting_path()
 
     if new_value:
         new_value.sort()
 
+    setting_base_name = os.path.basename( full_setting_path )
     sublime_settings = load_data_file( full_setting_path )
     sublime_settings[setting_name] = new_value
 
