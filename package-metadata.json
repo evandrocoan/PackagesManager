@@ -1,6 +1,6 @@
 {
     "version": "2018.0022.1518",
-    "url": "https://packagecontrol.io",
+    "url": "https://github.com/evandrocoan/PackagesManager",
     "description": "A full-featured package manager",
     "sublime_text": "*",
     "platforms": [
