@@ -33,6 +33,8 @@ class PackageDisabler():
     old_syntaxes = None
     old_color_schemes = None
 
+    settings_lock = threading.Lock()
+
     def __init__(self):
         self.pc_settings = sublime.load_settings(pc_settings_filename())
         self.debug = self.pc_settings.get('debug')
@@ -273,7 +275,7 @@ class PackageDisabler():
         threading.Thread(target=self._delayed_in_progress_removal, args=(package,)).start()
 
     def _delayed_in_progress_removal(self, package_name):
-        sleep_delay = 10 + random.randint( 0, 10 )
+        sleep_delay = 10 + random.randint( 0, 120 )
         time.sleep( sleep_delay )
 
         settings = sublime.load_settings(preferences_filename())
@@ -291,6 +293,8 @@ class PackageDisabler():
             self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
+        self.settings_lock.acquire()
+
         try:
             return callback(*args, **kwargs)
 
@@ -300,6 +304,9 @@ class PackageDisabler():
 
             g_settings.clean_up_sublime_settings()
             return result
+
+        finally:
+            self.settings_lock.release()
 
     def _force_add(self, setting_name, packages_to_add, full_setting_path=None):
         """
@@ -328,7 +335,7 @@ class PackageDisabler():
         # ensure we override this.
         for interval in range( 0, 30 ):
             g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
-            time.sleep( 0.1 )
+            time.sleep( g_settings.IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
             new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
 
@@ -367,9 +374,10 @@ class PackageDisabler():
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 30 ):
+            console_write( "Processing %s for the packages: %s", ( setting_name, effectively_added ) )
             g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
-            time.sleep( 0.1 )
 
+            time.sleep( g_settings.IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
             new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
 
             if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,

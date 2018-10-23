@@ -15,6 +15,10 @@ except (NameError):
 PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) )
 CURRENT_PACKAGE_NAME   = os.path.basename( PACKAGE_ROOT_DIRECTORY ).rsplit('.', 1)[0]
 
+# The minimum time between multiple calls setting the `ignored_packages` setting, without triggering
+# the Sublime Text error `It appears a package is trying to ignore itself, causing a loop`
+IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
+
 # Globally used to count how many dependencies are found installed
 g_dependencies_installed = 0
 
@@ -179,7 +183,7 @@ def load_data_file(file_path, wait_on_error=True):
                     return json.load( studio_channel_data, object_pairs_hook=OrderedDict )
 
             except ValueError as error:
-                print( "[package_io] Error, maximum_attempts %d, load_data_file: %s" % ( maximum_attempts, error ) )
+                print( "[package_io] Error, maximum_attempts %d, load_data_file: %s, %s" % ( maximum_attempts, file_path, error ) )
                 maximum_attempts -= 1
 
                 if wait_on_error:
@@ -208,14 +212,14 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
     # This adds them to the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_add ):
         package_disabler.disable_packages( packages_to_add, ignoring_type )
-        time.sleep( 0.1 )
+        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
     # This should remove them from the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_remove ):
 
         for package in packages_to_remove:
             package_disabler.reenable_package( package, ignoring_type )
-            time.sleep( 0.1 )
+            time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
 
 def get_main_directory(current_directory):
@@ -254,7 +258,7 @@ def setup_sublime_settings(setting_file_name):
         sublime_settings.set( DUMMY_RECORD_SETTING, index )
 
         sublime.save_settings( setting_file_name )
-        time.sleep( 0.1 )
+        time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
 
 def clean_up_sublime_settings(_settings_paths=None, _settings_names=None):
@@ -287,7 +291,7 @@ def _clean_up_sublime_settings(_settings_paths=None):
                 sublime_settings = sort_dictionary( sublime_settings )
                 write_data_file( setting_path, sublime_settings )
 
-                time.sleep( 0.1 )
+                time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
 
 def sort_dictionary(dictionary):
@@ -315,17 +319,9 @@ def set_list_setting(setting_name, new_value, full_setting_path=None):
         new_value.sort()
 
     setting_base_name = os.path.basename( full_setting_path )
-    sublime_settings = load_data_file( full_setting_path )
-    sublime_settings[setting_name] = new_value
-
-    sublime_settings = sort_dictionary( sublime_settings )
-    write_data_file( full_setting_path, sublime_settings )
-
-    # Sublime Text saves the file asynchronously, then, this will corrupt the file when the next
-    # call to load_data_file() is performed. Then, we only force Sublime Text to reload the file.
     sublime_settings = sublime.load_settings( setting_base_name )
-    # sublime_settings.set( setting_name, new_value )
-    # sublime.save_settings( setting_base_name)
+    sublime_settings.set( setting_name, new_value )
+    sublime.save_settings( setting_base_name )
 
 
 def unique_list_append(a_list, *lists):
