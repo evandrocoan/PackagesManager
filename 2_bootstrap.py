@@ -518,6 +518,9 @@ def clean_package_control_settings():
         to its settings file.
     """
 
+    if not os.path.exists( g_settings.package_control_setting_path() ):
+        return
+
     def _clean_package_control_settings():
         flush_settings = False
         package_control_settings = g_settings.load_data_file( g_settings.package_control_setting_path() )
