@@ -33,8 +33,6 @@ class PackageDisabler():
     old_syntaxes = None
     old_color_schemes = None
 
-    settings_lock = threading.Lock()
-
     def __init__(self):
         self.pc_settings = sublime.load_settings(pc_settings_filename())
         self.debug = self.pc_settings.get('debug')
@@ -282,31 +280,18 @@ class PackageDisabler():
         ignored = load_list_setting(settings, 'ignored_packages')
 
         if package_name in ignored:
-            console_write( "The package `%s` should not "
-                    "be in your User `ignored_packages` package settings, after %d seconds.",
+            console_write( "The package %s should not "
+                    "be in your User ignored_packages package settings, after %d seconds.",
                     ( package_name, sleep_delay ) )
 
         else:
-            console_write( "Finishing the package `%s` changes "
+            console_write( "Finishing the package %s changes "
                     "after randomly %s seconds delay.", ( package_name, sleep_delay ) )
 
             self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
-        self.settings_lock.acquire()
-
-        try:
-            return callback(*args, **kwargs)
-
-        except Exception as e:
-            g_settings.setup_all_settings()
-            result = callback(*args, **kwargs)
-
-            g_settings.clean_up_sublime_settings()
-            return result
-
-        finally:
-            self.settings_lock.release()
+        return callback(*args, **kwargs)
 
     def _force_add(self, setting_name, packages_to_add, full_setting_path=None):
         """
@@ -331,20 +316,8 @@ class PackageDisabler():
         g_settings.unique_list_append( currently_ignored, packages_to_add )
         currently_ignored.sort()
 
-        # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
-        # ensure we override this.
-        for interval in range( 0, 30 ):
-            g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
-            time.sleep( g_settings.IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
-
-            new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
-
-            if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
-                    " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
-
-            if len( new_ignored_list ) == len( currently_ignored ) \
-                    and new_ignored_list == currently_ignored:
-                break
+        console_write( "Processing %s add for the packages: %s", ( setting_name, effectively_added ) )
+        g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
 
         return effectively_added
 
@@ -371,21 +344,8 @@ class PackageDisabler():
         currently_ignored.sort()
         currently_ignored = [package_name for package_name in currently_ignored if package_name not in packages_to_remove]
 
-        # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
-        # ensure we override this.
-        for interval in range( 0, 30 ):
-            console_write( "Processing %s for the packages: %s", ( setting_name, effectively_added ) )
-            g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
-
-            time.sleep( g_settings.IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
-            new_ignored_list = g_settings.get_list_setting( setting_name, full_setting_path )
-
-            if self.debug: console_write( "currently `%s` packages: %s%s - %s", ( setting_name,
-                    " "*(23-len(setting_name)), new_ignored_list, currently_ignored ) )
-
-            if len( new_ignored_list ) == len( currently_ignored ) \
-                    and new_ignored_list == currently_ignored:
-                break
+        console_write( "Processing remove %s for the packages: %s", ( setting_name, effectively_added ) )
+        g_settings.set_list_setting( setting_name, currently_ignored, full_setting_path )
 
         return effectively_added
 
