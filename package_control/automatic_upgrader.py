@@ -144,7 +144,7 @@ class AutomaticUpgrader(threading.Thread):
             )
 
             for dependency in self.missing_dependencies:
-                if self.installer.manager.install_package(dependency, is_dependency=True):
+                if self.manager.install_package(dependency, is_dependency=True):
                     console_write(u'Installed missing dependency %s', dependency)
                     increment_dependencies_installed()
 
@@ -200,7 +200,7 @@ class AutomaticUpgrader(threading.Thread):
                 sublime.set_timeout(update_installed_packages, 10)
                 package = new_name
 
-            if self.installer.manager.install_package(package):
+            if self.manager.install_package(package):
                 console_write(
                     u'''
                     Installed missing package %s
@@ -234,7 +234,7 @@ class AutomaticUpgrader(threading.Thread):
         if not self.auto_upgrade:
             return
 
-        self.package_renamer.rename_packages(self.installer.manager)
+        self.package_renamer.rename_packages(self.manager)
 
         package_list = self.installer.make_package_list(
             [
@@ -279,8 +279,8 @@ class AutomaticUpgrader(threading.Thread):
 
         for package_name in IgnoredPackagesBugFixer([info[0] for info in package_list], "upgrade"):
 
-            if self.installer.manager.install_package(package_name):
-                version = self.installer.manager.get_version(package_name)
+            if self.manager.install_package(package_name):
+                version = self.manager.get_version(package_name)
                 console_write(
                     u'''
                     Upgraded %s to %s

@@ -32,7 +32,7 @@ class PackageRenamer(PackageDisabler):
         Renames any installed packages that the user has installed.
 
         :param manager:
-            An instance of :class:`PackageInstaller`
+            An instance of :class:`PackageManager`
         """
 
         # Fetch the packages since that will pull in the renamed packages list
