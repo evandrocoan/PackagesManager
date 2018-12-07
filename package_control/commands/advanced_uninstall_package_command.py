@@ -19,11 +19,11 @@ except (NameError):
     bytes_cls = bytes
 
 
-class AdvancedInstallPackageCommand(sublime_plugin.WindowCommand):
+class AdvancedUninstallPackageCommand(sublime_plugin.WindowCommand):
 
     """
-    A command that accepts a comma-separated list of packages to install, or
-    prompts the user to paste a comma-separated list.
+    A command that accepts a comma-separated list of packages to uninstall, or
+    prompts the user to paste a comma-separated list
     """
 
     def run(self, packages=None):
@@ -37,7 +37,7 @@ class AdvancedInstallPackageCommand(sublime_plugin.WindowCommand):
             return self.start(packages)
 
         self.window.show_input_panel(
-            'Packages to Install (Comma-separated)',
+            'Packages to Uninstall (Comma-separated)',
             '',
             self.on_done,
             None,
@@ -70,41 +70,36 @@ class AdvancedInstallPackageCommand(sublime_plugin.WindowCommand):
         self.start(self.split(input))
 
     def start(self, packages):
-        thread = AdvancedInstallPackageThread(packages)
+        thread = AdvancedUninstallPackageThread(packages)
         thread.start()
-        message = 'Installing package'
+        message = 'Uninstalling package'
         if len(packages) > 1:
             message += 's'
         ThreadProgress(thread, message, '')
 
 
-class AdvancedInstallPackageThread(threading.Thread):
+class AdvancedUninstallPackageThread(threading.Thread):
 
     """
-    A thread to run the installation of one or more packages.
+    A thread to run the uninstallation of one or more packages.
     """
 
     def __init__(self, packages):
         """
         :param window:
             An instance of :class:`sublime.Window` that represents the Sublime
-            Text window to show the available package list.
+            Text window to show the available package list in.
         """
+        threading.Thread.__init__(self)
+
         self.manager = PackageManager()
         self.packages = packages
 
-        self.installed = self.manager.list_packages()
-        threading.Thread.__init__(self)
-
     def run(self):
-
-        def closure(package_name):
-            return 'install' if package_name not in self.installed else 'upgrade'
-
-        iterable = IgnoredPackagesBugFixer(self.packages, closure)
+        iterable = IgnoredPackagesBugFixer(self.packages, "remove")
 
         for package in iterable:
 
             # Do not reenable if installation deferred until next restart
-            if self.manager.install_package(package) is None:
+            if self.manager.remove_package(package) is None:
                 iterable.skip_reenable(package)

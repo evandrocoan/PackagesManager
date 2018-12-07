@@ -12,6 +12,10 @@
         "command": "advanced_install_package"
     },
     {
+        "caption": "PackagesManager: Advanced Uninstall Package",
+        "command": "advanced_uninstall_package"
+    },
+    {
         "caption": "PackagesManager: Create Package File",
         "command": "create_package"
     },

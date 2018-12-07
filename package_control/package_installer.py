@@ -37,7 +37,7 @@ class PackageInstaller(PackageDisabler):
         :param ignore_actions:
             A list of actions to ignore packages by. Valid actions include:
             `install`, `upgrade`, `downgrade`, `reinstall`, `overwrite`,
-            `pull` and `none`. `pull` andd `none` are for Git and Hg
+            `pull` and `none`. `pull` and `none` are for Git and Hg
             repositories. `pull` is present when incoming changes are detected,
             where as `none` is selected if no commits are available. `overwrite`
             is for packages that do not include version information via the
