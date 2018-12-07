@@ -91,7 +91,7 @@ class AdvancedInstallPackageThread(threading.Thread):
             Text window to show the available package list.
         """
         self.manager = PackageManager()
-        self.packages = packages
+        self.packages = [packages] if isinstance( packages, str ) else packages
 
         self.installed = self.manager.list_packages()
         threading.Thread.__init__(self)

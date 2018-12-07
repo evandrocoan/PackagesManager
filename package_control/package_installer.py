@@ -8,6 +8,7 @@ from .thread_progress import ThreadProgress
 from .package_manager import PackageManager
 from .package_disabler import PackageDisabler
 from .versions import version_comparable
+from .commands.advanced_install_package_command import AdvancedInstallPackageThread
 
 
 class PackageInstaller(PackageDisabler):
@@ -154,13 +155,7 @@ class PackageInstaller(PackageDisabler):
             return
         name = self.package_list[picked][0]
 
-        if name in self.disable_packages(name, 'install'):
-            def on_complete():
-                self.reenable_package(name, 'install')
-        else:
-            on_complete = None
-
-        thread = PackageInstallerThread(self.manager, name, on_complete)
+        thread = AdvancedInstallPackageThread(name)
         thread.start()
         ThreadProgress(
             thread,

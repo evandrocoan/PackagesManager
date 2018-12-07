@@ -93,7 +93,7 @@ class AdvancedUninstallPackageThread(threading.Thread):
         threading.Thread.__init__(self)
 
         self.manager = PackageManager()
-        self.packages = packages
+        self.packages = [packages] if isinstance( packages, str ) else packages
 
     def run(self):
         iterable = IgnoredPackagesBugFixer(self.packages, "remove")
