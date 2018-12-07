@@ -27,17 +27,17 @@ class PackageRenamer(PackageDisabler):
         settings = sublime.load_settings(pc_settings_filename())
         self.original_installed_packages = load_list_setting(settings, 'installed_packages')
 
-    def rename_packages(self, installer):
+    def rename_packages(self, manager):
         """
         Renames any installed packages that the user has installed.
 
-        :param installer:
+        :param manager:
             An instance of :class:`PackageInstaller`
         """
 
         # Fetch the packages since that will pull in the renamed packages list
-        installer.manager.list_available_packages()
-        renamed_packages = installer.manager.settings.get('renamed_packages', {})
+        manager.list_available_packages()
+        renamed_packages = manager.settings.get('renamed_packages', {})
 
         if not renamed_packages:
             renamed_packages = {}
@@ -45,7 +45,7 @@ class PackageRenamer(PackageDisabler):
         # These are packages that have been tracked as installed
         installed_packages = list(self.original_installed_packages)
         # There are the packages actually present on the filesystem
-        present_packages = installer.manager.list_packages()
+        present_packages = manager.list_packages()
 
         case_insensitive_fs = sublime.platform() in ['windows', 'osx']
 
@@ -111,7 +111,7 @@ class PackageRenamer(PackageDisabler):
 
             else:
                 time.sleep(0.7)
-                remove_result = installer.manager.remove_package(package_name)
+                remove_result = manager.remove_package(package_name)
 
                 console_write(
                     u'''
