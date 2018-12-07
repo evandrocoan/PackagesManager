@@ -3,7 +3,9 @@ import sublime
 import os
 import time
 import json
+
 import traceback
+import functools
 
 from collections import OrderedDict
 
@@ -253,7 +255,7 @@ def setup_sublime_settings(setting_file_name):
         json parser.
     """
 
-    for index in range( 0, 10 ):
+    for index in range( 0, 3 ):
         sublime_settings = sublime.load_settings( setting_file_name )
         sublime_settings.set( DUMMY_RECORD_SETTING, index )
 
@@ -314,11 +316,11 @@ def get_list_setting(setting_name, full_setting_path=None):
 
 def set_list_setting(setting_name, new_value, full_setting_path=None):
     if not full_setting_path: full_setting_path = sublime_setting_path()
+    setting_base_name = os.path.basename( full_setting_path )
 
     if new_value:
         new_value.sort()
 
-    setting_base_name = os.path.basename( full_setting_path )
     sublime_settings = sublime.load_settings( setting_base_name )
     sublime_settings.set( setting_name, new_value )
     sublime.save_settings( setting_base_name )

@@ -48,9 +48,7 @@ non_local = {
 }
 
 
-
-
-loader_package_name = u'0_packages_manager_loader'
+loader_package_name = u'0_packagesmanager_loader'
 if sys.version_info < (3,):
     loader_package_path = path.join(sys_path.packages_path, loader_package_name)
 else:

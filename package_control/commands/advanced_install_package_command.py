@@ -10,6 +10,7 @@ from ..show_error import show_error
 from ..package_manager import PackageManager
 from ..package_disabler import PackageDisabler
 from ..thread_progress import ThreadProgress
+from ..package_disabler_iterator import IgnoredPackagesBugFixer
 
 try:
     str_cls = unicode
@@ -96,26 +97,17 @@ class AdvancedInstallPackageThread(threading.Thread, PackageDisabler):
         self.packages = packages
 
         self.installed = self.manager.list_packages()
-        self.disabled = []
-        for package_name in packages:
-            operation_type = 'install' if package_name not in self.installed else 'upgrade'
-            self.disabled.extend(self.disable_packages(package_name, operation_type))
-
         threading.Thread.__init__(self)
 
     def run(self):
-        # Allow packages to properly disable
-        time.sleep(0.7)
 
-        def do_reenable_package(package_name):
-            operation_type = 'install' if package_name not in self.installed else 'upgrade'
-            self.reenable_package(package_name, operation_type)
+        def closure(package_name):
+            return 'install' if package_name not in self.installed else 'upgrade'
 
-        for package in self.packages:
-            result = self.manager.install_package(package)
+        iterator = IgnoredPackagesBugFixer(self.packages, closure)
+
+        for package in iterator:
 
             # Do not reenable if installation deferred until next restart
-            if result is not None and package in self.disabled:
-                # We use a functools.partial to generate the on-complete callback in
-                # order to bind the current value of the parameters, unlike lambdas.
-                sublime.set_timeout(functools.partial(do_reenable_package, package), 700)
+            if self.manager.install_package(package) is None:
+                iterator.skip_reenable(package)

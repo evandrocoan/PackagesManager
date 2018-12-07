@@ -10,6 +10,7 @@ import sublime
 
 from .show_error import show_error
 from .console_write import console_write
+from .package_disabler_iterator import IgnoredPackagesBugFixer
 from .package_installer import PackageInstaller
 from .package_renamer import PackageRenamer
 from .file_not_found_error import FileNotFoundError
@@ -182,18 +183,7 @@ class AutomaticUpgrader(threading.Thread):
         self.manager.list_available_packages()
         renamed_packages = self.manager.settings.get('renamed_packages', {})
 
-        # Disabling a package means changing settings, which can only be done
-        # in the main thread. We just sleep in this thread for a bit to ensure
-        # that the packages have been disabled and are ready to be installed.
-        disabled_packages = []
-
-        def disable_packages():
-            disabled_packages.extend(self.installer.disable_packages(self.missing_packages, 'install'))
-        sublime.set_timeout(disable_packages, 1)
-
-        time.sleep(0.7)
-
-        for package in self.missing_packages:
+        for package in IgnoredPackagesBugFixer(self.missing_packages, "install"):
 
             # If the package has been renamed, detect the rename and update
             # the settings file with the new name as we install it
@@ -211,12 +201,6 @@ class AutomaticUpgrader(threading.Thread):
                 package = new_name
 
             if self.installer.manager.install_package(package):
-                if package in disabled_packages:
-                    # We use a functools.partial to generate the on-complete callback in
-                    # order to bind the current value of the parameters, unlike lambdas.
-                    on_complete = functools.partial(self.installer.reenable_package, package, 'install')
-                    sublime.set_timeout(on_complete, 700)
-
                 console_write(
                     u'''
                     Installed missing package %s
@@ -293,29 +277,9 @@ class AutomaticUpgrader(threading.Thread):
             (len(package_list), package_list)
         )
 
-        disabled_packages = []
-
-        # Disabling a package means changing settings, which can only be done
-        # in the main thread. We then then wait a bit and continue with the
-        # upgrades.
-        def disable_packages():
-            packages = [info[0] for info in package_list]
-            disabled_packages.extend(self.installer.disable_packages(packages, 'upgrade'))
-        sublime.set_timeout(disable_packages, 1)
-
-        # Wait so that the ignored packages can be "unloaded"
-        time.sleep(0.7)
-
-        for info in package_list:
-            package_name = info[0]
+        for package_name in IgnoredPackagesBugFixer([info[0] for info in package_list], "upgrade"):
 
             if self.installer.manager.install_package(package_name):
-                if package_name in disabled_packages:
-                    # We use a functools.partial to generate the on-complete callback in
-                    # order to bind the current value of the parameters, unlike lambdas.
-                    on_complete = functools.partial(self.installer.reenable_package, package_name, 'upgrade')
-                    sublime.set_timeout(on_complete, 700)
-
                 version = self.installer.manager.get_version(package_name)
                 console_write(
                     u'''

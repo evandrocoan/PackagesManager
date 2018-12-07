@@ -80,6 +80,7 @@ class PackageDisabler():
             A list of package names that were disabled
         """
         if self.debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, operation_type))
+        if not hasattr( operation_type, "__call__" ): operation_type = lambda package_name: operation_type
 
         global events
         if events is None:
@@ -100,10 +101,11 @@ class PackageDisabler():
         PackageDisabler.old_color_schemes = {}
 
         for package in packages:
+            operation = operation_type(package)
 
-            if operation_type in ['upgrade', 'remove']:
+            if operation in ['upgrade', 'remove']:
                 version = self.get_version(package)
-                tracker_type = 'pre_upgrade' if operation_type == 'upgrade' else operation_type
+                tracker_type = 'pre_upgrade' if operation == 'upgrade' else operation
                 events.add(tracker_type, package, version)
 
             global_color_scheme = settings.get('color_scheme')
@@ -136,30 +138,32 @@ class PackageDisabler():
                 PackageDisabler.old_theme = settings.get('theme')
                 settings.set('theme', 'Default.sublime-theme')
 
-        # We don't mark a package as in-process when disabling it, otherwise
-        # it automatically gets re-enabled the next time Sublime Text starts
-        if operation_type != 'disable':
-            self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
+            # We don't mark a package as in-process when disabling it, otherwise
+            # it automatically gets re-enabled the next time Sublime Text starts
+            if operation != 'disable':
+                self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
 
         # Force Sublime Text to understand the package is to be ignored
         return self._force_setting(self._force_add, 'ignored_packages', packages )
 
-    def reenable_package(self, package, operation_type='upgrade'):
+    def reenable_package(self, packages, operation_type='upgrade'):
         """
-        Re-enables a package after it has been installed or upgraded
+        Re-enables a package(s) after it has been installed or upgraded
 
-        :param package:
-            The string package name
+        :param packages:
+            The string packages name or a list of packages name
 
         :param operation_type:
-            The type of operation that caused the package to be re-enabled:
+            The type of operation that caused the packages to be re-enabled:
              - "upgrade"
              - "remove"
              - "install"
              - "enable"
              - "loader"
         """
-        if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (package, operation_type))
+        if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (packages, operation_type))
+        if isinstance( packages, str ): packages = [packages]
+        if not hasattr( operation_type, "__call__" ): operation_type = lambda package_name: operation_type
 
         global events
         if events is None:
@@ -168,112 +172,116 @@ class PackageDisabler():
         settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')
 
-        if package in ignored:
+        for package in packages:
+            operation = operation_type( package )
 
-            if operation_type in ['install', 'upgrade']:
-                version = self.get_version(package)
-                tracker_type = 'post_upgrade' if operation_type == 'upgrade' else operation_type
-                events.add(tracker_type, package, version)
-                events.clear(tracker_type, package, future=True)
-                if operation_type == 'upgrade':
-                    events.clear('pre_upgrade', package)
+            if package in ignored:
 
-            elif operation_type == 'remove':
-                events.clear('remove', package)
+                if operation in ['install', 'upgrade']:
+                    version = self.get_version(package)
+                    tracker_type = 'post_upgrade' if operation == 'upgrade' else operation
+                    events.add(tracker_type, package, version)
+                    events.clear(tracker_type, package, future=True)
+                    if operation == 'upgrade':
+                        events.clear('pre_upgrade', package)
 
-            # Force Sublime Text to understand the package is to be unignored
-            self._force_setting(self._force_remove, 'ignored_packages', [package] )
+                elif operation == 'remove':
+                    events.clear('remove', package)
 
-            corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
+                # Force Sublime Text to understand the package is to be unignored
+                self._force_setting(self._force_remove, 'ignored_packages', [package] )
 
-            if operation_type == 'remove' and PackageDisabler.old_theme_package == package:
-                message = text.format(u'''
-                    PackagesManager
+                corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
 
-                    The package containing your active theme was just removed
-                    and the Default theme was enabled in its place.
-                ''')
-                if int(sublime.version()) < 3106:
-                    message += corruption_notice
-                sublime.message_dialog(message)
+                if operation == 'remove' and PackageDisabler.old_theme_package == package:
+                    message = text.format(u'''
+                        PackagesManager
 
-            # By delaying the restore, we give Sublime Text some time to
-            # re-enable the package, making errors less likely
-            def delayed_settings_restore():
-                syntax_errors = set()
-                color_scheme_errors = set()
+                        The package containing your active theme was just removed
+                        and the Default theme was enabled in its place.
+                    ''')
+                    if int(sublime.version()) < 3106:
+                        message += corruption_notice
+                    sublime.message_dialog(message)
 
-                if PackageDisabler.old_syntaxes is None:
-                    PackageDisabler.old_syntaxes = {}
-                if PackageDisabler.old_color_schemes is None:
-                    PackageDisabler.old_color_schemes = {}
+                # By delaying the restore, we give Sublime Text some time to
+                # re-enable the package, making errors less likely
+                def delayed_settings_restore():
+                    syntax_errors = set()
+                    color_scheme_errors = set()
 
-                if operation_type == 'upgrade' and package in PackageDisabler.old_syntaxes:
-                    for view_syntax in PackageDisabler.old_syntaxes[package]:
-                        view, syntax = view_syntax
-                        if resource_exists(syntax):
-                            view.settings().set('syntax', syntax)
-                        elif syntax not in syntax_errors:
-                            console_write(u'The syntax "%s" no longer exists' % syntax)
-                            syntax_errors.add(syntax)
+                    if PackageDisabler.old_syntaxes is None:
+                        PackageDisabler.old_syntaxes = {}
+                    if PackageDisabler.old_color_schemes is None:
+                        PackageDisabler.old_color_schemes = {}
 
-                if operation_type == 'upgrade' and PackageDisabler.old_color_scheme_package == package:
-                    if resource_exists(PackageDisabler.old_color_scheme):
-                        settings.set('color_scheme', PackageDisabler.old_color_scheme)
-                    else:
-                        color_scheme_errors.add(PackageDisabler.old_color_scheme)
-                        sublime.error_message(text.format(
-                            u'''
-                            PackagesManager
+                    if operation == 'upgrade' and package in PackageDisabler.old_syntaxes:
+                        for view_syntax in PackageDisabler.old_syntaxes[package]:
+                            view, syntax = view_syntax
+                            if resource_exists(syntax):
+                                view.settings().set('syntax', syntax)
+                            elif syntax not in syntax_errors:
+                                console_write(u'The syntax "%s" no longer exists' % syntax)
+                                syntax_errors.add(syntax)
 
-                            The package containing your active color scheme was
-                            just upgraded, however the .tmTheme file no longer
-                            exists. Sublime Text has been configured use the
-                            default color scheme instead.
-                            '''
-                        ))
+                    if operation == 'upgrade' and PackageDisabler.old_color_scheme_package == package:
+                        if resource_exists(PackageDisabler.old_color_scheme):
+                            settings.set('color_scheme', PackageDisabler.old_color_scheme)
+                        else:
+                            color_scheme_errors.add(PackageDisabler.old_color_scheme)
+                            sublime.error_message(text.format(
+                                u'''
+                                PackagesManager
 
-                if operation_type == 'upgrade' and package in PackageDisabler.old_color_schemes:
-                    for view_scheme in PackageDisabler.old_color_schemes[package]:
-                        view, scheme = view_scheme
-                        if resource_exists(scheme):
-                            view.settings().set('color_scheme', scheme)
-                        elif scheme not in color_scheme_errors:
-                            console_write(u'The color scheme "%s" no longer exists' % scheme)
-                            color_scheme_errors.add(scheme)
+                                The package containing your active color scheme was
+                                just upgraded, however the .tmTheme file no longer
+                                exists. Sublime Text has been configured use the
+                                default color scheme instead.
+                                '''
+                            ))
 
-                if operation_type == 'upgrade' and PackageDisabler.old_theme_package == package:
-                    if package_file_exists(package, PackageDisabler.old_theme):
-                        settings.set('theme', PackageDisabler.old_theme)
-                        message = text.format(u'''
-                            PackagesManager
+                    if operation == 'upgrade' and package in PackageDisabler.old_color_schemes:
+                        for view_scheme in PackageDisabler.old_color_schemes[package]:
+                            view, scheme = view_scheme
+                            if resource_exists(scheme):
+                                view.settings().set('color_scheme', scheme)
+                            elif scheme not in color_scheme_errors:
+                                console_write(u'The color scheme "%s" no longer exists' % scheme)
+                                color_scheme_errors.add(scheme)
 
-                            The package containing your active theme was just
-                            upgraded.
-                        ''')
-                        if int(sublime.version()) < 3106:
-                            message += corruption_notice
-                        sublime.message_dialog(message)
-                    else:
-                        sublime.error_message(text.format(
-                            u'''
-                            PackagesManager
+                    if operation == 'upgrade' and PackageDisabler.old_theme_package == package:
+                        if package_file_exists(package, PackageDisabler.old_theme):
+                            settings.set('theme', PackageDisabler.old_theme)
+                            message = text.format(u'''
+                                PackagesManager
 
-                            The package containing your active theme was just
-                            upgraded, however the .sublime-theme file no longer
-                            exists. Sublime Text has been configured use the
-                            default theme instead.
-                            '''
-                        ))
+                                The package containing your active theme was just
+                                upgraded.
+                            ''')
+                            if int(sublime.version()) < 3106:
+                                message += corruption_notice
+                            sublime.message_dialog(message)
+                        else:
+                            sublime.error_message(text.format(
+                                u'''
+                                PackagesManager
 
-                sublime.save_settings(preferences_filename())
+                                The package containing your active theme was just
+                                upgraded, however the .sublime-theme file no longer
+                                exists. Sublime Text has been configured use the
+                                default theme instead.
+                                '''
+                            ))
 
-            sublime.set_timeout(delayed_settings_restore, 1000)
+                    sublime.save_settings(preferences_filename())
 
-        threading.Thread(target=self._delayed_in_progress_removal, args=(package,)).start()
+                sublime.set_timeout(delayed_settings_restore, 1000)
+
+            threading.Thread(target=self._delayed_in_progress_removal, args=(package,)).start()
 
     def _delayed_in_progress_removal(self, package_name):
-        sleep_delay = 10 + random.randint( 0, 120 )
+        sleep_delay = 5 + random.randint( 0, 10 )
+        console_write( "Will finish the package %s changes after %s seconds sleep!", ( package_name, sleep_delay ) )
         time.sleep( sleep_delay )
 
         settings = sublime.load_settings(preferences_filename())
