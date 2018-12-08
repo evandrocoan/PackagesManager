@@ -15,7 +15,7 @@ from .package_installer import PackageInstaller
 from .package_renamer import PackageRenamer
 from .file_not_found_error import FileNotFoundError
 from .open_compat import open_compat, read_compat, write_compat
-from .settings import pc_settings_filename, load_list_setting, increment_dependencies_installed, get_dependencies_installed
+from .settings import pc_settings_filename, load_list_setting, increment_dependencies_installed, get_dependencies_installed, force_lower
 
 
 class AutomaticUpgrader(threading.Thread):
@@ -50,13 +50,24 @@ class AutomaticUpgrader(threading.Thread):
         self.load_last_run()
         self.determine_next_run()
 
+        clean_found_packages = force_lower( found_packages )
+        clean_installed_packages = force_lower( self.installed_packages )
+
         # Detect if a package is missing that should be installed
-        self.missing_packages = list(set(self.installed_packages) - set(found_packages))
+        self.missing_packages = list(clean_installed_packages - clean_found_packages)
+        required_dependencies = self.manager.find_required_dependencies()
 
-        # print( "found_dependencies:           %d\n" % len( found_dependencies ) + str( found_dependencies ) )
-        # print( "find_required_dependencies(): %d\n" % len( self.manager.find_required_dependencies() ) + str( self.manager.find_required_dependencies() ) )
+        clean_found_dependencies = force_lower( found_dependencies )
+        clean_required_dependencies = force_lower( required_dependencies )
 
-        self.missing_dependencies = list(set(self.manager.find_required_dependencies()) - set(found_dependencies))
+        self.missing_dependencies = list(clean_required_dependencies - clean_found_dependencies)
+
+        # print( "automatic_upgrader.py, missing_dependencies:  %s\n%s" % (
+        #         len(self.missing_dependencies), list(sorted(self.missing_dependencies, key=lambda s: s.lower())) ) )
+        # print( "automatic_upgrader.py, found_dependencies:    %s\n%s" % (
+        #         len(found_dependencies), list(sorted(found_dependencies, key=lambda s: s.lower())) ) )
+        # print( "automatic_upgrader.py, required_dependencies: %s\n%s" % (
+        #         len(required_dependencies), list(sorted(required_dependencies, key=lambda s: s.lower())) ) )
 
         if self.auto_upgrade and self.next_run <= time.time():
             self.save_last_run(time.time())

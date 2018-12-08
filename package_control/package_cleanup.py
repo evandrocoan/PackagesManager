@@ -140,8 +140,12 @@ class PackageCleanup(threading.Thread):
         required_dependencies = set(self.manager.find_required_dependencies())
         extra_dependencies = list(set(installed_dependencies) - required_dependencies)
 
-        # print( "package_cleanup.py, installed_dependencies: %d\n" % len( installed_dependencies ) + str( installed_dependencies ) )
-        # print( "package_cleanup.py, required_dependencies:  %d\n" % len( required_dependencies ) + str( required_dependencies ) )
+        # print( "package_cleanup.py, extra_dependencies:     %s\n%s" % (
+        #         len(extra_dependencies), list(sorted(extra_dependencies, key=lambda s: s.lower())) ) )
+        # print( "package_cleanup.py, installed_dependencies: %s\n%s" % (
+        #         len(installed_dependencies), list(sorted(installed_dependencies, key=lambda s: s.lower())) ) )
+        # print( "package_cleanup.py, required_dependencies:  %s\n%s" % (
+        #         len(required_dependencies), list(sorted(required_dependencies, key=lambda s: s.lower())) ) )
 
         # Clean up unneeded dependencies so that found_dependencies will only
         # end up having required dependencies added to it

@@ -335,3 +335,14 @@ def unique_list_append(a_list, *lists):
             if item not in a_list:
                 a_list.append( item )
 
+def force_lower(iterable):
+    clean = set()
+
+    for item in iterable:
+        item = item.lower()
+
+        if item not in clean:
+            clean.add(item)
+
+    return clean
+
