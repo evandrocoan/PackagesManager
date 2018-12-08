@@ -54,6 +54,8 @@ OLD_DEFAULT_CHANNELS = set([
     'https://sublime.wbond.net/repositories.json'
 ])
 
+DEFAULT_IGNORED_PACKAGES = set(['User', '0_settings_loader'])
+
 
 class PackageManager():
 
@@ -760,7 +762,7 @@ class PackageManager():
 
         if not list_everything:
             packages -= set(self.list_dependencies())
-            packages -= set(['User'])
+            packages -= DEFAULT_IGNORED_PACKAGES
 
         return sorted(packages, key=lambda s: s.lower())
 
@@ -826,7 +828,7 @@ class PackageManager():
 
             packages = pristine_files - installed_files
 
-        packages -= set(['User', 'Default'])
+        packages -= DEFAULT_IGNORED_PACKAGES
         return sorted(packages, key=lambda s: s.lower())
 
     def _list_visible_dirs(self, path):
