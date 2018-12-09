@@ -195,7 +195,7 @@ class IgnoredPackagesBugFixer(object):
         if len( packages_to_add ):
             # We use a functools.partial to generate the on-complete callback in
             # order to bind the current value of the parameters, unlike lambdas.
-            closure = functools.partial( self.package_disabler.disable_packages, packages_to_add, self.ignoring_type )
+            closure = functools.partial( self.package_disabler.disable_packages, list(packages_to_add), self.ignoring_type )
 
             run_on_main_thread( closure )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
@@ -204,7 +204,7 @@ class IgnoredPackagesBugFixer(object):
         if len( packages_to_remove ):
             # We use a functools.partial to generate the on-complete callback in
             # order to bind the current value of the parameters, unlike lambdas.
-            closure = functools.partial( self.package_disabler.reenable_package, packages_to_remove, self.ignoring_type )
+            closure = functools.partial( self.package_disabler.reenable_package, list(packages_to_remove), self.ignoring_type )
 
             run_on_main_thread( closure )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )

@@ -141,10 +141,10 @@ class PackageDisabler():
             # We don't mark a package as in-process when disabling it, otherwise
             # it automatically gets re-enabled the next time Sublime Text starts
             if operation != 'disable':
-                self._force_setting(self._force_add, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
+                self._force_setting(self._force_add, 'in_process_packages', list(packages), g_settings.packagesmanager_setting_path() )
 
         # Force Sublime Text to understand the package is to be ignored
-        return self._force_setting(self._force_add, 'ignored_packages', packages )
+        return self._force_setting(self._force_add, 'ignored_packages', list(packages) )
 
     def reenable_package(self, packages, operation_type='upgrade'):
         """
