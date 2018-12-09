@@ -1264,8 +1264,21 @@ class PackageManager():
 
             # If the user create this special file, it means he want to the
             # package to be always unpacked
-            if os.path.exists( os.path.join(unpacked_package_dir, '.extracted-sublime-package') ):
+            is_extracted_sublime_package = False
+
+            def extracted_package_flag(package_dir):
+                return os.path.join(package_dir, '.extracted-sublime-package')
+
+            if self.settings.get('debug'):
+                console_write( 'extracted_package_flag( unpacked_package_dir ): %s (%s)',
+                        ( extracted_package_flag( unpacked_package_dir ),
+                            os.path.exists( extracted_package_flag( unpacked_package_dir ) )
+                        )
+                    )
+
+            if os.path.exists( extracted_package_flag( unpacked_package_dir ) ):
                 unpack = True
+                is_extracted_sublime_package = True
 
             # If dependencies were not in the channel, try the package
             if not is_dependency and not have_installed_dependencies:
@@ -1579,6 +1592,18 @@ class PackageManager():
             # will silently delete the package
             if os.path.exists(pristine_package_path):
                 os.remove(pristine_package_path)
+
+            # Recreate the .extracted-sublime-package after unpacking the repository
+            if is_extracted_sublime_package:
+                package_flag = extracted_package_flag( package_dir )
+                console_write(
+                    u'''
+                    Recreating the package flag file:
+                        %s
+                    ''',
+                    (package_flag)
+                )
+                open( package_flag, 'a' ).close()
 
             os.chdir(self.settings['packages_path'])
             return True
