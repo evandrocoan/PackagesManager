@@ -1262,6 +1262,11 @@ class PackageManager():
             if is_dependency:
                 unpack = True
 
+            # If the user create this special file, it means he want to the
+            # package to be always unpacked
+            if os.path.exists( os.path.join(unpacked_package_dir, '.extracted-sublime-package') ):
+                unpack = True
+
             # If dependencies were not in the channel, try the package
             if not is_dependency and not have_installed_dependencies:
                 try:
