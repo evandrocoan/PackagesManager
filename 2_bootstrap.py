@@ -373,10 +373,6 @@ def _background_bootstrap(settings):
     else:
         sublime.set_timeout(mark_bootstrapped, 10)
 
-# ST2 compat
-if sys.version_info < (3,):
-    plugin_loaded()
-
 
 def plugin_unloaded():
     g_settings.disable_package_control_uninstaller()
@@ -733,4 +729,8 @@ def _delete_read_only_file(action, name, exc):
     os.chmod( name, stat.S_IWRITE )
     os.remove( name )
 
+
+# ST2 compat
+if sys.version_info < (3,):
+    plugin_loaded()
 
