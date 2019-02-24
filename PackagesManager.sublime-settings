@@ -137,8 +137,8 @@
 	// program installed and present in the PATH.
 	"downloader_precedence": {
 		"windows": ["wininet", "oscrypto"],
-		"osx": ["oscrypto", "urllib"],
-		"linux": ["oscrypto", "urllib", "curl", "wget"]
+		"osx": ["urllib", "curl", "wget", "oscrypto"],
+		"linux": ["urllib", "curl", "wget", "oscrypto"]
 	},
 
 	// Directories to ignore when creating a package
