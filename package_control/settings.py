@@ -5,7 +5,7 @@ import time
 import json
 
 import traceback
-import functools
+import threading
 
 from collections import OrderedDict
 
@@ -346,3 +346,32 @@ def force_lower(iterable):
 
     return clean
 
+
+class AtomicInteger():
+    """ https://stackoverflow.com/questions/23547604/python-counter-atomic-increment """
+
+    def __init__(self, value=0):
+        self._value = value
+        self._lock = threading.Lock()
+
+    def inc(self):
+        with self._lock:
+            self._value += 1
+            return self._value
+
+    def dec(self):
+        with self._lock:
+            self._value -= 1
+            return self._value
+
+
+    @property
+    def value(self):
+        with self._lock:
+            return self._value
+
+    @value.setter
+    def value(self, v):
+        with self._lock:
+            self._value = v
+            return self._value
