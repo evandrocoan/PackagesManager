@@ -80,7 +80,7 @@ class PackageDisabler():
             A list of package names that were disabled
         """
         if self.debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, operation_type))
-        if not hasattr( operation_type, "__call__" ): operation_type = lambda package_name: operation_type
+        _operation_type = ( lambda package_name: operation_type ) if not hasattr( operation_type, "__call__" ) else operation_type
 
         global events
         if events is None:
@@ -102,7 +102,7 @@ class PackageDisabler():
         PackageDisabler.old_color_schemes = {}
 
         for package in packages:
-            operation = operation_type(package)
+            operation = _operation_type(package)
 
             if operation in ['upgrade', 'remove']:
                 version = self.get_version(package)
@@ -145,8 +145,8 @@ class PackageDisabler():
                 in_process.append( package )
 
         # Force Sublime Text to understand the package is to be ignored
-        self._force_setting(self._force_add, 'in_process_packages', in_process, g_settings.packagesmanager_setting_path() )
-        return self._force_setting(self._force_add, 'ignored_packages', list(packages) )
+        self._force_setting( self._force_add, 'in_process_packages', in_process, g_settings.packagesmanager_setting_path() )
+        return self._force_setting( self._force_add, 'ignored_packages', list(packages) )
 
     def reenable_package(self, packages, operation_type='upgrade'):
         """
@@ -165,7 +165,7 @@ class PackageDisabler():
         """
         if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (packages, operation_type))
         if isinstance( packages, str ): packages = [packages]
-        if not hasattr( operation_type, "__call__" ): operation_type = lambda package_name: operation_type
+        _operation_type = ( lambda package_name: operation_type ) if not hasattr( operation_type, "__call__" ) else operation_type
 
         global events
         if events is None:
@@ -175,7 +175,7 @@ class PackageDisabler():
         ignored = load_list_setting(settings, 'ignored_packages')
 
         for package in packages:
-            operation = operation_type( package )
+            operation = _operation_type( package )
 
             if package in ignored:
 
@@ -191,10 +191,11 @@ class PackageDisabler():
                     events.clear('remove', package)
 
         # Force Sublime Text to understand the package is to be unignored
-        self._force_setting(self._force_remove, 'ignored_packages', packages )
+        self._force_setting( self._force_remove, 'ignored_packages', packages )
 
         for package in packages:
-            operation = operation_type( package )
+            operation = _operation_type( package )
+            if self.debug: console_write( u'operation: %s, _operation_type: %s', (operation, _operation_type) )
 
             if package in ignored:
                 corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
@@ -229,6 +230,15 @@ class PackageDisabler():
                             elif syntax not in syntax_errors:
                                 console_write(u'The syntax "%s" no longer exists' % syntax)
                                 syntax_errors.add(syntax)
+
+                    if self.debug: console_write( "PackageDisabler.old_color_scheme_package: %s, \n"
+                            "PackageDisabler.old_theme_package: %s, \n"
+                            "PackageDisabler.old_color_schemes: %s, \n"
+                            "package: %s",
+                            (PackageDisabler.old_color_scheme_package,
+                             PackageDisabler.old_theme_package,
+                             PackageDisabler.old_color_schemes,
+                             package) )
 
                     if operation == 'upgrade' and PackageDisabler.old_color_scheme_package == package:
                         if resource_exists(PackageDisabler.old_color_scheme):
@@ -300,7 +310,7 @@ class PackageDisabler():
                         "package settings, after %d seconds.", ( package, sleep_delay ) )
 
         console_write( "After randomly %s seconds delay, finishing the packages changes: %s", ( sleep_delay, packages ) )
-        self._force_setting(self._force_remove, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
+        self._force_setting( self._force_remove, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
         return callback(*args, **kwargs)
