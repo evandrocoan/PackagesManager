@@ -97,9 +97,10 @@ class AdvancedInstallPackageThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        installed = list(self.installed)
 
         def closure(package_name):
-            return 'install' if package_name not in self.installed else 'upgrade'
+            return 'install' if package_name not in installed else 'upgrade'
 
         iterable = IgnoredPackagesBugFixer(self.packages, closure)
 
