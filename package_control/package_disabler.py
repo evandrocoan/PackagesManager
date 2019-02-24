@@ -89,6 +89,7 @@ class PackageDisabler():
         if not isinstance(packages, list):
             packages = [packages]
 
+        in_process = []
         settings = sublime.load_settings(preferences_filename())
 
         PackageDisabler.old_color_scheme_package = None
@@ -141,9 +142,10 @@ class PackageDisabler():
             # We don't mark a package as in-process when disabling it, otherwise
             # it automatically gets re-enabled the next time Sublime Text starts
             if operation != 'disable':
-                self._force_setting(self._force_add, 'in_process_packages', list(packages), g_settings.packagesmanager_setting_path() )
+                in_process.append( package )
 
         # Force Sublime Text to understand the package is to be ignored
+        self._force_setting(self._force_add, 'in_process_packages', in_process, g_settings.packagesmanager_setting_path() )
         return self._force_setting(self._force_add, 'ignored_packages', list(packages) )
 
     def reenable_package(self, packages, operation_type='upgrade'):
@@ -188,9 +190,13 @@ class PackageDisabler():
                 elif operation == 'remove':
                     events.clear('remove', package)
 
-                # Force Sublime Text to understand the package is to be unignored
-                self._force_setting(self._force_remove, 'ignored_packages', [package] )
+        # Force Sublime Text to understand the package is to be unignored
+        self._force_setting(self._force_remove, 'ignored_packages', packages )
 
+        for package in packages:
+            operation = operation_type( package )
+
+            if package in ignored:
                 corruption_notice = u' You may see some graphical corruption until you restart Sublime Text.'
 
                 if operation == 'remove' and PackageDisabler.old_theme_package == package:
@@ -277,26 +283,24 @@ class PackageDisabler():
 
                 sublime.set_timeout(delayed_settings_restore, 1000)
 
-            threading.Thread(target=self._delayed_in_progress_removal, args=(package,)).start()
+        threading.Thread(target=self._delayed_in_progress_removal, args=(packages,)).start()
 
-    def _delayed_in_progress_removal(self, package_name):
+    def _delayed_in_progress_removal(self, packages):
         sleep_delay = 5 + random.randint( 0, 10 )
-        console_write( "Will finish the package %s changes after %s seconds sleep!", ( package_name, sleep_delay ) )
+        console_write( "After %s seconds sleep, it will finish the packages changes: %s", ( sleep_delay, packages ) )
         time.sleep( sleep_delay )
 
-        settings = sublime.load_settings(preferences_filename())
-        ignored = load_list_setting(settings, 'ignored_packages')
+        settings = sublime.load_settings( preferences_filename() )
+        ignored = load_list_setting( settings, 'ignored_packages' )
 
-        if package_name in ignored:
-            console_write( "The package %s should not "
-                    "be in your User ignored_packages package settings, after %d seconds.",
-                    ( package_name, sleep_delay ) )
+        for package in packages:
 
-        else:
-            console_write( "Finishing the package %s changes "
-                    "after randomly %s seconds delay.", ( package_name, sleep_delay ) )
+            if package in ignored:
+                console_write( "The package %s should not be in your User ignored_packages "
+                        "package settings, after %d seconds.", ( package, sleep_delay ) )
 
-            self._force_setting(self._force_remove, 'in_process_packages', [package_name], g_settings.packagesmanager_setting_path() )
+        console_write( "After randomly %s seconds delay, finishing the packages changes: %s", ( sleep_delay, packages ) )
+        self._force_setting(self._force_remove, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
         return callback(*args, **kwargs)
