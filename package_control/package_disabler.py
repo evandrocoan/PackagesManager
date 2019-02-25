@@ -312,6 +312,7 @@ class PackageDisabler():
 
     def _delayed_in_progress_removal(self, packages):
         sleep_delay = 5 + random.randint( 0, 10 )
+        packages = list( packages )
         to_remove = []
 
         console_write( "After %s seconds sleep, it will finish the packages changes: %s", ( sleep_delay, packages ) )
