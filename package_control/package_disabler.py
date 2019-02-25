@@ -146,7 +146,17 @@ class PackageDisabler():
 
         # Force Sublime Text to understand the package is to be ignored
         self._force_setting( self._force_add, 'in_process_packages', in_process, g_settings.packagesmanager_setting_path() )
-        return self._force_setting( self._force_add, 'ignored_packages', list(packages) )
+
+        disabled_packages = []
+        to_disable = list( packages )
+
+        while len( to_disable ) > 0:
+            MAXIMUM_TO_REENABLE = 10
+            effectively_added = self._force_setting( self._force_add, 'ignored_packages', to_disable[:MAXIMUM_TO_REENABLE] )
+            disabled_packages.extend( effectively_added )
+            to_disable = to_disable[MAXIMUM_TO_REENABLE:]
+
+        return disabled_packages
 
     def reenable_package(self, packages, operation_type='upgrade'):
         """
@@ -191,7 +201,12 @@ class PackageDisabler():
                     events.clear('remove', package)
 
         # Force Sublime Text to understand the package is to be unignored
-        self._force_setting( self._force_remove, 'ignored_packages', packages )
+        to_enable = list( packages )
+
+        while len( to_enable ) > 0:
+            MAXIMUM_TO_REENABLE = 10
+            self._force_setting( self._force_remove, 'ignored_packages', to_enable[:MAXIMUM_TO_REENABLE] )
+            to_enable = to_enable[MAXIMUM_TO_REENABLE:]
 
         for package in packages:
             operation = _operation_type( package )
