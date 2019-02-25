@@ -496,7 +496,7 @@ class PackageCleanup(threading.Thread):
                 )
                 to_reenable.append( package )
 
-            self.disabler.reenable_package(to_reenable, 'enable')
+            if to_reenable: self.disabler.reenable_package(to_reenable, 'enable')
 
         save_list_setting(
             pc_settings,
