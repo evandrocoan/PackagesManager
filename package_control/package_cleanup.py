@@ -479,6 +479,8 @@ class PackageCleanup(threading.Thread):
 
         in_process = load_list_setting(pc_settings, 'in_process_packages')
         if not self.ignore_in_process_packages:
+            to_reenable = []
+
             for package in in_process:
                 # This prevents removing unused dependencies from being messed up by
                 # the functionality to re-enable packages that were left disabled
@@ -492,7 +494,9 @@ class PackageCleanup(threading.Thread):
                     ''',
                     package
                 )
-                self.disabler.reenable_package(package, 'enable')
+                to_reenable.append( package )
+
+            self.disabler.reenable_package(to_reenable, 'enable')
 
         save_list_setting(
             pc_settings,
