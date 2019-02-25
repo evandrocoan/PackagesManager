@@ -297,7 +297,7 @@ class PackageDisabler():
 
     def _delayed_in_progress_removal(self, packages):
         sleep_delay = 5 + random.randint( 0, 10 )
-        packages = list( packages )
+        to_remove = []
 
         console_write( "After %s seconds sleep, it will finish the packages changes: %s", ( sleep_delay, packages ) )
         time.sleep( sleep_delay )
@@ -311,8 +311,11 @@ class PackageDisabler():
                 console_write( "The package %s should not be in your User ignored_packages "
                         "package settings, after %d seconds.", ( package, sleep_delay ) )
 
-        console_write( "After randomly %s seconds delay, finishing the packages changes: %s", ( sleep_delay, packages ) )
-        self._force_setting( self._force_remove, 'in_process_packages', packages, g_settings.packagesmanager_setting_path() )
+            else:
+                to_remove.append( package )
+
+        console_write( "After randomly %s seconds delay, finishing the packages changes: %s", ( sleep_delay, to_remove ) )
+        self._force_setting( self._force_remove, 'in_process_packages', to_remove, g_settings.packagesmanager_setting_path() )
 
     def _force_setting(self, callback, *args, **kwargs):
         return callback(*args, **kwargs)
