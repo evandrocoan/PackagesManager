@@ -224,9 +224,9 @@ class DownloadManager(object):
         downloader_precedence = self.settings.get(
             'downloader_precedence',
             {
-                "windows": ["wininet", "urllib", "curl", "wget", "oscrypto"],
-                "osx": ["urllib", "curl", "wget", "oscrypto"],
-                "linux": ["urllib", "curl", "wget", "oscrypto"]
+                "windows": ["wininet", "urllib", "curl", "wget"],
+                "osx": ["urllib", "curl", "wget"],
+                "linux": ["urllib", "curl", "wget"]
             }
         )
         downloader_list = downloader_precedence.get(platform, [])
