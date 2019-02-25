@@ -82,6 +82,10 @@ class PackageDisabler():
         if self.debug: console_write(u'Calling disable_packages() with: %s, type: %s', (packages, operation_type))
         _operation_type = ( lambda package_name: operation_type ) if not hasattr( operation_type, "__call__" ) else operation_type
 
+        if not packages:
+            console_write( u'No packages to process by reenable_package!' )
+            return []
+
         global events
         if events is None:
             from PackagesManager.package_control import events
@@ -176,6 +180,10 @@ class PackageDisabler():
         if self.debug: console_write(u'Calling reenable_package() with: %s, type: %s', (packages, operation_type))
         if isinstance( packages, str ): packages = [packages]
         _operation_type = ( lambda package_name: operation_type ) if not hasattr( operation_type, "__call__" ) else operation_type
+
+        if not packages:
+            console_write( u'No packages to process by reenable_package!' )
+            return
 
         global events
         if events is None:
