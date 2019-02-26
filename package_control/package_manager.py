@@ -54,7 +54,7 @@ OLD_DEFAULT_CHANNELS = set([
     'https://sublime.wbond.net/repositories.json'
 ])
 
-DEFAULT_IGNORED_PACKAGES = set(['User', '0_settings_loader'])
+DEFAULT_IGNORED_PACKAGES = set(['User', '0_settings_loader', '0_packagesmanager_loader'])
 
 
 class PackageManager():
