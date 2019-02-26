@@ -31,10 +31,16 @@ class ExistingPackagesCommand():
               2 - [action] installed version; package url
         """
 
-        packages = self.manager.list_packages()
+        packages = self.manager.list_packages(list_everything=True)
+        default_packages = self.manager.list_default_packages()
+        dependencies = self.manager.list_dependencies()
 
         if action:
             action += ' '
+
+        package_count = 0
+        default_count = 0
+        dependencies_count = 0
 
         package_list = []
         for package in sorted(packages, key=lambda s: s.lower()):
@@ -62,6 +68,25 @@ class ExistingPackagesCommand():
                 url = ''
 
             package_entry.append(action + installed_version + url)
+
+            if package in default_packages:
+                default_count += 1
+                package_entry.append( "Default" )
+                package_entry.append( default_count )
+
+            elif package in dependencies:
+                dependencies_count += 1
+                package_entry.append( "Dependency" )
+                package_entry.append( dependencies_count )
+
+            else:
+                package_count += 1
+                package_entry.append( "Third Part" )
+                package_entry.append( package_count )
+
             package_list.append(package_entry)
 
+        self.package_count = package_count
+        self.default_count = default_count
+        self.dependencies_count = dependencies_count
         return package_list
