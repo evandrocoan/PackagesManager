@@ -760,10 +760,13 @@ class PackageManager():
         if self.settings['version'] > 3000 and unpacked_only is False:
             packages |= self._list_sublime_package_files(self.settings['installed_packages_path'])
 
-        if not list_everything:
-            packages -= set(self.list_dependencies())
-            packages -= DEFAULT_IGNORED_PACKAGES
+        if list_everything:
+            packages |= set(self.list_default_packages())
 
+        else:
+            packages -= set(self.list_dependencies())
+
+        packages -= DEFAULT_IGNORED_PACKAGES
         return sorted(packages, key=lambda s: s.lower())
 
     def list_dependencies(self):
