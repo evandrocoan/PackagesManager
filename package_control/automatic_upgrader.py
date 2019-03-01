@@ -55,12 +55,17 @@ class AutomaticUpgrader(threading.Thread):
 
         # Detect if a package is missing that should be installed
         self.missing_packages = list(clean_installed_packages - clean_found_packages)
-        required_dependencies = self.manager.find_required_dependencies()
+        installed_packages_mapping = { package.lower(): package for package in self.installed_packages }
 
+        required_dependencies = self.manager.find_required_dependencies()
         clean_found_dependencies = force_lower( found_dependencies )
         clean_required_dependencies = force_lower( required_dependencies )
 
+        required_dependencies_mapping = { package.lower(): package for package in required_dependencies }
         self.missing_dependencies = list(clean_required_dependencies - clean_found_dependencies)
+
+        self.missing_packages = [ installed_packages_mapping[package_name] for package_name in self.missing_packages ]
+        self.missing_dependencies = [ required_dependencies_mapping[dependency_name] for dependency_name in self.missing_dependencies ]
 
         # print( "automatic_upgrader.py, missing_dependencies:  %s\n%s" % (
         #         len(self.missing_dependencies), list(sorted(self.missing_dependencies, key=lambda s: s.lower())) ) )
