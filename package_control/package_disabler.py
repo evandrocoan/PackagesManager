@@ -186,27 +186,34 @@ class PackageDisabler():
             return
 
         global events
-        if events is None:
+        try:
             from package_control import events
+
+        except (ImportError):
+            events = None
 
         settings = sublime.load_settings(preferences_filename())
         ignored = load_list_setting(settings, 'ignored_packages')
 
-        for package in packages:
-            operation = _operation_type( package )
+        if events:
+            for package in packages:
+                operation = _operation_type( package )
 
-            if package in ignored:
+                if package in ignored:
 
-                if operation in ['install', 'upgrade']:
-                    version = self.get_version(package)
-                    tracker_type = 'post_upgrade' if operation == 'upgrade' else operation
-                    events.add(tracker_type, package, version)
-                    events.clear(tracker_type, package, future=True)
-                    if operation == 'upgrade':
-                        events.clear('pre_upgrade', package)
+                    if operation in ['install', 'upgrade']:
+                        version = self.get_version(package)
+                        tracker_type = 'post_upgrade' if operation == 'upgrade' else operation
+                        events.add(tracker_type, package, version)
+                        events.clear(tracker_type, package, future=True)
+                        if operation == 'upgrade':
+                            events.clear('pre_upgrade', package)
 
-                elif operation == 'remove':
-                    events.clear('remove', package)
+                    elif operation == 'remove':
+                        events.clear('remove', package)
+
+        else:
+            console_write( u'Warning: Could not run packages events, if any event was scheduled!' )
 
         # Force Sublime Text to understand the package is to be unignored
         to_enable = list( packages )
