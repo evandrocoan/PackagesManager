@@ -131,8 +131,9 @@ class PackageCleanup(threading.Thread):
                 else:
                     found_packages.append(package_name)
 
-        uninstaller = AdvancedUninstallPackageThread(not_found_packages)
-        uninstaller.run()
+        if not_found_packages:
+            uninstaller = AdvancedUninstallPackageThread(not_found_packages)
+            uninstaller.run()
 
         required_dependencies = set(self.manager.find_required_dependencies())
         extra_dependencies = list(set(installed_dependencies) - required_dependencies)
