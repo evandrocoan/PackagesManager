@@ -18,6 +18,7 @@ from .settings import preferences_filename, pc_settings_filename, load_list_sett
 from . import cmd
 from . import loader, text, __version__
 from .providers.release_selector import is_compatible_version
+from .commands.advanced_uninstall_package_command import AdvancedUninstallPackageThread
 
 
 class PackageCleanup(threading.Thread):
@@ -64,6 +65,7 @@ class PackageCleanup(threading.Thread):
             installed_packages_at_start.append('PackagesManager')
 
         found_packages = []
+        not_found_packages = []
         installed_packages = list(installed_packages_at_start)
 
         found_dependencies = []
@@ -125,17 +127,12 @@ class PackageCleanup(threading.Thread):
                 # being synced.
                 if self.remove_orphaned and package_name not in installed_packages_at_start \
                         and package_file_exists(package_name, 'package-metadata.json'):
-                    # Since Windows locks the .sublime-package files, we must
-                    # do a dance where we disable the package first, which has
-                    # to be done in the main Sublime Text thread.
-                    package_filename = os.path.join(installed_path, file)
-
-                    # We use a functools.partial to generate the on-complete callback in
-                    # order to bind the current value of the parameters, unlike lambdas.
-                    sublime.set_timeout(functools.partial(self.remove_package_file, package_name, package_filename), 10)
-
+                    not_found_packages.append(package_name)
                 else:
                     found_packages.append(package_name)
+
+        uninstaller = AdvancedUninstallPackageThread(not_found_packages)
+        uninstaller.run()
 
         required_dependencies = set(self.manager.find_required_dependencies())
         extra_dependencies = list(set(installed_dependencies) - required_dependencies)
@@ -375,46 +372,6 @@ class PackageCleanup(threading.Thread):
             sublime.set_timeout(show_sync_error, 100)
 
         sublime.set_timeout(lambda: self.finish(installed_packages, found_packages, found_dependencies), 10)
-
-    def remove_package_file(self, name, filename):
-        """
-        On Windows, .sublime-package files are locked when imported, so we must
-        disable the package, delete it and then re-enable the package.
-
-        :param name:
-            The name of the package
-
-        :param filename:
-            The filename of the package
-        """
-
-        def do_remove():
-            try:
-                os.remove(filename)
-                console_write(
-                    u'''
-                    Removed orphaned package %s
-                    ''',
-                    name
-                )
-
-            except (OSError) as e:
-                console_write(
-                    u'''
-                    Unable to remove orphaned package %s - deferring until
-                    next start: %s
-                    ''',
-                    (name, unicode_from_os(e))
-                )
-
-            finally:
-                # Always re-enable the package so it doesn't get stuck
-                self.disabler.reenable_package(name, 'remove')
-
-        # Disable the package so any filesystem locks are released
-        self.disabler.disable_packages(name)
-
-        sublime.set_timeout(do_remove, 700)
 
     def is_compatible(self, metadata):
         """
