@@ -127,12 +127,20 @@ def _background_bootstrap(settings):
         import os
         import random
         import time
+        import stat
+        import shutil
         import threading
 
         SUBLIME_SETTING_NAME = "Preferences"
         PACKAGESMANAGER_NAME = "{manager}"
 
+        THIS_SCRIPT_PATH = os.path.realpath( __file__ )
         PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
+
+        PACKAGESMANAGER_ROOT_DIRECTORY = os.path.join(
+                os.path.dirname( os.path.realpath( __file__ ) ),
+                PACKAGESMANAGER_NAME
+            )
 
 
         def main_directory():
@@ -176,6 +184,7 @@ def _background_bootstrap(settings):
 
         def _delayed_in_progress_removal(package_name):
             sleep_delay = 60 + random.randint( 0, 60 )
+            # sleep_delay = 6
             time.sleep( sleep_delay )
 
             packages_setting = sublime.load_settings( packagesmanager_setting_file() )
@@ -211,6 +220,37 @@ def _background_bootstrap(settings):
                     packages_setting.erase( 'in_process_packages_count' )
                     packages_setting.set( 'in_process_packages', in_process_packages )
                     sublime.save_settings( packagesmanager_setting_file() )
+
+            # Remove itself if the Default package is not found
+            if not os.path.exists( PACKAGESMANAGER_ROOT_DIRECTORY ):
+                print("{manager}: Uninstalling %s... Because the %s package was not found installed at %s." % (
+                        THIS_SCRIPT_PATH, PACKAGESMANAGER_NAME, PACKAGESMANAGER_ROOT_DIRECTORY ) )
+                safe_remove( THIS_SCRIPT_PATH )
+
+
+        def safe_remove(path):
+
+            try:
+                os.remove( path )
+
+            except Exception as error:
+                print( "{manager}: Failed to remove `%s`. Error is: %s" % ( path, error) )
+
+                try:
+                    delete_read_only_file(path)
+
+                except Exception as error:
+                    print( "{manager}: Failed to remove `%s`. Error is: %s" % ( path, error) )
+
+
+        def delete_read_only_file(path):
+            _delete_read_only_file( None, path, None )
+
+
+        def _delete_read_only_file(action, name, exc):
+            os.chmod( name, stat.S_IWRITE )
+            os.remove( name )
+
     """.format( manager=PACKAGESMANAGER_NAME )
 
     packages_directory = os.path.dirname( PACKAGE_ROOT_DIRECTORY )
