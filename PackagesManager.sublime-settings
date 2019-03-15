@@ -40,6 +40,10 @@
 	// If missing packages should be automatically installed when ST starts
 	"install_missing": true,
 
+	// Never install any package to Installed Packages, i.e., install everything
+	// on the user loose Packages directory.
+	"extract_everything": false,
+
 	// If a package was installed by PackagesManager (has a
 	// package-metadata.json file) but is not in installed_packages, remove it
 	// based upon the assumption that it was removed on another machine and

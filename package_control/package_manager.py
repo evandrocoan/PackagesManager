@@ -1279,7 +1279,7 @@ class PackageManager():
                         )
                     )
 
-            if os.path.exists( extracted_package_flag( unpacked_package_dir ) ):
+            if self.settings.get('extract_everything') or os.path.exists( extracted_package_flag( unpacked_package_dir ) ):
                 unpack = True
                 is_extracted_sublime_package = True
 
