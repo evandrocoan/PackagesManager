@@ -5,9 +5,13 @@ import functools
 import sublime
 import sublime_plugin
 
+from .. import text
+from ..console_write import console_write
+from ..show_quick_panel import show_quick_panel
 from ..thread_progress import ThreadProgress
 from ..package_installer import PackageInstaller, PackageInstallerThread
 from ..package_renamer import PackageRenamer
+from ..package_disabler_iterator import IgnoredPackagesBugFixer
 
 
 class UpgradeAllPackagesCommand(sublime_plugin.WindowCommand):
@@ -40,39 +44,32 @@ class UpgradeAllPackagesThread(threading.Thread, PackageInstaller):
         PackageInstaller.__init__(self)
 
     def run(self):
-        self.package_renamer.rename_packages(self)
+        package_names = []
         package_list = self.make_package_list(['install', 'reinstall', 'none'])
+        self.package_renamer.rename_packages(self.manager)
 
-        disabled_packages = []
+        if not package_list:
+            sublime.message_dialog(text.format(
+                u'''
+                PackagesManager
 
-        def do_upgrades():
-            # Pause so packages can be disabled
-            time.sleep(0.7)
+                There are no packages ready for upgrade
+                '''
+            ))
+            return
 
-            for info in package_list:
-                if info[0] in disabled_packages:
-                    # We use a functools.partial to generate the on-complete callback in
-                    # order to bind the current value of the parameters, unlike lambdas.
-                    on_complete = functools.partial(self.reenable_package, info[0])
-                else:
-                    on_complete = None
-                thread = PackageInstallerThread(self.manager, info[0], on_complete)
-                thread.start()
-                ThreadProgress(
-                    thread,
-                    'Upgrading package %s' % info[0],
-                    'Package %s successfully %s' % (info[0], self.completion_type)
-                )
-                thread.join()
+        console_write( 'Upgrading packages %s' % package_list )
 
-        # Disabling a package means changing settings, which can only be done
-        # in the main thread. We then create a new background thread so that
-        # the upgrade process does not block the UI.
-        def disable_packages():
-            package_names = []
-            for info in package_list:
-                package_names.append(info[0])
-            disabled_packages.extend(self.disable_packages(package_names, 'upgrade'))
-            threading.Thread(target=do_upgrades).start()
+        for info in package_list:
+            package_names.append(info[0])
 
-        sublime.set_timeout(disable_packages, 1)
+        iterable = IgnoredPackagesBugFixer(package_names, 'upgrade')
+
+        for package in iterable:
+            console_write( 'Upgrading package %s' % package )
+
+            # Do not reenable if installation deferred until next restart
+            if self.manager.install_package(package) is None:
+                iterable.skip_reenable(package)
+
+            console_write( 'Package %s successfully %s' % (package, self.completion_type) )

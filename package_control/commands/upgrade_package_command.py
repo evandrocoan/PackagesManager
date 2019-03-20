@@ -8,6 +8,7 @@ from ..show_quick_panel import show_quick_panel
 from ..thread_progress import ThreadProgress
 from ..package_installer import PackageInstaller, PackageInstallerThread
 from ..package_renamer import PackageRenamer
+from ..package_disabler_iterator import IgnoredPackagesBugFixer
 
 
 class UpgradePackageCommand(sublime_plugin.WindowCommand):
@@ -47,9 +48,8 @@ class UpgradePackageThread(threading.Thread, PackageInstaller):
         PackageInstaller.__init__(self)
 
     def run(self):
-        self.package_renamer.rename_packages(self)
-
         self.package_list = self.make_package_list(['install', 'reinstall', 'none'])
+        self.package_renamer.rename_packages(self.manager)
 
         def show_panel():
             if not self.package_list:
