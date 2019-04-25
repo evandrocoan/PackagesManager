@@ -16,7 +16,7 @@ matrix:
           language: generic
 
 before_install:
-    - curl -OL https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/travis.sh
+    - curl -OL https://raw.githubusercontent.com/evandroforks/UnitTesting/master/sbin/travis.sh
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
             brew update;
             brew install python3;
@@ -41,7 +41,7 @@ install:
 
 script:
     # run tests with test coverage report
-    - sh travis.sh run_tests --coverage
+    - sh travis.sh run_tests --coverage; sh travis.sh show_full_sublime_text_console $?;
     # testing syntax_test files
     # - sh travis.sh run_syntax_tests
     - coveralls
