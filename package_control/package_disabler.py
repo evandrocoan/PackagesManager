@@ -30,16 +30,13 @@ class PackageDisabler():
     old_theme_package = None
     old_theme = None
 
-    old_syntaxes = None
-    old_color_schemes = None
+    old_syntaxes = {}
+    old_color_schemes = {}
 
     def __init__(self):
         self.pc_settings = sublime.load_settings(pc_settings_filename())
         self.debug = self.pc_settings.get('debug')
-
         # self.debug = True
-        PackageDisabler.old_syntaxes = {}
-        PackageDisabler.old_color_schemes = {}
 
     def get_version(self, package):
         """
