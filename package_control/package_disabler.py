@@ -1,10 +1,11 @@
+import json
+import threading
+
 import sublime
 
 import os
-import json
 import time
 import random
-import threading
 
 from . import text
 from . import settings as g_settings
@@ -85,6 +86,9 @@ class PackageDisabler():
         if not packages:
             console_write( u'No packages to process by reenable_package!' )
             return []
+
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            raise RuntimeError('disable_packages called on a background thread')
 
         global events
         try:
@@ -185,6 +189,9 @@ class PackageDisabler():
         if not packages:
             console_write( u'No packages to process by reenable_package!' )
             return
+
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            raise RuntimeError('reenable_package called on a background thread')
 
         global events
         try:
