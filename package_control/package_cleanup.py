@@ -315,7 +315,7 @@ class PackageCleanup(threading.Thread):
 
         # Check metadata to verify packages were not improperly installed
         for package in found_packages:
-            if package == 'User':
+            if package == 'User' or package == 'Default':
                 continue
 
             metadata = self.manager.get_metadata(package)
