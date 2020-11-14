@@ -20,7 +20,7 @@ PACKAGE_CONTROL_LOADER_NAME = "0_package_control_loader"
 PACKAGESMANAGER_LOADER_NAME = "0_packagesmanager_loader"
 
 g_is_running = False
-IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 1.7
+IGNORE_PACKAGE_MINIMUM_WAIT_TIME = 3.7
 
 
 # Clean up the installed and pristine packages for PackagesManager 2 to
