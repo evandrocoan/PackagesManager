@@ -4,6 +4,7 @@ import sublime
 import time
 import functools
 
+# from .settings import run_on_main_thread
 from .package_disabler import PackageDisabler
 
 # How many packages to ignore and unignore in batch to fix the ignored packages bug error
@@ -54,6 +55,22 @@ def clean_ignored_packages_callback():
     save_packagesmanager_settings()
 
 
+# Disabling a package means changing settings, which can only be done
+# in the main thread. We just sleep in this thread for a bit to ensure
+# that the packages have been disabled and are ready to be installed.
+def run_on_main_thread(callback):
+    is_finished = [False]
+
+    def main_thread_call():
+        callback()
+        is_finished[0] = True
+
+    sublime.set_timeout( main_thread_call, 1 )
+
+    while not is_finished[0]:
+        time.sleep( 0.1 )
+
+
 class IgnoredPackagesBugFixer(object):
     _is_running = False
 
@@ -100,7 +117,7 @@ class IgnoredPackagesBugFixer(object):
         """
         self.accumulative_unignore_user_packages( flush_everything=True )
 
-        clean_ignored_packages_callback()
+        run_on_main_thread( clean_ignored_packages_callback )
         IgnoredPackagesBugFixer._is_running = False
 
     def skip_reenable(self, package_name):
@@ -176,19 +193,30 @@ class IgnoredPackagesBugFixer(object):
 
         # This adds them to the `in_process` list on the Package Control.sublime-settings file
         if len( packages_to_add ):
-            self.package_disabler.disable_packages( list(packages_to_add), self.ignoring_type )
+            # We use a functools.partial to generate the on-complete callback in
+            # order to bind the current value of the parameters, unlike lambdas.
+            closure = functools.partial( self.package_disabler.disable_packages, list(packages_to_add), self.ignoring_type )
+
+            run_on_main_thread( closure )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
         # This should remove them from the `in_process` list on the Package Control.sublime-settings file
         if len( packages_to_remove ):
-            self.package_disabler.reenable_package( list(packages_to_remove), self.ignoring_type )
+            # We use a functools.partial to generate the on-complete callback in
+            # order to bind the current value of the parameters, unlike lambdas.
+            closure = functools.partial( self.package_disabler.reenable_package, list(packages_to_remove), self.ignoring_type )
+
+            run_on_main_thread( closure )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
+
+        def main_callback():
+            sublime_settings().set( "ignored_packages", currently_ignored )
+            save_sublime_settings()
 
         # Something, somewhere is setting the ignored_packages list back to `["Vintage"]`. Then
         # ensure we override this.
         for interval in range( 0, 27 ):
-            sublime_settings().set( "ignored_packages", currently_ignored )
-            save_sublime_settings()
+            run_on_main_thread( main_callback )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
             new_ignored_list = sublime_settings().get( "ignored_packages", [] )
@@ -201,6 +229,6 @@ class IgnoredPackagesBugFixer(object):
 
                     break
 
-        save_ignored_packages_callback()
+        run_on_main_thread( save_ignored_packages_callback )
         return currently_ignored
 
