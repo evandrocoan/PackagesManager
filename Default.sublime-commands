@@ -81,26 +81,26 @@
     },
     {
         "caption": "PackagesManager: Enable Debug Mode",
-        "command": "packages_manager_enable_debug_mode"
+        "command": "package_control_enable_debug_mode"
     },
     {
         "caption": "PackagesManager: Disable Debug Mode",
-        "command": "packages_manager_disable_debug_mode"
+        "command": "package_control_disable_debug_mode"
     },
     {
         "caption": "Preferences: PackagesManager Settings – Default",
-        "command": "packages_manager_open_default_settings"
+        "command": "package_control_open_default_settings"
     },
     {
         "caption": "Preferences: PackagesManager Settings – User",
-        "command": "packages_manager_open_user_settings"
+        "command": "package_control_open_user_settings"
     },
     {
         "caption": "Preferences: PackagesManager Settings",
-        "command": "packages_manager_edit_settings"
+        "command": "package_control_edit_settings"
     },
     {
         "caption": "PackagesManager: Tests",
-        "command": "packages_manager_tests"
+        "command": "package_control_tests"
     },
 ]

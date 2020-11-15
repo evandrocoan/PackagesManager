@@ -36,5 +36,5 @@ class PackageControlTestsCommand(sublime_plugin.WindowCommand):
         )
 
     def is_visible(self):
-        settings = sublime.load_settings('Package Control.sublime-settings')
+        settings = sublime.load_settings('PackagesManager.sublime-settings')
         return settings.get('enable_tests', False)

@@ -14,15 +14,15 @@
                         "children":
                         [
                             {
-                                "command": "packages_manager_open_default_settings",
+                                "command": "package_control_open_default_settings",
                                 "caption": "Settings – Default"
                             },
                             {
-                                "command": "packages_manager_open_user_settings",
+                                "command": "package_control_open_user_settings",
                                 "caption": "Settings – User"
                             },
                             {
-                                "command": "packages_manager_edit_settings",
+                                "command": "package_control_edit_settings",
                                 "caption": "Settings"
                             },
                             { "caption": "-" }

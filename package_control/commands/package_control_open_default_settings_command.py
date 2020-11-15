@@ -7,7 +7,7 @@ class PackageControlOpenDefaultSettingsCommand(sublime_plugin.WindowCommand):
         self.window.run_command(
             'open_file',
             {
-                "file": "${packages}/Package Control/Package Control.sublime-settings"
+                "file": "${packages}/PackagesManager/PackagesManager.sublime-settings"
             }
         )
 

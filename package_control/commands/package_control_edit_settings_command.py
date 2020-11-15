@@ -7,7 +7,7 @@ class PackageControlEditSettingsCommand(sublime_plugin.WindowCommand):
         self.window.run_command(
             'edit_settings',
             {
-                "base_file": "${packages}/Package Control/Package Control.sublime-settings",
+                "base_file": "${packages}/PackagesManager/PackagesManager.sublime-settings",
                 "default":
                     "// See the left pane for the list of settings and valid values\n"
                     "{\n"
