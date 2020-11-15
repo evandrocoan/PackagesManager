@@ -230,14 +230,14 @@ def setup_packages_ignored_list(package_disabler, packages_to_add=[], packages_t
 
     # This adds them to the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_add ):
-        package_disabler.disable_packages( packages_to_add, ignoring_type )
+        run_on_main_thread( lambda: package_disabler.disable_packages( packages_to_add, ignoring_type ) )
         time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
     # This should remove them from the `in_process` list on the Package Control.sublime-settings file
     if len( packages_to_remove ):
 
         for package in packages_to_remove:
-            package_disabler.reenable_package( package, ignoring_type )
+            run_on_main_thread( lambda: package_disabler.reenable_package( package, ignoring_type ) )
             time.sleep( IGNORE_PACKAGE_MINIMUM_WAIT_TIME )
 
 
