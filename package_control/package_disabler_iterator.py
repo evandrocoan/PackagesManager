@@ -4,7 +4,7 @@ import sublime
 import time
 import functools
 
-# from .settings import run_on_main_thread
+from .settings import run_on_main_thread
 from .package_disabler import PackageDisabler
 
 # How many packages to ignore and unignore in batch to fix the ignored packages bug error
@@ -53,22 +53,6 @@ def save_ignored_packages_callback():
 def clean_ignored_packages_callback():
     packagesmanager_settings().erase( 'next_packages_to_ignore' )
     save_packagesmanager_settings()
-
-
-# Disabling a package means changing settings, which can only be done
-# in the main thread. We just sleep in this thread for a bit to ensure
-# that the packages have been disabled and are ready to be installed.
-def run_on_main_thread(callback):
-    is_finished = [False]
-
-    def main_thread_call():
-        callback()
-        is_finished[0] = True
-
-    sublime.set_timeout( main_thread_call, 1 )
-
-    while not is_finished[0]:
-        time.sleep( 0.1 )
 
 
 class IgnoredPackagesBugFixer(object):

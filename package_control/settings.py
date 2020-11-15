@@ -31,6 +31,23 @@ SUBLIME_SETTING_NAME = "Preferences"
 DUMMY_RECORD_SETTING = "not_your_business"
 
 
+# Disabling a package means changing settings, which can only be done
+# in the main thread. We just sleep in this thread for a bit to ensure
+# that the packages have been disabled and are ready to be installed.
+# https://stackoverflow.com/questions/3252228/python-why-is-functools-partial-necessary/3252364#comment114638367_3252364
+def run_on_main_thread(callback):
+    is_finished = [False]
+
+    def main_thread_call():
+        callback()
+        is_finished[0] = True
+
+    sublime.set_timeout( main_thread_call, 1 )
+
+    while not is_finished[0]:
+        time.sleep( 0.1 )
+
+
 def main_directory():
     return get_main_directory( PACKAGE_ROOT_DIRECTORY )
 
