@@ -13,6 +13,8 @@ from ..package_installer import PackageInstaller, PackageInstallerThread
 from ..package_renamer import PackageRenamer
 from ..package_disabler_iterator import IgnoredPackagesBugFixer
 
+USE_QUICK_PANEL_ITEM = hasattr(sublime, 'QuickPanelItem')
+
 
 class UpgradeAllPackagesCommand(sublime_plugin.WindowCommand):
 
@@ -61,7 +63,11 @@ class UpgradeAllPackagesThread(threading.Thread, PackageInstaller):
         console_write( 'Upgrading packages %s' % package_list )
 
         for info in package_list:
-            package_names.append(info[0])
+            if USE_QUICK_PANEL_ITEM:
+                package_name = info.trigger
+            else:
+                package_name = info[0]
+            package_names.append(package_name)
 
         iterable = IgnoredPackagesBugFixer(package_names, 'upgrade')
 

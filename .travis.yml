@@ -1,55 +1,22 @@
-env:
-    global:
-        - PACKAGE="PackagesManager" # Package name
-        - SUBLIME_TEXT_VERSION="3"
-        # use UNITTESTING_TAG to specific tag of UnitTesting
-        # - UNITTESTING_TAG="master"
-
-# mutliple os matrix
-# https://docs.travis-ci.com/user/multi-os/#Python-example-(unsupported-languages)
+sudo: false
+language: c
+branches:
+  except:
+    - /^[0-9]+\.[0-9]+\.[0-9]$/
 matrix:
-    include:
-        - os: linux
-          language: python
-          python: 3.3
-        - os: osx
-          language: generic
-
-before_install:
-    - curl -OL https://raw.githubusercontent.com/evandrocoan/UnitTesting/master/sbin/travis.sh
-    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-            brew update;
-            brew install python3;
-            pip3 install python-coveralls;
-            pip3 install codecov;
-      fi
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-            pip install python-coveralls;
-            pip install codecov;
-      fi
-    # enable gui, see https://docs.travis-ci.com/user/gui-and-headless-browsers
-    - if [ "$TRAVIS_OS_NAME" == "linux"  ]; then
-            export DISPLAY=:99.0;
-            sh -e /etc/init.d/xvfb start;
-      fi
-
-install:
-    # bootstrap the testing environment
-    - sh travis.sh bootstrap
-    # install Package Control and package denepdencies
-    # - sh travis.sh install_package_control
-
+  include:
+    - os: linux
+      dist: trusty
+      language: python
+      python: "2.6"
+    - os: linux
+      dist: trusty
+      language: python
+      python: "3.3"
+    - os: linux
+      dist: bionic
+      language: python
+      python: "3.8"
 script:
-    # run tests with test coverage report
-    - sh travis.sh run_tests --coverage; sh travis.sh show_full_sublime_text_console $?;
-    # testing syntax_test files
-    # - sh travis.sh run_syntax_tests
-    - coveralls
-    - codecov
-
-after_success:
-    # remove the following if `coveralls` is not needed
-    - echo
-
-notifications:
-    email: false
+  - python dev/deps.py
+  - python dev/lint.py

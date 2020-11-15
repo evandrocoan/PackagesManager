@@ -1,6 +1,7 @@
 import sublime
 import sys
 import os
+import shutil
 
 
 st_version = 2 if sys.version_info < (3,) else 3
@@ -106,7 +107,7 @@ else:
         # Sublime Text is not written to work that way, and although packages
         # could be installed, they could not be loaded properly.
         try:
-            os.path.exists(os.path.join(sublime.packages_path(), u"fran\u00e7ais"))
+            os.path.exists(os.path.join(sublime.packages_path(), u"fran\u2013ais"))
         except (UnicodeEncodeError):
             message = text.format(
                 u'''
@@ -129,6 +130,40 @@ else:
 
         # This handles fixing unicode issues with tempdirs on ST2 for Windows
         tempfile_unicode_patch()
+
+        # Ensure we have a Cache dir we can use for temporary data
+        if not os.path.exists(sys_path.pc_cache_dir()):
+            os.mkdir(sys_path.pc_cache_dir())
+
+        # Clean up the old HTTP cache dir
+        legacy_http_cache = os.path.join(sublime.packages_path(), u'User', u'Package Control.cache')
+        http_cache = os.path.join(sys_path.pc_cache_dir(), 'http_cache')
+        if os.path.exists(legacy_http_cache):
+            if not os.path.exists(http_cache):
+                console_write(
+                    u'''
+                    Moving HTTP cache data into "Cache/Package Control/http_cache/"
+                    '''
+                )
+                shutil.move(legacy_http_cache, http_cache)
+            else:
+                console_write(
+                    u'''
+                    Removing old HTTP cache data"
+                    '''
+                )
+                shutil.rmtree(legacy_http_cache)
+
+        # Clean up old CA bundle paths
+        legacy_ca_filenames = [
+            'Package Control.system-ca-bundle',
+            'Package Control.merged-ca-bundle',
+            'oscrypto-ca-bundle.crt'
+        ]
+        for legacy_ca_filename in legacy_ca_filenames:
+            legacy_ca_path = os.path.join(sublime.packages_path(), 'User', legacy_ca_filename)
+            if os.path.exists(legacy_ca_path):
+                os.unlink(legacy_ca_path)
 
         pc_settings = sublime.load_settings(pc_settings_filename())
 

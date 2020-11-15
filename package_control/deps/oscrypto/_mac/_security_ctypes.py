@@ -2,12 +2,10 @@
 from __future__ import unicode_literals, division, absolute_import, print_function
 
 import platform
-from ctypes.util import find_library
 from ctypes import c_void_p, c_int32, c_char_p, c_size_t, c_byte, c_int, c_uint32, c_uint64, c_ulong, c_long, c_bool
 from ctypes import CDLL, POINTER, CFUNCTYPE, Structure
 
 from .._ffi import FFIEngineError
-from ..errors import LibraryNotFoundError
 
 
 __all__ = [
@@ -18,14 +16,12 @@ __all__ = [
 
 
 version = platform.mac_ver()[0]
-version_info = tuple(map(int, version.split('.')))
+version_info = tuple(map(int,  platform.mac_ver()[0].split('.')))
 
 if version_info < (10, 7):
     raise OSError('Only OS X 10.7 and newer are supported, not %s.%s' % (version_info[0], version_info[1]))
 
-security_path = find_library('Security')
-if not security_path:
-    raise LibraryNotFoundError('The library Security could not be found')
+security_path = '/System/Library/Frameworks/Security.framework/Security'
 
 Security = CDLL(security_path, use_errno=True)
 
@@ -56,7 +52,9 @@ SecTransformRef = POINTER(c_void_p)
 SecRandomRef = c_void_p
 SecTrustSettingsDomain = c_uint32
 SecItemImportExportFlags = c_uint32
+SecKeyImportExportFlags = c_uint32
 SecExternalFormat = c_uint32
+SecExternalItemType = c_uint32
 SecPadding = c_uint32
 SSLProtocol = c_uint32
 SSLCipherSuite = c_uint32
@@ -64,9 +62,8 @@ SecPolicyRef = POINTER(c_void_p)
 CSSM_CC_HANDLE = c_uint64
 CSSM_ALGORITHMS = c_uint32
 CSSM_KEYUSE = c_uint32
-SecItemImportExportKeyParameters = c_void_p
 SecAccessRef = POINTER(c_void_p)
-SecKeychainRef = c_void_p
+SecKeychainRef = POINTER(c_void_p)
 SSLContextRef = POINTER(c_void_p)
 SecTrustRef = POINTER(c_void_p)
 SSLConnectionRef = c_uint32
@@ -103,7 +100,33 @@ class CSSM_APPLE_TP_CRL_OPTIONS(Structure):  # noqa
     ]
 
 
+class SecItemImportExportKeyParameters(Structure):
+    _fields_ = [
+        ('version', c_uint32),
+        ('flags', SecKeyImportExportFlags),
+        ('passphrase', CFTypeRef),
+        ('alertTitle', CFStringRef),
+        ('alertPrompt', CFStringRef),
+        ('accessRef', SecAccessRef),
+        ('keyUsage', CFArrayRef),
+        ('keyAttributes', CFArrayRef),
+    ]
+
+
 try:
+    Security.SecKeychainCreate.argtypes = [
+        c_char_p,
+        c_uint32,
+        c_void_p,
+        Boolean,
+        SecAccessRef,
+        POINTER(SecKeychainRef)
+    ]
+    Security.SecKeychainCreate.restype = OSStatus
+
+    Security.SecKeychainDelete.argtypes = [SecKeychainRef]
+    Security.SecKeychainDelete.restype = OSStatus
+
     Security.SecRandomCopyBytes.argtypes = [
         SecRandomRef,
         c_size_t,
@@ -246,13 +269,6 @@ try:
     ]
     Security.SecKeyRawVerify.restype = OSStatus
 
-    Security.SecKeyGeneratePair.argtypes = [
-        CFDictionaryRef,
-        POINTER(SecKeyRef),
-        POINTER(SecKeyRef)
-    ]
-    Security.SecKeyGeneratePair.restype = OSStatus
-
     Security.SecAccessCreate.argtypes = [
         CFStringRef,
         CFArrayRef,
@@ -275,11 +291,23 @@ try:
     ]
     Security.SecKeyCreatePair.restype = OSStatus
 
+    Security.SecItemImport.argtypes = [
+        CFDataRef,
+        CFStringRef,
+        POINTER(SecExternalFormat),
+        POINTER(SecExternalItemType),
+        SecItemImportExportFlags,
+        POINTER(SecItemImportExportKeyParameters),
+        SecKeychainRef,
+        POINTER(CFArrayRef)
+    ]
+    Security.SecItemImport.restype = OSStatus
+
     Security.SecItemExport.argtypes = [
         CFTypeRef,
         SecExternalFormat,
         SecItemImportExportFlags,
-        SecItemImportExportKeyParameters,
+        POINTER(SecItemImportExportKeyParameters),
         POINTER(CFDataRef)
     ]
     Security.SecItemExport.restype = OSStatus
@@ -542,6 +570,7 @@ try:
     setattr(Security, 'OSStatus', OSStatus)
 
     setattr(Security, 'SecAccessRef', SecAccessRef)
+    setattr(Security, 'SecKeychainRef', SecKeychainRef)
     setattr(Security, 'SecKeyRef', SecKeyRef)
 
     setattr(Security, 'SecPolicySearchRef', SecPolicySearchRef)
@@ -551,6 +580,7 @@ try:
     setattr(Security, 'CSSM_OID', CSSM_OID)
     setattr(Security, 'CSSM_APPLE_TP_OCSP_OPTIONS', CSSM_APPLE_TP_OCSP_OPTIONS)
     setattr(Security, 'CSSM_APPLE_TP_CRL_OPTIONS', CSSM_APPLE_TP_CRL_OPTIONS)
+    setattr(Security, 'SecItemImportExportKeyParameters', SecItemImportExportKeyParameters)
 
     setattr(Security, 'kSecRandomDefault', SecRandomRef.in_dll(Security, 'kSecRandomDefault'))
 
@@ -570,9 +600,7 @@ try:
     setattr(Security, 'kSecDigestLengthAttribute', CFStringRef.in_dll(Security, 'kSecDigestLengthAttribute'))
     setattr(Security, 'kSecIVKey', CFStringRef.in_dll(Security, 'kSecIVKey'))
 
-    setattr(Security, 'kSecAttrKeyClass', CFStringRef.in_dll(Security, 'kSecAttrKeyClass'))
-    setattr(Security, 'kSecAttrKeyClassPublic', CFTypeRef.in_dll(Security, 'kSecAttrKeyClassPublic'))
-    setattr(Security, 'kSecAttrKeyClassPrivate', CFTypeRef.in_dll(Security, 'kSecAttrKeyClassPrivate'))
+    setattr(Security, 'kSecAttrIsExtractable', CFStringRef.in_dll(Security, 'kSecAttrIsExtractable'))
 
     setattr(Security, 'kSecDigestSHA1', CFStringRef.in_dll(Security, 'kSecDigestSHA1'))
     setattr(Security, 'kSecDigestSHA2', CFStringRef.in_dll(Security, 'kSecDigestSHA2'))

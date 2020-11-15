@@ -14,18 +14,16 @@
                         "children":
                         [
                             {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/PackagesManager/PackagesManager.sublime-settings"
-                                },
+                                "command": "packages_manager_open_default_settings",
                                 "caption": "Settings – Default"
                             },
                             {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/PackagesManager.sublime-settings"
-                                },
+                                "command": "packages_manager_open_user_settings",
                                 "caption": "Settings – User"
+                            },
+                            {
+                                "command": "packages_manager_edit_settings",
+                                "caption": "Settings"
                             },
                             { "caption": "-" }
                         ]

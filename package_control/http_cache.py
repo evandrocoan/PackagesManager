@@ -1,10 +1,9 @@
 import os
 import time
 
-import sublime
-
 from .file_not_found_error import FileNotFoundError
 from .open_compat import open_compat, read_compat
+from .sys_path import pc_cache_dir
 
 
 class HttpCache(object):
@@ -14,7 +13,7 @@ class HttpCache(object):
     """
 
     def __init__(self, ttl):
-        self.base_path = os.path.join(sublime.packages_path(), 'User', 'PackagesManager.cache')
+        self.base_path = os.path.join(pc_cache_dir(), 'http_cache')
         if not os.path.exists(self.base_path):
             os.mkdir(self.base_path)
         self.clear(int(ttl))

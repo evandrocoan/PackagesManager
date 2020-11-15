@@ -14,7 +14,13 @@ from .list_unmanaged_packages_command import ListUnmanagedPackagesCommand
 from .remove_package_command import RemovePackageCommand
 from .upgrade_all_packages_command import UpgradeAllPackagesCommand
 from .upgrade_package_command import UpgradePackageCommand
+from .packages_manager_disable_debug_mode_command import PackagesManagerDisableDebugModeCommand
+from .packages_manager_edit_settings_command import PackagesManagerEditSettingsCommand
+from .packages_manager_enable_debug_mode_command import PackagesManagerEnableDebugModeCommand
 from .packages_manager_insert_command import PackagesManagerInsertCommand
+from .packages_manager_tests_command import PackagesManagerTestsCommand
+from .packages_manager_open_default_settings_command import PackagesManagerOpenDefaultSettingsCommand
+from .packages_manager_open_user_settings_command import PackagesManagerOpenUserSettingsCommand
 from .remove_channel_command import RemoveChannelCommand
 from .remove_repository_command import RemoveRepositoryCommand
 from .satisfy_dependencies_command import SatisfyDependenciesCommand
@@ -37,7 +43,13 @@ __all__ = [
     'RemovePackageCommand',
     'UpgradeAllPackagesCommand',
     'UpgradePackageCommand',
+    'PackagesManagerDisableDebugModeCommand',
+    'PackagesManagerEditSettingsCommand',
+    'PackagesManagerEnableDebugModeCommand',
     'PackagesManagerInsertCommand',
+    'PackagesManagerTestsCommand',
+    'PackagesManagerOpenDefaultSettingsCommand',
+    'PackagesManagerOpenUserSettingsCommand',
     'RemoveChannelCommand',
     'RemoveRepositoryCommand',
     'SatisfyDependenciesCommand'

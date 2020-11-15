@@ -2,12 +2,12 @@
 from __future__ import unicode_literals, division, absolute_import, print_function
 
 import re
-from ctypes.util import find_library
+
 from ctypes import CDLL, c_void_p, c_char_p, c_int, c_ulong, c_uint, c_long, c_size_t, POINTER
 
 from .. import _backend_config
 from .._errors import pretty_message
-from .._ffi import FFIEngineError
+from .._ffi import FFIEngineError, get_library
 from ..errors import LibraryNotFoundError
 
 
@@ -23,7 +23,7 @@ __all__ = [
 
 libcrypto_path = _backend_config().get('libcrypto_path')
 if libcrypto_path is None:
-    libcrypto_path = find_library('crypto')
+    libcrypto_path = get_library('crypto', 'libcrypto.dylib', '42')
 if not libcrypto_path:
     raise LibraryNotFoundError('The library libcrypto could not be found')
 
@@ -231,6 +231,12 @@ try:
         c_int
     ]
     libcrypto.d2i_PUBKEY.restype = P_EVP_PKEY
+
+    libcrypto.i2d_PUBKEY.argtypes = [
+        P_EVP_PKEY,
+        POINTER(c_char_p)
+    ]
+    libcrypto.i2d_PUBKEY.restype = c_int
 
     libcrypto.d2i_X509.argtypes = [
         POINTER(P_X509),

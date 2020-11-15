@@ -14,8 +14,10 @@ except (NameError):
     from zipimport import zipimporter
 
 data_dir = None
+cache_dir = None
 packages_path = None
 installed_packages_path = None
+pc_package_path = None
 
 if sys.version_info >= (3,):
     def decode(path):
@@ -23,6 +25,12 @@ if sys.version_info >= (3,):
 
     def encode(path):
         return path
+
+    # flake8 fix for Python 2.6
+    try:
+        __loader__
+    except NameError:
+        __loader__ = None
 
     # Unpacked install of Sublime Text
     if not isinstance(__loader__, zipimporter):
@@ -64,15 +72,16 @@ if sys.version_info >= (3,):
                 _data_base = os.path.expanduser('~/.config')
 
         if _data_base is not None:
-            _config_leaf = u'Sublime Text 3 Development'
-            if sys.platform not in set(['win32', 'darwin']):
-                _config_leaf = u'sublime-text-3-development'
-            _possible_data_dir = os.path.join(_data_base, _config_leaf)
-            if os.path.exists(_possible_data_dir):
-                data_dir = _possible_data_dir
-                _possible_installed_packages_path = os.path.join(data_dir, u'Installed Packages')
-                if os.path.exists(_possible_installed_packages_path):
-                    installed_packages_path = _possible_installed_packages_path
+            for _leaf in [u'Sublime Text Development', u'Sublime Text 3 Development']:
+                if sys.platform not in set(['win32', 'darwin']):
+                    _leaf = _leaf.lower().replace(' ', '-')
+                _possible_data_dir = os.path.join(_data_base, _leaf)
+                if os.path.exists(_possible_data_dir):
+                    data_dir = _possible_data_dir
+                    _possible_installed_packages_path = os.path.join(data_dir, u'Installed Packages')
+                    if os.path.exists(_possible_installed_packages_path):
+                        installed_packages_path = _possible_installed_packages_path
+                    break
 
     if installed_packages_path and data_dir is None:
         data_dir = dirname(installed_packages_path)
@@ -197,3 +206,35 @@ def add_dependency(name, first=False):
     for path in dep_paths.values():
         if os.path.exists(encode(path)):
             add(path, first=first)
+
+
+def pc_cache_dir():
+    """
+    Returns the cache directory for Package Control files
+
+    :return:
+        A unicode string of the Package Control cache dir
+    """
+
+    global cache_dir
+
+    if cache_dir is None:
+        if st_version == u'2':
+            cache_dir = os.path.join(data_dir, u'Cache')
+            if not os.path.exists(cache_dir):
+                os.mkdir(cache_dir)
+        else:
+            cache_dir = sublime.cache_path()
+
+    return os.path.join(cache_dir, u'PackagesManager')
+
+
+def user_config_dir():
+    """
+    Returns the directory for the user's config
+
+    :return:
+        A unicode string of the user's config dir
+    """
+
+    return os.path.join(sublime.packages_path(), 'User')

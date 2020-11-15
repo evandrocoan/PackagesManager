@@ -89,7 +89,7 @@ try:
 
             hosts = self.get_valid_hosts_for_cert(cert)
             for host in hosts:
-                host_re = host.replace('.', '\.').replace('*', '[^.]*')
+                host_re = host.replace('.', r'\.').replace('*', r'[^.]*')
                 if re.search('^%s$' % (host_re,), hostname, re.I):
                     return True
             return False
@@ -307,7 +307,14 @@ try:
 
             # Python 3 supports SNI when using an SSLContext
             if sys.version_info >= (3,):
-                self.ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+                proto = ssl.PROTOCOL_SSLv23
+                if sys.version_info >= (3, 6):
+                    proto = ssl.PROTOCOL_TLS
+                self.ctx = ssl.SSLContext(proto)
+                if sys.version_info < (3, 7):
+                    self.ctx.options = ssl.OP_ALL | ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3
+                else:
+                    self.ctx.minimum_version = ssl.TLSVersion.TLSv1
                 self.ctx.verify_mode = self.cert_reqs
                 self.ctx.load_verify_locations(self.ca_certs)
                 # We don't call load_cert_chain() with self.key_file and self.cert_file
@@ -333,7 +340,7 @@ try:
                     certfile=self.cert_file,
                     cert_reqs=self.cert_reqs,
                     ca_certs=self.ca_certs,
-                    ssl_version=ssl.PROTOCOL_TLSv1
+                    ssl_version=ssl.PROTOCOL_SSLv23
                 )
 
             if self.debuglevel == -1:

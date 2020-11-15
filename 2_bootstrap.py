@@ -40,13 +40,12 @@ if sys.version_info < (3,):
     from package_control import settings as g_settings
     from package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from package_control.package_manager import PackageManager
-    from package_control import loader, text, sys_path
-
+    from package_control import loader, text
 else:
     from .package_control import settings as g_settings
     from .package_control.bootstrap import bootstrap_dependency, mark_bootstrapped
     from .package_control.package_manager import PackageManager
-    from .package_control import loader, text, sys_path
+    from .package_control import loader, text
 
 
 def compare_text_with_file(input_text, file):

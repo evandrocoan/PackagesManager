@@ -80,18 +80,24 @@
         "command": "satisfy_dependencies"
     },
     {
+        "caption": "PackagesManager: Enable Debug Mode",
+        "command": "packages_manager_enable_debug_mode"
+    },
+    {
+        "caption": "PackagesManager: Disable Debug Mode",
+        "command": "packages_manager_disable_debug_mode"
+    },
+    {
         "caption": "Preferences: PackagesManager Settings – Default",
-        "command": "open_file", "args":
-        {
-            "file": "${packages}/PackagesManager/PackagesManager.sublime-settings"
-        }
+        "command": "packages_manager_open_default_settings"
     },
     {
         "caption": "Preferences: PackagesManager Settings – User",
-        "command": "open_file", "args":
-        {
-            "file": "${packages}/User/PackagesManager.sublime-settings"
-        }
+        "command": "packages_manager_open_user_settings"
+    },
+    {
+        "caption": "Preferences: PackagesManager Settings",
+        "command": "packages_manager_edit_settings"
     },
     {
         "caption": "PackagesManager: Tests",

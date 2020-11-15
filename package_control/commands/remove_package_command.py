@@ -11,6 +11,8 @@ from .. import text
 from ..show_quick_panel import show_quick_panel
 from ..thread_progress import ThreadProgress
 
+USE_QUICK_PANEL_ITEM = hasattr(sublime, 'QuickPanelItem')
+
 
 class RemovePackageCommand(sublime_plugin.WindowCommand):
 
@@ -83,7 +85,10 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
                 packages = []
 
                 for index in range( 1, self.last_picked_item + 1 ):
-                    package_name = self.repositories_list[index][0]
+                    if USE_QUICK_PANEL_ITEM:
+                        package_name = self.repositories_list[index].trigger
+                    else:
+                        package_name = self.repositories_list[index][0]
 
                     if package_name.endswith( self.exclusion_flag ):
                         continue

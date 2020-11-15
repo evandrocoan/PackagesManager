@@ -10,6 +10,8 @@ from .package_disabler import PackageDisabler
 from .versions import version_comparable
 from .commands.advanced_install_package_command import AdvancedInstallPackageThread
 
+USE_QUICK_PANEL_ITEM = hasattr(sublime, 'QuickPanelItem')
+
 
 class PackageInstaller(PackageDisabler):
 
@@ -65,7 +67,6 @@ class PackageInstaller(PackageDisabler):
         for package in sorted(iter(packages.keys()), key=lambda s: s.lower()):
             if ignore_packages and package in ignore_packages:
                 continue
-            package_entry = [package]
             info = packages[package]
             release = info['releases'][0]
 
@@ -136,8 +137,27 @@ class PackageInstaller(PackageDisabler):
             description = info.get('description')
             if not description:
                 description = 'No description provided'
-            package_entry.append(description)
-            package_entry.append(action + extra + ' ' + re.sub('^https?://', '', info['homepage']))
+
+            homepage = info['homepage']
+            homepage_display = re.sub('^https?://', '', homepage)
+
+            if USE_QUICK_PANEL_ITEM:
+                description = '<em>%s</em>' % sublime.html_format_command(description)
+                final_line = '<em>' + action + extra + '</em>'
+                if homepage_display:
+                    if action or extra:
+                        final_line += ' '
+                    final_line += '<a href="%s">%s</a>' % (homepage, homepage_display)
+                package_entry = sublime.QuickPanelItem(package, [description, final_line])
+            else:
+                package_entry = [package]
+                package_entry.append(description)
+                final_line = action + extra
+                if final_line and homepage_display:
+                    final_line += ' '
+                final_line += homepage_display
+                package_entry.append(final_line)
+
             package_list.append(package_entry)
         return package_list
 
@@ -153,7 +173,10 @@ class PackageInstaller(PackageDisabler):
 
         if picked == -1:
             return
-        name = self.package_list[picked][0]
+        if USE_QUICK_PANEL_ITEM:
+            name = self.package_list[picked].trigger
+        else:
+            name = self.package_list[picked][0]
 
         thread = AdvancedInstallPackageThread(name)
         thread.start()

@@ -1,11 +1,21 @@
+# PackagesManager
+
+The [Sublime Text](http://www.sublimetext.com) package manager. Visit
+[packagecontrol.io](https://packagecontrol.io) for
+[installation instructions](https://packagecontrol.io/installation), a list of
+[available packages](https://packagecontrol.io/browse) and detailed
+[documentation](https://packagecontrol.io/docs).
+
+## License
+
 PackagesManager is licensed under the MIT license.
 
 All of the source code (except for `package_control/semver.py`), is under the
 license:
 
 ```
-Copyright (c) 2011-2016 Will Bond <will@wbond.net>
-Copyright (c) 2017 Evandro Coan <evandrocoan@hotmail.com>
+Copyright (c) 2011-2020 Will Bond <will@wbond.net>
+Copyright (c) 2017-2020 Evandro Coan <evandrocoan@hotmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
