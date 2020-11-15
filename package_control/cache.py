@@ -106,7 +106,7 @@ def set_cache(key, data, ttl=300):
 
     _channel_repository_cache[key] = {
         'data': data,
-        'expires': time.time() + ttl
+        'expires': time.time() + (ttl if ttl else 300)
     }
 
 
