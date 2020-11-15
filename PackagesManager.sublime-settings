@@ -231,5 +231,5 @@
 	},
 
 	// Enable the ability to run the tests - this is only for development
-	"enable_tests": true
+	"enable_tests": false
 }
