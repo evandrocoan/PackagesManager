@@ -19,4 +19,4 @@ matrix:
       python: "3.8"
 script:
   - python dev/deps.py
-  - python dev/lint.py
+  # - python dev/lint.py
