@@ -52,13 +52,13 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
         self.last_excluded_items = 0
 
     def run(self):
-        self.repositories_list = [ ["", "", ""] ]
-        self.repositories_list.extend( self.make_package_list( 'remove' ) )
+        self.package_list = [ ["", "", ""] ]
+        self.package_list.extend( self.make_package_list( 'remove' ) )
 
         self.update_start_item_name()
-        self.repositories_list[0][2] = "(from {length} packages available)".format( length=len( self.repositories_list ) - 1 )
+        self.package_list[0][2] = "(from {length} packages available)".format( length=len( self.package_list ) - 1 )
 
-        if len( self.repositories_list ) < 2:
+        if len( self.package_list ) < 2:
             sublime.message_dialog(text.format(
                 u'''
                 PackagesManager
@@ -68,7 +68,7 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
             ))
             return
 
-        show_quick_panel( self.window, self.repositories_list, self.on_done )
+        show_quick_panel( self.window, self.package_list, self.on_done )
 
     def on_done(self, picked_index):
 
@@ -79,16 +79,16 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
 
             # No repositories selected, reshow the menu
             if self.get_total_items_selected() < 1:
-                show_quick_panel( self.window, self.repositories_list, self.on_done )
+                show_quick_panel( self.window, self.package_list, self.on_done )
 
             else:
                 packages = []
 
                 for index in range( 1, self.last_picked_item + 1 ):
                     if USE_QUICK_PANEL_ITEM:
-                        package_name = self.repositories_list[index].trigger
+                        package_name = self.package_list[index].trigger
                     else:
-                        package_name = self.repositories_list[index][0]
+                        package_name = self.package_list[index][0]
 
                     if package_name.endswith( self.exclusion_flag ):
                         continue
@@ -110,7 +110,7 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
         else:
 
             if picked_index <= self.last_picked_item:
-                picked_package = self.repositories_list[picked_index]
+                picked_package = self.package_list[picked_index]
 
                 if picked_package[0].endswith( self.inclusion_flag ):
                     picked_package[0] = picked_package[0][:-len( self.inclusion_flag )]
@@ -121,31 +121,31 @@ class InstallPackageThread(threading.Thread, ExistingPackagesCommand):
                         picked_package[0] = picked_package[0][:-len( self.exclusion_flag )]
 
                     self.last_excluded_items -= 1
-                    self.repositories_list[picked_index][0] = picked_package[0] + self.inclusion_flag
+                    self.package_list[picked_index][0] = picked_package[0] + self.inclusion_flag
 
                 else:
                     self.last_excluded_items += 1
-                    self.repositories_list[picked_index][0] = picked_package[0] + self.exclusion_flag
+                    self.package_list[picked_index][0] = picked_package[0] + self.exclusion_flag
 
             else:
                 self.last_picked_item += 1
-                self.repositories_list[picked_index][0] = self.repositories_list[picked_index][0] + self.inclusion_flag
+                self.package_list[picked_index][0] = self.package_list[picked_index][0] + self.inclusion_flag
 
             self.update_start_item_name()
-            self.repositories_list.insert( 1, self.repositories_list.pop( picked_index ) )
+            self.package_list.insert( 1, self.package_list.pop( picked_index ) )
 
-            show_quick_panel( self.window, self.repositories_list, self.on_done )
+            show_quick_panel( self.window, self.package_list, self.on_done )
 
     def update_start_item_name(self):
         items = self.get_total_items_selected()
 
         if items:
-            self.repositories_list[0][0] = "Select this first item to start the uninstallation..."
+            self.package_list[0][0] = "Select this first item to start the uninstallation..."
 
         else:
-            self.repositories_list[0][0] = "Select all the packages you would like to uninstall"
+            self.package_list[0][0] = "Select all the packages you would like to uninstall"
 
-        self.repositories_list[0][1] = "(%d items selected)" % ( items )
+        self.package_list[0][1] = "(%d items selected)" % ( items )
 
     def get_total_items_selected(self):
         return self.last_picked_item - self.last_excluded_items
